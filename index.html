@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="purple">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,7 +19,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .sb-logo{padding:14px 14px 10px;border-bottom:1px solid var(--border)}
 .sb-brand{display:flex;align-items:center;gap:9px;margin-bottom:8px}
 .sb-icon{width:32px;height:32px;background:linear-gradient(135deg,#7c3aed,#3b82f6);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;flex-shrink:0}
-.sb-title{font-size:15px;font-weight:800;letter-spacing:-.3px}
 .sb-sub{font-size:9px;color:var(--muted)}
 .sb-clock{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:6px 10px;display:flex;justify-content:space-between;align-items:center}
 .sb-date{font-size:10px;color:var(--muted)}
@@ -36,14 +35,29 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .sb-nav{padding:8px 8px;flex:1;overflow-y:auto}
 .nl{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);padding:0 8px;margin:10px 0 4px}
 .ni{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;cursor:pointer;color:var(--muted);font-size:12px;font-weight:500;margin-bottom:2px;transition:all .15s;user-select:none}
-.ni:hover{background:rgba(124,58,237,.15);color:var(--pl)}
-.ni.on{background:rgba(124,58,237,.2);color:#c4b5fd;font-weight:600}
+.ni:hover{background:rgba(var(--pa),.15);color:var(--pl)}
+.ni.on{background:rgba(var(--pa),.22);color:var(--pl);font-weight:600}
 .nd{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
 
 /* EDITABLE NAME */
 .sb-name-wrap{display:flex;align-items:center;gap:4px;position:relative}
-.sb-title{font-size:15px;font-weight:800;letter-spacing:-.3px;cursor:text;outline:none;border-radius:4px;padding:1px 2px;transition:background .15s}
-.sb-title:focus{background:rgba(124,58,237,.18);outline:2px solid rgba(124,58,237,.5);padding:1px 5px}
+/* animated shimmer title */
+@keyframes shimmer{0%{background-position:0%}100%{background-position:400%}}
+@keyframes iconGlow{0%,100%{box-shadow:0 0 10px rgba(var(--pa),.45)}50%{box-shadow:0 0 28px rgba(var(--pa),.9),0 0 55px rgba(var(--pa),.25)}}
+@keyframes autoSpin{to{transform:rotate(360deg)}}
+.sb-title{
+  font-size:15px;font-weight:800;letter-spacing:-.3px;cursor:text;outline:none;
+  border-radius:4px;padding:1px 4px;
+  background:linear-gradient(90deg,#a78bfa,#60a5fa,#34d399,#fbbf24,#f472b6,#e11d48,#a78bfa);
+  background-size:400% 100%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:shimmer 5s linear infinite;
+}
+.sb-title:focus{
+  -webkit-text-fill-color:#fff!important;animation:none!important;
+  background:rgba(var(--pa),.2)!important;-webkit-background-clip:initial!important;
+  outline:2px solid rgba(var(--pa),.5)!important;
+}
 .sb-edit-btn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:11px;opacity:0;transition:opacity .15s;padding:2px 4px;border-radius:4px;line-height:1}
 .sb-brand:hover .sb-edit-btn{opacity:.7}
 .sb-edit-btn:hover{opacity:1!important;color:var(--pl)}
@@ -168,7 +182,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
 /* PBAR */
 .pbar-w{height:7px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;margin:6px 0}
-.pbar{height:100%;border-radius:4px;background:linear-gradient(90deg,#7c3aed,#60a5fa);transition:width .5s ease}
+.pbar{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gs,#7c3aed),var(--ge,#60a5fa));transition:width .5s ease}
 
 /* 2-col grid */
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -196,7 +210,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .ymc{background:rgba(255,255,255,.03);border-radius:9px;padding:10px;border:1px solid var(--border)}
 .ym-n{font-size:11.5px;font-weight:700;margin-bottom:5px}
 .ym-b{height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-bottom:3px}
-.ym-bf{height:100%;border-radius:2px;background:linear-gradient(90deg,#7c3aed,#60a5fa)}
+.ym-bf{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--gs,#7c3aed),var(--ge,#60a5fa))}
 .ym-m{font-size:9px;color:var(--muted)}
 
 /* SUMMARY */
@@ -248,6 +262,27 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .empty{text-align:center;padding:20px;color:var(--muted);font-size:11.5px}
 .ei{font-size:26px;margin-bottom:6px}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:2px}
+
+/* ICON GLOW */
+.sb-icon{animation:iconGlow 2.5s ease-in-out infinite;transition:background .4s ease}
+
+/* THEME BAR */
+.theme-bar{display:flex;align-items:center;gap:5px;margin-top:8px;padding:4px 0}
+.th{width:15px;height:15px;border-radius:50%;background:var(--tc,#888);cursor:pointer;
+    border:2px solid transparent;transition:all .22s;flex-shrink:0}
+.th:hover{transform:scale(1.4);border-color:rgba(255,255,255,.55)}
+.th.on{border-color:#fff;transform:scale(1.18);box-shadow:0 0 10px var(--tc,#888)}
+.th-lbl{font-size:9px;color:var(--muted);margin-left:2px;white-space:nowrap}
+.th-auto{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);
+         cursor:pointer;font-size:13px;line-height:1;padding:3px 5px;border-radius:6px;
+         transition:all .2s;display:flex;align-items:center}
+.th-auto:hover{color:var(--pl);border-color:rgba(var(--pa),.4);background:rgba(var(--pa),.08)}
+.th-auto.on{color:var(--pl);border-color:rgba(var(--pa),.5);background:rgba(var(--pa),.1);
+            animation:autoSpin 3s linear infinite}
+
+/* GRADIENT-AWARE ELEMENTS */
+.sc.cp::before{background:linear-gradient(90deg,var(--primary),var(--pl))}
+.btn-p{background:var(--primary)}.btn-p:hover{filter:brightness(1.15)}
 </style>
 </head>
 <body>
@@ -265,6 +300,19 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
         <div class="sb-sub" id="app-sub">Personal Progress System</div>
       </div>
     </div>
+    <!-- THEME SELECTOR -->
+    <div class="theme-bar">
+      <div class="th on" data-theme="purple"  style="--tc:#7c3aed" title="Purple Night"></div>
+      <div class="th"    data-theme="ocean"   style="--tc:#0ea5e9" title="Ocean Blue"></div>
+      <div class="th"    data-theme="emerald" style="--tc:#059669" title="Emerald"></div>
+      <div class="th"    data-theme="sunset"  style="--tc:#ea580c" title="Sunset Fire"></div>
+      <div class="th"    data-theme="rose"    style="--tc:#e11d48" title="Rose Gold"></div>
+      <div class="th"    data-theme="gold"    style="--tc:#d97706" title="Midnight Gold"></div>
+      <div class="th"    data-theme="teal"    style="--tc:#0891b2" title="Cyber Teal"></div>
+      <div class="th"    data-theme="neon"    style="--tc:#8b5cf6" title="Neon Violet"></div>
+      <button class="th-auto" id="th-auto" title="Auto-cycle themes every 5 min">⟳</button>
+    </div>
+
     <div class="sb-clock">
       <span class="sb-date" id="sb-date">Loading...</span>
       <span class="sb-time" id="sb-time">--:--</span>
@@ -1138,6 +1186,67 @@ function seed(){
   save();
 }
 seed();renderAll(true);
+
+// ===== THEME SYSTEM =====
+const THEMES={
+  purple: {primary:'#7c3aed',pl:'#a78bfa',pa:'124,58,237', bg:'#0a0a14',card:'#12121f',card2:'#1a1a2e',sb:'#0d0d1c',gs:'#7c3aed',ge:'#60a5fa'},
+  ocean:  {primary:'#0369a1',pl:'#38bdf8',pa:'3,105,161',  bg:'#020c18',card:'#071828',card2:'#0c2438',sb:'#040f1e',gs:'#0ea5e9',ge:'#06b6d4'},
+  emerald:{primary:'#047857',pl:'#34d399',pa:'4,120,87',   bg:'#020f0a',card:'#071a10',card2:'#0c2518',sb:'#040f0c',gs:'#059669',ge:'#0d9488'},
+  sunset: {primary:'#c2410c',pl:'#fb923c',pa:'194,65,12',  bg:'#130908',card:'#1f1008',card2:'#2b180c',sb:'#160a06',gs:'#c2410c',ge:'#dc2626'},
+  rose:   {primary:'#be185d',pl:'#f472b6',pa:'190,24,93',  bg:'#120810',card:'#1e0d1c',card2:'#2a1328',sb:'#140a12',gs:'#be185d',ge:'#9333ea'},
+  gold:   {primary:'#b45309',pl:'#fbbf24',pa:'180,83,9',   bg:'#0f0c02',card:'#1a1504',card2:'#221e06',sb:'#110e02',gs:'#b45309',ge:'#d97706'},
+  teal:   {primary:'#0e7490',pl:'#22d3ee',pa:'14,116,144', bg:'#02100f',card:'#071b1a',card2:'#0c2625',sb:'#040f0e',gs:'#0e7490',ge:'#0891b2'},
+  neon:   {primary:'#6d28d9',pl:'#c084fc',pa:'109,40,217', bg:'#080615',card:'#100c25',card2:'#181033',sb:'#0a0820',gs:'#6d28d9',ge:'#db2777'},
+};
+const THEME_ORDER=['purple','ocean','emerald','sunset','rose','gold','teal','neon'];
+const THEME_NAMES={purple:'Purple Night',ocean:'Ocean Blue',emerald:'Emerald',sunset:'Sunset Fire',rose:'Rose Gold',gold:'Midnight Gold',teal:'Cyber Teal',neon:'Neon Violet'};
+let currentTheme=S.get('theme','purple');
+let autoOn=S.get('autoTheme',false);
+let autoTimer=null;
+
+function applyTheme(name,silent){
+  const t=THEMES[name]||THEMES.purple;
+  const r=document.documentElement.style;
+  r.setProperty('--primary',t.primary);r.setProperty('--pl',t.pl);r.setProperty('--pa',t.pa);
+  r.setProperty('--bg',t.bg);r.setProperty('--card',t.card);r.setProperty('--card2',t.card2);
+  r.setProperty('--sb',t.sb);r.setProperty('--gs',t.gs);r.setProperty('--ge',t.ge);
+  // Update icon gradient
+  const ic=document.getElementById('sb-icon-txt');
+  if(ic)ic.style.background=`linear-gradient(135deg,${t.primary},${t.ge})`;
+  // Update SVG ring gradients in sidebar
+  document.querySelectorAll('#rg stop:first-child').forEach(s=>s.setAttribute('stop-color',t.pl));
+  document.querySelectorAll('#rg stop:last-child').forEach(s=>s.setAttribute('stop-color',t.ge));
+  // Active dot
+  document.querySelectorAll('.th').forEach(d=>d.classList.toggle('on',d.dataset.theme===name));
+  currentTheme=name;S.set('theme',name);
+  if(!silent)toast('🎨 '+THEME_NAMES[name],'s');
+}
+
+function nextAutoTheme(){
+  const i=THEME_ORDER.indexOf(currentTheme);
+  applyTheme(THEME_ORDER[(i+1)%THEME_ORDER.length],true);
+}
+
+function toggleAuto(){
+  autoOn=!autoOn;S.set('autoTheme',autoOn);
+  const btn=document.getElementById('th-auto');
+  if(btn)btn.classList.toggle('on',autoOn);
+  clearInterval(autoTimer);
+  if(autoOn){
+    autoTimer=setInterval(nextAutoTheme,5*60*1000);
+    toast('⟳ Auto-theme ON — cycles every 5 min','s');
+  } else {
+    toast('Auto-theme OFF','w');
+  }
+}
+
+// Theme dot clicks
+document.querySelectorAll('.th[data-theme]').forEach(d=>d.addEventListener('click',()=>applyTheme(d.dataset.theme)));
+document.getElementById('th-auto').addEventListener('click',toggleAuto);
+
+// Init on load
+applyTheme(currentTheme,true);
+if(autoOn){document.getElementById('th-auto').classList.add('on');autoTimer=setInterval(nextAutoTheme,5*60*1000);}
 
 // ===== EDITABLE NAME =====
 (function(){
