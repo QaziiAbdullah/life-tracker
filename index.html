@@ -1189,6 +1189,24 @@ function seed(){
 }
 
 seed();renderAll(true);
+
+// ===== MIDNIGHT DATE CHANGE DETECTION =====
+let _currentDay = today();
+setInterval(function(){
+  const newDay = today();
+  if(newDay !== _currentDay){
+    _currentDay = newDay;
+    // Reload tasks/habits/goals/logs from storage in case of any external changes
+    habits = S.get('habits', habits);
+    tasks  = S.get('tasks',  tasks);
+    goals  = S.get('goals',  goals);
+    logs   = S.get('logs',   logs);
+    renderAll(true);
+    toast('🌅 New day! Yesterday\'s data saved. Fresh start!', 's');
+    // Update the clock display immediately
+    tick();
+  }
+}, 30000); // check every 30 seconds
 </script>
 </body>
 </html>
