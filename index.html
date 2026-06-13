@@ -283,6 +283,58 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 /* GRADIENT-AWARE ELEMENTS */
 .sc.cp::before{background:linear-gradient(90deg,var(--primary),var(--pl))}
 .btn-p{background:var(--primary)}.btn-p:hover{filter:brightness(1.15)}
+
+/* ===== BIRTHDAY SYSTEM ===== */
+@keyframes bdayGlow{0%,100%{box-shadow:0 0 18px rgba(244,114,182,.25)}50%{box-shadow:0 0 40px rgba(244,114,182,.5),0 0 80px rgba(244,114,182,.12)}}
+@keyframes confScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes floatUp{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+.bday-banner{
+  background:linear-gradient(135deg,rgba(244,114,182,.1),rgba(251,146,60,.08),rgba(250,204,21,.06));
+  border:1px solid rgba(244,114,182,.28);border-radius:14px;
+  padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;
+  animation:bdayGlow 2.2s ease-in-out infinite;position:relative;overflow:hidden;
+}
+.bday-banner::before{
+  content:'🎉 🎁 🎂 🎊 🎈 ✨ 🎉 🎁 🎂 🎊 🎈 ✨ 🎉 🎁 🎂 🎊 🎈 ✨ ';
+  position:absolute;top:3px;left:0;font-size:10px;letter-spacing:6px;opacity:.35;
+  animation:confScroll 22s linear infinite;white-space:nowrap;pointer-events:none;
+  width:200%;
+}
+.bday-cake{font-size:36px;animation:floatUp 1.5s ease-in-out infinite;flex-shrink:0;line-height:1}
+.bday-txt{flex:1;min-width:0}
+.bday-title{font-size:15px;font-weight:800;background:linear-gradient(90deg,#f472b6,#fb923c,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.bday-sub{font-size:11px;color:var(--muted);margin-top:3px}
+.bday-view-btn{background:rgba(244,114,182,.15);border:1px solid rgba(244,114,182,.3);color:#f472b6;padding:6px 13px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;flex-shrink:0}
+.bday-view-btn:hover{background:rgba(244,114,182,.28)}
+.bday-x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;padding:4px;flex-shrink:0;transition:color .15s}
+.bday-x:hover{color:#f87171}
+
+/* Birthday cards */
+.bday-card{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,.025);border-radius:10px;margin-bottom:6px;border:1px solid var(--border);transition:background .12s}
+.bday-card:hover{background:rgba(255,255,255,.045)}
+.bday-card.is-today{border-color:rgba(244,114,182,.35);background:rgba(244,114,182,.06)}
+.bday-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.bday-info{flex:1;min-width:0}
+.bday-name{font-size:13px;font-weight:700}
+.bday-meta{font-size:10px;color:var(--muted);margin-top:2px;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.bday-tag{font-size:9px;padding:2px 7px;border-radius:12px;font-weight:700}
+.bday-countdown{font-size:22px;font-weight:800;text-align:right;line-height:1;flex-shrink:0}
+.bday-cds{font-size:9px;color:var(--muted);text-align:right}
+.bday-month-h{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 5px;padding-left:2px}
+
+/* Upcoming strip */
+.up-strip{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:thin}
+.up-pill{flex-shrink:0;background:rgba(255,255,255,.035);border:1px solid var(--border);border-radius:10px;padding:8px 10px;text-align:center;min-width:72px;cursor:pointer;transition:all .15s}
+.up-pill:hover{background:rgba(var(--pa),.1);border-color:rgba(var(--pa),.3)}
+.up-pill.is-today{border-color:rgba(244,114,182,.4);background:rgba(244,114,182,.08)}
+.up-n{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:68px}
+.up-d{font-size:20px;font-weight:800;line-height:1;margin:3px 0 1px}
+.up-l{font-size:8px;color:var(--muted);text-transform:uppercase}
+
+/* Bell alarm indicator */
+.alarm-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#ef4444;margin-left:4px;animation:pulse .9s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
 </style>
 </head>
 <body>
@@ -356,6 +408,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <div class="ni" data-view="habits"><div class="nd"></div>Habits</div>
     <div class="ni" data-view="tasks"><div class="nd"></div>Tasks &amp; Priorities</div>
     <div class="ni" data-view="goals"><div class="nd"></div>Goals</div>
+    <div class="nl">Events</div>
+    <div class="ni" data-view="birthdays" id="nav-birthdays"><div class="nd"></div>🎂 Birthdays</div>
     <div class="nl">Reports</div>
     <div class="ni" data-view="summary"><div class="nd"></div>Summary</div>
   </nav>
@@ -366,6 +420,23 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
   <!-- DAILY -->
   <div class="view on" id="view-daily">
+    <!-- BIRTHDAY CELEBRATION BANNER (shown when today is someone's birthday) -->
+    <div id="bday-banner" style="display:none" class="bday-banner">
+      <div class="bday-cake">🎂</div>
+      <div class="bday-txt">
+        <div class="bday-title">Happy Birthday, <span id="bday-names">Friend</span>! 🎉</div>
+        <div class="bday-sub" id="bday-sub-txt">Wishing you a wonderful day!</div>
+      </div>
+      <button class="bday-view-btn" data-vl="birthdays">Send Wish 🎁</button>
+      <button class="bday-x" id="bday-dismiss">✕</button>
+    </div>
+
+    <!-- UPCOMING BIRTHDAYS WIDGET (shows if any in next 7 days) -->
+    <div id="bday-widget" style="display:none" class="card" style="margin-bottom:14px">
+      <div class="card-h"><div class="card-t">🎈 Upcoming Birthdays</div><button class="btn btn-g btn-sm" data-vl="birthdays">All →</button></div>
+      <div class="up-strip" id="daily-bday-strip"></div>
+    </div>
+
     <div class="ph">
       <div><div class="ph-t">Daily Dashboard</div><div class="ph-s" id="daily-date">Loading...</div></div>
       <div class="ph-a">
@@ -579,6 +650,76 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   </div>
 </div>
 
+<!-- BIRTHDAYS VIEW -->
+<div class="view" id="view-birthdays">
+  <div class="ph">
+    <div><div class="ph-t">🎂 Birthday Tracker</div><div class="ph-s">Never miss a special day</div></div>
+    <div class="ph-a">
+      <button class="btn btn-g btn-sm" id="req-notif-btn">🔔 Enable Alerts</button>
+      <button class="btn btn-p" id="bob">+ Add Birthday</button>
+    </div>
+  </div>
+
+  <div class="srow" style="grid-template-columns:repeat(3,1fr)">
+    <div class="sc cr"><div class="sv" id="bd-total" style="color:#f87171">0</div><div class="sl">People</div><div class="sc-sub">tracked</div></div>
+    <div class="sc co"><div class="sv" id="bd-month" style="color:#fbbf24">0</div><div class="sl">This Month</div><div class="sc-sub">birthdays</div></div>
+    <div class="sc" style="border-top:3px solid #f472b6"><div class="sv" id="bd-today-cnt" style="color:#f472b6">0</div><div class="sl">Today 🎂</div><div class="sc-sub">celebrate!</div></div>
+  </div>
+
+  <!-- Upcoming 30 days -->
+  <div class="card">
+    <div class="card-h" style="margin-bottom:10px">
+      <div class="card-t">🎉 Upcoming — Next 30 Days</div>
+    </div>
+    <div class="up-strip" id="up-strip"></div>
+    <div id="up-empty" class="empty" style="display:none"><div class="ei">📅</div>No birthdays in the next 30 days.</div>
+  </div>
+
+  <!-- All birthdays by month -->
+  <div class="card">
+    <div class="card-h"><div class="card-t">All Birthdays by Month</div></div>
+    <div id="all-bdays"></div>
+  </div>
+</div>
+
+<!-- BIRTHDAY MODAL -->
+<div class="overlay" id="bm">
+  <div class="modal">
+    <div class="modal-t">🎂 Add Birthday</div>
+    <div class="fg"><label>Person's Name</label><input class="fi" id="bm-name" placeholder="e.g. Ahmed Ali"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:11px">
+      <div class="fg" style="margin:0">
+        <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:4px;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Month</label>
+        <select class="fi" id="bm-month">
+          <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+          <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+          <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+          <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+        </select>
+      </div>
+      <div class="fg" style="margin:0">
+        <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:4px;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Day</label>
+        <input class="fi" type="number" id="bm-day" placeholder="15" min="1" max="31">
+      </div>
+    </div>
+    <div class="fg"><label>Birth Year <span style="color:var(--muted);font-weight:400">(optional — shows age)</span></label><input class="fi" type="number" id="bm-year" placeholder="e.g. 1995" min="1900" max="2030"></div>
+    <div class="fg"><label>Relationship</label>
+      <select class="fi" id="bm-cat">
+        <option value="family">👨‍👩‍👧 Family</option>
+        <option value="friend">👫 Friend</option>
+        <option value="colleague">💼 Colleague</option>
+        <option value="other">⭐ Other</option>
+      </select>
+    </div>
+    <div class="fg"><label>Custom Wish Message <span style="color:var(--muted);font-weight:400">(optional)</span></label><input class="fi" id="bm-wish" placeholder="Happy Birthday! Wishing you all the best! 🎂"></div>
+    <div class="fg"><label>Color</label><div class="clr-row" id="bm-clrs"></div></div>
+    <div class="mbtn">
+      <button class="btn btn-g" id="bm-cancel">Cancel</button>
+      <button class="btn btn-p" id="bm-save">Save Birthday 🎂</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"><span id="t-icon">✓</span><span id="t-msg">Done!</span></div>
 
 <script>
@@ -753,6 +894,8 @@ function renderDaily(){
     const pct=Math.min(100,Math.round((g.current||0)/g.target*100));
     return `<div class="ng-item"><div class="ng-info"><div class="ng-name">${g.name} <span style="font-size:9px;color:var(--muted)">${g.type}</span></div><div class="ng-bar"><div class="ng-bf" style="width:${pct}%;background:${c}"></div></div><div class="ng-meta"><span>${g.current||0}/${g.target} ${g.unit}</span><span style="color:${c};font-weight:700">${pct}%</span></div></div><div class="ng-act"><button class="ng-btn" data-gi="${g.id}" data-gb="1">+1</button></div></div>`;
   }).join('');
+  // Birthday widget at top of daily
+  renderBdayWidget();
 }
 
 function renderPriorities(td,log,dayT){
@@ -993,7 +1136,7 @@ function _do(){
   renderSB();
   const v=document.querySelector('.view.on');if(!v)return;
   const n=v.id.replace('view-','');
-  ({daily:renderDaily,weekly:renderWeekly,monthly:renderMonthly,yearly:renderYearly,habits:renderHabits,tasks:renderTasks,goals:renderGoals,summary:renderSum}[n]||Function)();
+  ({daily:renderDaily,weekly:renderWeekly,monthly:renderMonthly,yearly:renderYearly,habits:renderHabits,tasks:renderTasks,goals:renderGoals,birthdays:renderBirthdays,summary:renderSum}[n]||Function)();
 }
 
 // ===== NAVIGATION =====
@@ -1099,6 +1242,8 @@ document.addEventListener('click',function(e){
   if(dt){e.stopPropagation();tasks=tasks.filter(tk=>tk.id!==dt.dataset.dt);save();toast('Task deleted.','w');renderAll(true);return;}
   const dg=t.closest('[data-dg]');
   if(dg){e.stopPropagation();goals=goals.filter(g=>g.id!==dg.dataset.dg);save();toast('Goal removed.','w');renderAll(true);return;}
+  const db=t.closest('[data-db]');
+  if(db){e.stopPropagation();birthdays=birthdays.filter(b=>b.id!==db.dataset.db);S.set('birthdays',birthdays);toast('Birthday removed.','w');renderAll(true);return;}
 
   // --- GOAL INCREMENT ---
   const gi=t.closest('[data-gi]');
@@ -1129,6 +1274,11 @@ document.addEventListener('click',function(e){
   if(id==='boh'||id==='boh2'||id==='boh3'){openHabitModal();return;}
   if(id==='bot'||id==='bot2'||id==='bot3'){openTaskModal();return;}
   if(id==='bog'){openGoalModal();return;}
+  if(id==='bob'){openBirthdayModal();return;}
+  if(id==='bm-save'){saveBirthday();return;}
+  if(id==='bm-cancel'){closeM('bm');return;}
+  if(id==='bday-dismiss'){document.getElementById('bday-banner').style.display='none';return;}
+  if(id==='req-notif-btn'){requestNotifPermission();return;}
   if(id==='qadd-btn'){quickAdd();return;}
   if(id==='hm-save'){saveHabit();return;}if(id==='hm-cancel'){closeM('hm');return;}
   if(id==='tm-save'){saveTask();return;}if(id==='tm-cancel'){closeM('tm');return;}
@@ -1186,6 +1336,245 @@ function seed(){
   save();
 }
 seed();renderAll(true);
+
+// ===== BIRTHDAY SYSTEM =====
+let birthdays = S.get('birthdays', []);
+
+const BCAT  = {family:'👨‍👩‍👧',friend:'👫',colleague:'💼',other:'⭐'};
+const BCOL  = {family:'#e11d48',friend:'#10b981',colleague:'#3b82f6',other:'#f59e0b'};
+const BDCOLS= ['#e11d48','#f472b6','#10b981','#3b82f6','#f59e0b','#7c3aed','#0891b2','#ea580c'];
+
+function bdToday(){
+  const n=new Date();
+  return birthdays.filter(b=>b.month===n.getMonth()+1&&b.day===n.getDate());
+}
+function bdUpcoming(days=30){
+  const now=new Date();
+  return birthdays.map(b=>{
+    let nx=new Date(now.getFullYear(),b.month-1,b.day);
+    if(nx<now)nx=new Date(now.getFullYear()+1,b.month-1,b.day);
+    const d=Math.ceil((nx-now)/86400000);
+    return{...b,daysUntil:d,isToday:d===0};
+  }).filter(b=>b.daysUntil<=days).sort((a,c)=>a.daysUntil-c.daysUntil);
+}
+function bdAge(b){
+  if(!b.year)return null;
+  const n=new Date();
+  let age=n.getFullYear()-b.year;
+  if(n.getMonth()+1<b.month||(n.getMonth()+1===b.month&&n.getDate()<b.day))age--;
+  return age;
+}
+
+function renderBirthdays(){
+  // Stats
+  const now=new Date();
+  document.getElementById('bd-total').textContent=birthdays.length;
+  document.getElementById('bd-month').textContent=birthdays.filter(b=>b.month===now.getMonth()+1).length;
+  const todayBd=bdToday();
+  document.getElementById('bd-today-cnt').textContent=todayBd.length;
+
+  // Upcoming strip
+  const up=bdUpcoming(30);
+  const strip=document.getElementById('up-strip');
+  const upEmpty=document.getElementById('up-empty');
+  if(!up.length){
+    strip.innerHTML='';strip.style.display='none';upEmpty.style.display='';
+  } else {
+    strip.style.display='flex';upEmpty.style.display='none';
+    strip.innerHTML=up.map(b=>{
+      const c=b.color||BCOL[b.cat]||'#e11d48';
+      return `<div class="up-pill${b.isToday?' is-today':''}">
+        <div class="up-n" style="color:${c}">${b.name.split(' ')[0]}</div>
+        <div class="up-d" style="color:${b.isToday?'#f472b6':c}">${b.isToday?'🎂':b.daysUntil}</div>
+        <div class="up-l">${b.isToday?'TODAY':'days'}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // All by month
+  const el=document.getElementById('all-bdays');
+  if(!birthdays.length){
+    el.innerHTML='<div class="empty"><div class="ei">🎂</div>No birthdays yet. Click "+ Add Birthday" to start!</div>';
+    return;
+  }
+  const byM={};
+  birthdays.forEach(b=>{if(!byM[b.month])byM[b.month]=[];byM[b.month].push(b);});
+  const sortedM=Object.keys(byM).map(Number).sort((a,c)=>a-c);
+  el.innerHTML=sortedM.map(m=>{
+    const mbs=byM[m].sort((a,c)=>a.day-c.day);
+    const rows=mbs.map(b=>{
+      const c=b.color||BCOL[b.cat]||'#e11d48';
+      const age=bdAge(b);
+      const n=new Date();
+      let nx=new Date(n.getFullYear(),b.month-1,b.day);
+      if(nx<n)nx=new Date(n.getFullYear()+1,b.month-1,b.day);
+      const diff=Math.ceil((nx-n)/86400000);
+      const isT=b.month===n.getMonth()+1&&b.day===n.getDate();
+      return `<div class="bday-card${isT?' is-today':''}">
+        <div class="bday-av" style="background:${c}22;border:2px solid ${c}44">${BCAT[b.cat]||'🎂'}</div>
+        <div class="bday-info">
+          <div class="bday-name">${b.name}${isT?'<span class="bday-tag" style="background:rgba(244,114,182,.15);color:#f472b6;margin-left:6px">🎂 TODAY</span>':''}</div>
+          <div class="bday-meta">
+            <span>${MONTHS[m-1]} ${b.day}${b.year?' · '+b.year:''}</span>
+            ${age!==null?`<span style="color:${c}">Turns ${age+1} 🎂</span>`:''}
+            <span class="bday-tag" style="background:${c}18;color:${c}">${BCAT[b.cat]||'⭐'} ${b.cat}</span>
+          </div>
+          ${b.wish?`<div style="font-size:10px;color:var(--muted);margin-top:3px;font-style:italic">"${b.wish}"</div>`:''}
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          ${isT
+            ?`<div style="font-size:13px;font-weight:800;color:#f472b6">🎉 Today!</div>`
+            :`<div class="bday-countdown" style="color:${c}">${diff}</div><div class="bday-cds">days left</div>`
+          }
+          <button class="del-btn" data-db="${b.id}" style="margin-top:6px">Delete</button>
+        </div>
+      </div>`;
+    }).join('');
+    const _nr=new Date();const hasTodayInMonth=mbs.some(b=>b.month===_nr.getMonth()+1&&b.day===_nr.getDate());
+    return `<div class="bday-month-h">${MONTHS[m-1]}${hasTodayInMonth?'<span class="alarm-dot" style="background:#f472b6"></span>':''}</div>${rows}`;
+  }).join('');
+}
+
+// Daily view birthday widget
+function renderBdayWidget(){
+  const todayBds=bdToday();
+  const banner=document.getElementById('bday-banner');
+  if(todayBds.length&&banner){
+    const names=todayBds.map(b=>b.name).join(' & ');
+    document.getElementById('bday-names').textContent=names;
+    document.getElementById('bday-sub-txt').textContent=
+      todayBds.length===1
+        ?`${todayBds[0].wish||'Wishing you a wonderful birthday!'}`
+        :`${todayBds.length} people are celebrating today! 🎊`;
+    banner.style.display='flex';
+  }
+  // Upcoming widget (next 7 days excl. today)
+  const up7=bdUpcoming(7).filter(b=>!b.isToday);
+  const widget=document.getElementById('bday-widget');
+  const dstrip=document.getElementById('daily-bday-strip');
+  if(up7.length&&widget&&dstrip){
+    widget.style.display='block';
+    dstrip.innerHTML=up7.map(b=>{
+      const c=b.color||BCOL[b.cat]||'#e11d48';
+      return `<div class="up-pill">
+        <div class="up-n" style="color:${c}">${b.name.split(' ')[0]}</div>
+        <div class="up-d" style="color:${c}">${b.daysUntil}</div>
+        <div class="up-l">days</div>
+      </div>`;
+    }).join('');
+  } else if(widget){
+    widget.style.display='none';
+  }
+  // Show alarm dot on sidebar nav if today has birthdays
+  const navBd=document.getElementById('nav-birthdays');
+  if(navBd){
+    const existing=navBd.querySelector('.alarm-dot');
+    if(todayBds.length&&!existing){
+      navBd.innerHTML+='<span class="alarm-dot"></span>';
+    }
+  }
+}
+
+// Birthday chime
+function playChime(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const notes=[523,659,784,1047,880,1047];
+    let t=ctx.currentTime+0.05;
+    notes.forEach(freq=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.frequency.value=freq;o.type='sine';
+      g.gain.setValueAtTime(0.22,t);
+      g.gain.exponentialRampToValueAtTime(0.001,t+0.38);
+      o.start(t);o.stop(t+0.38);
+      t+=0.19;
+    });
+  }catch(e){}
+}
+
+// Request + fire browser notification
+function requestNotifPermission(){
+  if(!('Notification' in window)){toast('Browser notifications not supported','w');return;}
+  Notification.requestPermission().then(p=>{
+    if(p==='granted'){toast('🔔 Notifications enabled!','s');checkBdayAlarms();}
+    else toast('Notifications blocked in browser settings','w');
+  });
+}
+function fireBdayNotif(names){
+  if(typeof Notification==='undefined'||Notification.permission!=='granted')return;
+  new Notification('🎂 Birthday Alert!',{
+    body:`Today is ${names}'s birthday! Don't forget to send wishes! 🎉`,
+    icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🎂</text></svg>'
+  });
+}
+
+function checkBdayAlarms(){
+  const todayBds=bdToday();
+  if(todayBds.length){
+    const names=todayBds.map(b=>b.name).join(', ');
+    fireBdayNotif(names);
+    playChime();
+  }
+  // Reminders for upcoming (1–3 days)
+  const remind=bdUpcoming(3).filter(b=>!b.isToday);
+  remind.forEach((b,i)=>{
+    setTimeout(()=>{
+      toast(`🎂 ${b.name}'s birthday in ${b.daysUntil} day${b.daysUntil>1?'s':''}!`,'w');
+    },(i+1)*2500);
+  });
+}
+
+function openBirthdayModal(){
+  document.getElementById('bm-name').value='';
+  document.getElementById('bm-day').value='';
+  document.getElementById('bm-year').value='';
+  document.getElementById('bm-wish').value='';
+  document.getElementById('bm-month').value='1';
+  document.getElementById('bm-cat').value='family';
+  selC=BDCOLS[0];
+  document.getElementById('bm-clrs').innerHTML=BDCOLS.map(c=>`<div class="clr${c===selC?' on':''}" style="background:${c}" data-pc="${c}"></div>`).join('');
+  openM('bm');
+  setTimeout(()=>document.getElementById('bm-name').focus(),80);
+}
+
+function saveBirthday(){
+  const name=document.getElementById('bm-name').value.trim();
+  if(!name){toast('Enter a name','w');return;}
+  const day=parseInt(document.getElementById('bm-day').value);
+  const month=parseInt(document.getElementById('bm-month').value);
+  if(!day||day<1||day>31){toast('Enter a valid day (1-31)','w');return;}
+  const yr=parseInt(document.getElementById('bm-year').value)||null;
+  birthdays.push({
+    id:'b_'+Date.now(),name,month,day,year:yr,
+    cat:document.getElementById('bm-cat').value,
+    wish:document.getElementById('bm-wish').value.trim(),
+    color:selC
+  });
+  S.set('birthdays',birthdays);
+  closeM('bm');
+  toast('🎂 Birthday saved!','s');
+  renderAll(true);
+}
+
+// Seed sample birthdays if none exist
+(function seedBdays(){
+  if(birthdays.length)return;
+  const n=new Date();
+  birthdays=[
+    {id:'bd1',name:'Ahmad Khan',    month:n.getMonth()+1,day:n.getDate(), year:1995,cat:'friend',  wish:'Happy Birthday! 🎉',color:'#e11d48'},
+    {id:'bd2',name:'Sara Ali',      month:(n.getMonth()+2)%12||12,       day:10,year:1992,cat:'family',   wish:'Many happy returns! 🎂',color:'#10b981'},
+    {id:'bd3',name:'Usman Tariq',   month:(n.getMonth()+1)%12||12,       day:22,year:1990,cat:'colleague',wish:'Best wishes!',color:'#3b82f6'},
+  ];
+  S.set('birthdays',birthdays);
+})();
+
+// Run birthday checks on load
+renderBdayWidget();
+checkBdayAlarms();
+
+// Also re-check at midnight (already handled by scheduleMidnight, but add explicit re-check)
+const _origMidnight=scheduleMidnight;
 
 // ===== THEME SYSTEM =====
 const THEMES={
