@@ -429,23 +429,59 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
 .ccat-add-row input:focus{border-color:var(--primary)}
 
 /* FLOATING NOTIFICATION STACK */
-#float-notif-stack{position:fixed;top:16px;right:16px;z-index:1500;display:flex;flex-direction:column;gap:8px;max-width:296px;pointer-events:none}
-.fnotif{pointer-events:all;background:rgba(18,18,31,.96);border:1px solid rgba(255,255,255,.1);border-radius:13px;padding:11px 12px 11px 16px;display:flex;align-items:flex-start;gap:9px;box-shadow:0 8px 32px rgba(0,0,0,.55),0 2px 8px rgba(0,0,0,.3);position:relative;overflow:hidden;animation:fnotifIn .4s cubic-bezier(.34,1.4,.64,1) forwards,fnotifFloat 4s ease-in-out 0.5s infinite;backdrop-filter:blur(12px)}
-.fnotif::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px}
-.fnotif.fn-blue::before{background:linear-gradient(180deg,#3b82f6,#06b6d4)}
-.fnotif.fn-red::before{background:linear-gradient(180deg,#ef4444,#f97316)}
-.fnotif.fn-orange::before{background:linear-gradient(180deg,#f59e0b,#fbbf24)}
-.fnotif.fn-pink::before{background:linear-gradient(180deg,#f472b6,#e879f9)}
-.fnotif-icon{font-size:20px;flex-shrink:0;margin-top:0px;line-height:1}
+#float-notif-stack{
+  position:fixed;top:16px;right:16px;z-index:3000;
+  display:flex;flex-direction:column;gap:10px;
+  max-width:310px;pointer-events:none;
+}
+.fnotif{
+  pointer-events:all;
+  background:linear-gradient(135deg,rgba(20,20,36,.97) 0%,rgba(16,16,28,.97) 100%);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;
+  padding:13px 13px 13px 12px;
+  display:flex;align-items:center;gap:11px;
+  box-shadow:0 20px 60px rgba(0,0,0,.65),0 4px 16px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.06);
+  position:relative;overflow:hidden;
+  animation:fnotifIn .45s cubic-bezier(.34,1.4,.64,1) both;
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+}
+.fnotif:hover{transform:translateY(-2px);box-shadow:0 24px 70px rgba(0,0,0,.7),0 6px 20px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.08);transition:all .2s ease}
+.fnotif::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
+}
+.fnotif-dot{
+  width:10px;height:10px;border-radius:50%;flex-shrink:0;
+  box-shadow:0 0 0 3px rgba(255,255,255,.08);
+  animation:dotPulse 2s ease-in-out infinite;
+}
+.fn-blue .fnotif-dot{background:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+.fn-red .fnotif-dot{background:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,.15)}
+.fn-orange .fnotif-dot{background:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.15)}
+.fn-pink .fnotif-dot{background:#f472b6;box-shadow:0 0 0 3px rgba(244,114,182,.15)}
+@keyframes dotPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.7}}
+.fnotif-icon-wrap{
+  width:36px;height:36px;border-radius:10px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:17px;
+}
+.fn-blue .fnotif-icon-wrap{background:rgba(59,130,246,.18);border:1px solid rgba(59,130,246,.25)}
+.fn-red .fnotif-icon-wrap{background:rgba(239,68,68,.18);border:1px solid rgba(239,68,68,.25)}
+.fn-orange .fnotif-icon-wrap{background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.25)}
+.fn-pink .fnotif-icon-wrap{background:rgba(244,114,182,.18);border:1px solid rgba(244,114,182,.25)}
 .fnotif-body{flex:1;min-width:0}
-.fnotif-title{font-size:11.5px;font-weight:700;color:var(--text);line-height:1.35}
-.fnotif-sub{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.4}
-.fnotif-x{background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;padding:2px 4px;border-radius:5px;flex-shrink:0;line-height:1;transition:all .12s;margin-top:-1px}
-.fnotif-x:hover{color:var(--text);background:rgba(255,255,255,.08)}
-@keyframes fnotifIn{from{opacity:0;transform:translateX(110%)}to{opacity:1;transform:translateX(0)}}
-@keyframes fnotifFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-.fnotif.fnotif-out{animation:fnotifOut .28s ease forwards}
-@keyframes fnotifOut{to{opacity:0;transform:translateX(110%)}}
+.fnotif-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+.fn-blue .fnotif-label{color:#60a5fa}
+.fn-red .fnotif-label{color:#f87171}
+.fn-orange .fnotif-label{color:#fbbf24}
+.fn-pink .fnotif-label{color:#f9a8d4}
+.fnotif-title{font-size:11.5px;font-weight:700;color:#f1f5f9;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fnotif-sub{font-size:10px;color:rgba(148,163,184,.8);margin-top:2px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.fnotif-x{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);cursor:pointer;color:rgba(148,163,184,.7);font-size:11px;width:22px;height:22px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;padding:0;line-height:1}
+.fnotif-x:hover{color:#f1f5f9;background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.15)}
+@keyframes fnotifIn{from{opacity:0;transform:translateX(115%) scale(.95)}to{opacity:1;transform:translateX(0) scale(1)}}
+.fnotif.fnotif-out{animation:fnotifOut .3s cubic-bezier(.4,0,1,1) forwards!important}
+@keyframes fnotifOut{to{opacity:0;transform:translateX(115%) scale(.92)}}
 
 /* ANALOG CLOCK */
 .sb-analog-wrap{padding:8px 12px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:4px}
@@ -625,6 +661,9 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
     <div class="ni" data-view="settings" id="nav-settings"><div class="nd"></div>⚙️ Settings</div>
   </nav>
 </aside>
+
+<!-- FLOATING NOTIFICATION STACK (fixed, must be in DOM before script runs) -->
+<div id="float-notif-stack"></div>
 
 <!-- MAIN -->
 <main class="main">
@@ -1539,9 +1578,9 @@ function renderDaily(){
     alertGoals.forEach(g=>{
       const diff=Math.ceil((new Date(g.deadline)-new Date(td2))/(1000*60*60*24));
       const isToday=diff===0;
-      const label='Goal Deadline '+(isToday?'TODAY':diff===1?'TOMORROW':'in '+diff+' days')+': '+g.name;
-      const sub=isToday?'Deadline is today — complete it now!':(diff===1?'Due tomorrow — finish it!':'Due on '+g.deadline+' · '+g.type+' goal');
-      showFloatNotif('gd-'+g.id,isToday?'🚨':'⚠️',label,sub,isToday?'fn-red':'fn-orange');
+      const lbl=isToday?'Deadline Today':diff===1?'Due Tomorrow':'Deadline Alert';
+      const sub=isToday?'Complete it now — due today!':(diff===1?'Due tomorrow, don\'t miss it!':'Due on '+g.deadline+' · '+g.type+' goal');
+      showFloatNotif('gd-'+g.id,isToday?'🚨':'⚠️',g.name,sub,isToday?'fn-red':'fn-orange',lbl);
     });
   }
 
@@ -1945,15 +1984,18 @@ function saveGoal(){
 
 // ===== FLOATING NOTIFICATIONS =====
 const _fnotifSeen=new Set();
-function showFloatNotif(id,icon,title,sub,cls){
+function showFloatNotif(id,icon,title,sub,cls,labelTxt){
   if(_fnotifSeen.has(id))return;
-  _fnotifSeen.add(id);
   const stack=document.getElementById('float-notif-stack');
   if(!stack)return;
+  _fnotifSeen.add(id);
+  const delay=(stack.children.length*120)+'ms';
   const el=document.createElement('div');
   el.className='fnotif '+(cls||'fn-blue');
   el.id='fn-'+id;
-  el.innerHTML=`<div class="fnotif-icon">${icon}</div><div class="fnotif-body"><div class="fnotif-title">${title}</div>${sub?`<div class="fnotif-sub">${sub}</div>`:''}</div><button class="fnotif-x" data-fn="${id}">✕</button>`;
+  el.style.animationDelay=delay;
+  const lbl=labelTxt||({'fn-blue':'Event','fn-red':'Urgent','fn-orange':'Warning','fn-pink':'Birthday'}[cls||'fn-blue']||'Alert');
+  el.innerHTML=`<div class="fnotif-dot"></div><div class="fnotif-icon-wrap">${icon}</div><div class="fnotif-body"><div class="fnotif-label">${lbl}</div><div class="fnotif-title">${title}</div>${sub?`<div class="fnotif-sub">${sub}</div>`:''}</div><button class="fnotif-x" data-fn="${id}">✕</button>`;
   stack.appendChild(el);
 }
 function dismissFloatNotif(id){
@@ -2330,17 +2372,17 @@ function renderBdayWidget(){
   if(todayEvs.length){
     const names=todayEvs.map(e=>e.title).join(', ');
     const sub=todayEvs.length===1
-      ?`${EVTYPES[todayEvs[0].type]||'📌'} ${todayEvs[0].note||'You have an event today!'}`
-      :`${todayEvs.length} events scheduled today!`;
-    showFloatNotif('ev-today','📅',"Today's Events: "+names,sub,'fn-blue');
+      ?`${EVTYPES[todayEvs[0].type]||'📌'} ${todayEvs[0].note||'Scheduled for today'}`
+      :`${todayEvs.length} events scheduled for today`;
+    showFloatNotif('ev-today','📅',names,sub,'fn-blue',"Today's Events");
   }
-  // Upcoming events (next 7 days) → floating notification
+  // Upcoming events → floating notification
   const upEvs=events.filter(ev=>ev.date>today()).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,5);
   if(upEvs.length){
     const next=upEvs[0];
     const diff=Math.ceil((new Date(next.date+' 00:00')-new Date())/(1000*60*60*24));
-    const dayStr=diff<=1?'tomorrow':'in '+diff+' days';
-    showFloatNotif('ev-upcoming','📌',upEvs.length+' Upcoming Event'+(upEvs.length>1?'s':''),`Next: ${next.title} ${dayStr}`,'fn-blue');
+    const dayStr=diff<=1?'Tomorrow':'In '+diff+' days';
+    showFloatNotif('ev-upcoming','📌',next.title,`${dayStr} · ${upEvs.length} event${upEvs.length>1?'s':''} upcoming`,'fn-blue','Upcoming Events');
   }
 
   // Show alarm dot on sidebar nav if today has birthdays
@@ -3839,7 +3881,5 @@ function openEditFinance(id){
   setInterval(next, 5000); // new quote every 5 seconds
 })();
 </script>
-<!-- FLOATING NOTIFICATION STACK -->
-<div id="float-notif-stack"></div>
 </body>
 </html>
