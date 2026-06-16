@@ -421,6 +421,54 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
 .set-hint{font-size:10px;color:var(--muted);margin-top:2px}
 .set-val{font-size:11px;color:var(--muted);margin-right:8px}
 .ai-sum-box{background:var(--card2);border:1px solid var(--border);border-radius:9px;padding:12px;font-size:10px;font-family:monospace;color:var(--muted);line-height:1.7;white-space:pre-wrap;word-break:break-word;max-height:300px;overflow-y:auto;margin:12px 18px 14px}
+.ccat-add-row{padding:12px 18px;display:flex;gap:6px;border-top:1px solid var(--border)}
+.ccat-add-row input{flex:1;background:var(--card2);border:1px solid var(--border);border-radius:7px;padding:6px 10px;color:var(--text);font-size:11px;outline:none}
+.ccat-add-row input:focus{border-color:var(--primary)}
+
+/* EVENT BANNER */
+.event-banner{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,rgba(59,130,246,.15),rgba(6,182,212,.08));border:1px solid rgba(59,130,246,.3);border-radius:12px;padding:12px 16px;margin-bottom:14px;position:relative}
+.event-banner-icon{font-size:26px;flex-shrink:0}
+.event-banner-txt{flex:1}
+.event-banner-title{font-size:14px;font-weight:700;color:#60a5fa}
+.event-banner-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.event-banner-x{background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px;padding:4px 6px;border-radius:6px;line-height:1}
+.event-banner-x:hover{color:var(--text)}
+
+/* GOAL DEADLINE ALERT */
+.goal-deadline-alerts{margin-bottom:14px}
+.gda-item{display:flex;align-items:center;gap:10px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:10px 14px;margin-bottom:6px;animation:glowPulse 2s ease-in-out infinite}
+.gda-item.warn-1{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3)}
+.gda-icon{font-size:22px;flex-shrink:0}
+.gda-content{flex:1}
+.gda-title{font-size:12px;font-weight:700;color:#f87171}
+.gda-item.warn-1 .gda-title{color:#fbbf24}
+.gda-sub{font-size:10px;color:var(--muted);margin-top:1px}
+
+/* ANALOG CLOCK */
+.sb-analog-wrap{padding:8px 12px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:4px}
+.sb-clock-style-row{display:flex;align-items:center;gap:6px;width:100%}
+.sb-clk-arrow{background:none;border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:1px 7px;cursor:pointer;font-size:12px;line-height:1.5}
+.sb-clk-arrow:hover{color:var(--text);border-color:var(--pl)}
+.sb-clk-label{flex:1;text-align:center;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.sb-analog-svg circle,.sb-analog-svg line{transition:stroke .3s}
+
+/* SIDEBAR WEATHER CHIP */
+.sb-weather-chip{display:flex;align-items:center;gap:5px;padding:5px 10px;background:rgba(255,255,255,.03);border-bottom:1px solid var(--border);font-size:10px;color:var(--muted)}
+.sb-weather-chip .swc-icon{font-size:14px}
+.sb-weather-chip .swc-temp{font-weight:700;color:var(--pl);font-size:11px}
+
+/* DASHBOARD NOTIFY STRIPS */
+.dash-notify-strip{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.dns-pill{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:600;border:1px solid transparent}
+.dns-pill.bday{background:rgba(244,114,182,.12);border-color:rgba(244,114,182,.3);color:#f472b6}
+.dns-pill.event{background:rgba(96,165,250,.12);border-color:rgba(96,165,250,.3);color:#60a5fa}
+
+/* TWO BIG RINGS */
+.big-rings{display:flex;gap:16px;justify-content:center;margin-bottom:6px}
+.big-ring-item{display:flex;flex-direction:column;align-items:center;gap:4px}
+.big-ring-item svg{filter:drop-shadow(0 0 8px rgba(167,139,250,.25))}
+.big-ring-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.big-ring-pct{font-size:18px;font-weight:900;margin-top:-2px}
 
 /* LIFE TRACKER HERO HEADER */
 .lt-hero{text-align:center;padding:10px 0 6px;margin-bottom:14px}
@@ -506,10 +554,27 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
       <button class="th-auto" id="th-auto" title="Auto-cycle themes every 5 min">⟳</button>
     </div>
 
-    <div class="sb-clock">
+    <div class="sb-clock" id="sb-digital-clock">
       <span class="sb-date" id="sb-date">Loading...</span>
       <span class="sb-time" id="sb-time">--:--</span>
     </div>
+  </div>
+
+  <!-- ANALOG CLOCK -->
+  <div class="sb-analog-wrap" id="sb-analog-wrap" style="display:none">
+    <canvas id="sb-analog-canvas" width="90" height="90"></canvas>
+  </div>
+  <div class="sb-clock-style-row" style="padding:4px 10px;border-bottom:1px solid var(--border)">
+    <button class="sb-clk-arrow" id="clk-prev">‹</button>
+    <div class="sb-clk-label" id="clk-mode-label">Digital</div>
+    <button class="sb-clk-arrow" id="clk-next">›</button>
+  </div>
+
+  <!-- SIDEBAR WEATHER CHIP -->
+  <div class="sb-weather-chip" id="sb-weather-chip" style="display:none">
+    <span class="swc-icon" id="swc-icon">🌤</span>
+    <span class="swc-temp" id="swc-temp">--°C</span>
+    <span id="swc-desc" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
   </div>
 
   <!-- MOTIVATIONAL TICKER -->
@@ -546,11 +611,11 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
     <div class="ni" data-view="monthly"><div class="nd"></div>Monthly Calendar</div>
     <div class="ni" data-view="yearly"><div class="nd"></div>Yearly Overview</div>
     <div class="nl">Manage</div>
-    <div class="ni" data-view="habits"><div class="nd"></div>Habits</div>
-    <div class="ni" data-view="tasks"><div class="nd"></div>Tasks &amp; Priorities</div>
-    <div class="ni" data-view="goals"><div class="nd"></div>Goals</div>
+    <div class="ni" data-view="habits" id="nav-habits"><div class="nd"></div><span class="nav-lbl-habits">Habits</span></div>
+    <div class="ni" data-view="tasks" id="nav-tasks"><div class="nd"></div><span class="nav-lbl-tasks">Tasks &amp; Priorities</span></div>
+    <div class="ni" data-view="goals" id="nav-goals"><div class="nd"></div><span class="nav-lbl-goals">Goals</span></div>
     <div class="nl">Events</div>
-    <div class="ni" data-view="birthdays" id="nav-birthdays"><div class="nd"></div>📅 Events & Birthday</div>
+    <div class="ni" data-view="birthdays" id="nav-birthdays"><div class="nd"></div><span class="nav-lbl-evbday">📅 Events &amp; Birthday</span></div>
     <div class="ni" data-view="finance" id="nav-finance"><div class="nd"></div>💰 Finance</div>
     <div class="nl">Reports</div>
     <div class="ni" data-view="summary"><div class="nd"></div>Summary</div>
@@ -578,6 +643,9 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
       <div class="welcome-avatar" id="welcome-avatar">A</div>
     </div>
 
+    <!-- GOAL DEADLINE ALERTS -->
+    <div id="goal-deadline-alerts" class="goal-deadline-alerts"></div>
+
     <!-- BIRTHDAY CELEBRATION BANNER (shown when today is someone's birthday) -->
     <div id="bday-banner" style="display:none" class="bday-banner">
       <div class="bday-cake">🎂</div>
@@ -598,6 +666,27 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
       </div>
       <div class="up-strip" id="daily-bday-strip"></div>
       <div id="bday-widget-empty" style="display:none;font-size:11px;color:var(--muted);padding:6px 2px">No upcoming birthdays in the next 30 days. <span style="color:var(--pl);cursor:pointer" data-vl="birthdays">Add one →</span></div>
+    </div>
+
+    <!-- EVENT CELEBRATION BANNER (shown when today has events) -->
+    <div id="event-banner" style="display:none" class="event-banner">
+      <div class="event-banner-icon">📌</div>
+      <div class="event-banner-txt">
+        <div class="event-banner-title">Today's Events: <span id="event-banner-names"></span></div>
+        <div class="event-banner-sub" id="event-banner-sub">You have events scheduled today!</div>
+      </div>
+      <button class="event-banner-x" id="event-banner-dismiss">✕</button>
+    </div>
+
+    <!-- UPCOMING EVENTS WIDGET -->
+    <div id="event-widget" class="card" style="margin-bottom:14px">
+      <div class="card-h">
+        <div class="card-t">📌 Upcoming Events</div>
+        <button class="btn btn-p btn-sm" id="boe5">+ Add Event</button>
+        <button class="btn btn-g btn-sm" data-vl="birthdays" style="margin-left:2px">All →</button>
+      </div>
+      <div id="daily-event-strip" class="up-strip"></div>
+      <div id="event-widget-empty" style="display:none;font-size:11px;color:var(--muted);padding:6px 2px">No upcoming events. <span style="color:var(--pl);cursor:pointer" data-vl="birthdays">Add one →</span></div>
     </div>
 
     <!-- WEATHER WIDGET -->
@@ -666,10 +755,11 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
         <div id="line-chart-wrap"></div>
       </div>
       <div class="an-rings">
-        <div class="card-h" style="margin-bottom:4px"><div class="card-t">Today Progress</div></div>
-        <div class="ring-item" id="ring-habits"></div>
-        <div class="ring-item" id="ring-tasks"></div>
-        <div class="ring-item" id="ring-goals"></div>
+        <div class="card-h" style="margin-bottom:8px"><div class="card-t">Today Progress</div></div>
+        <div class="big-rings">
+          <div class="big-ring-item" id="ring-habit-task"></div>
+          <div class="big-ring-item" id="ring-goals"></div>
+        </div>
       </div>
     </div>
 
@@ -727,6 +817,7 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
 
   <!-- MONTHLY -->
   <div class="view" id="view-monthly">
+    <div id="monthly-notify-strip" class="dash-notify-strip"></div>
     <div class="ph">
       <div><div class="ph-t">Monthly Calendar</div><div class="ph-s" id="m-label">This month</div></div>
       <div class="ph-a"><button class="btn btn-g btn-sm" id="m-prev">← Prev</button><button class="btn btn-g btn-sm" id="m-next">Next →</button><button class="btn btn-p btn-sm" id="boe">+ Add Event</button></div>
@@ -748,6 +839,7 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
 
   <!-- YEARLY -->
   <div class="view" id="view-yearly">
+    <div id="yearly-notify-strip" class="dash-notify-strip"></div>
     <div class="ph"><div><div class="ph-t">Yearly Overview</div><div class="ph-s" id="y-label">2026</div></div></div>
     <div class="srow">
       <div class="sc cp"><div class="sv" id="y-avg" style="color:#a78bfa">0%</div><div class="sl">Year Avg</div></div>
@@ -853,6 +945,7 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
       <div class="fg"><label>Target Number</label><input class="fi" type="number" id="gm-target" placeholder="e.g. 12" min="1"></div>
       <div class="fg"><label>Unit</label><input class="fi" id="gm-unit" placeholder="e.g. books, km, hours"></div>
     </div>
+    <div class="fg"><label>Deadline <span style="font-size:9px;color:var(--muted)">(optional — get alert 2 days before)</span></label><input class="fi" type="date" id="gm-deadline"></div>
     <div class="fg"><label>Priority</label><select class="fi" id="gm-pri"><option value="high">🔴 High Priority</option><option value="med" selected>🟡 Medium Priority</option><option value="low">🟢 Low Priority</option></select></div>
     <div class="fg"><label>Color</label><div class="clr-row" id="gm-clrs"></div></div>
     <div class="mbtn"><button class="btn btn-g" id="gm-cancel">Cancel</button><button class="btn btn-p" id="gm-save">Save Goal</button></div>
@@ -1159,14 +1252,46 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
         <button class="btn btn-p btn-sm" id="set-change-cur">Change Currency 🌍</button>
       </div>
     </div>
+    <!-- Section Names -->
+    <div class="set-section">
+      <div class="set-sh">🏷️ Section Names</div>
+      <div class="set-row">
+        <div><div class="set-lbl">Habits Label</div><div class="set-hint">Nav + dashboard heading</div></div>
+        <input class="fi" id="sn-habits" style="width:140px" placeholder="Habits">
+        <button class="btn btn-p btn-sm" data-sn="habits">Save</button>
+      </div>
+      <div class="set-row">
+        <div><div class="set-lbl">Tasks Label</div></div>
+        <input class="fi" id="sn-tasks" style="width:140px" placeholder="Tasks">
+        <button class="btn btn-p btn-sm" data-sn="tasks">Save</button>
+      </div>
+      <div class="set-row">
+        <div><div class="set-lbl">Goals Label</div></div>
+        <input class="fi" id="sn-goals" style="width:140px" placeholder="Goals">
+        <button class="btn btn-p btn-sm" data-sn="goals">Save</button>
+      </div>
+      <div class="set-row">
+        <div><div class="set-lbl">Events &amp; Birthday Label</div></div>
+        <input class="fi" id="sn-evbday" style="width:140px" placeholder="Events & Birthday">
+        <button class="btn btn-p btn-sm" data-sn="evbday">Save</button>
+      </div>
+    </div>
     <!-- Finance Categories -->
     <div class="set-section">
       <div class="set-sh">💰 Custom Income Sources</div>
       <div class="ccat-list" id="set-inc-cats"><span style="font-size:11px;color:var(--muted)">No custom sources yet.</span></div>
+      <div class="ccat-add-row">
+        <input id="set-new-inc" placeholder="New income source name...">
+        <button class="btn btn-p btn-sm" id="set-add-inc">+ Add</button>
+      </div>
     </div>
     <div class="set-section">
       <div class="set-sh">💸 Custom Expense Categories</div>
       <div class="ccat-list" id="set-exp-cats"><span style="font-size:11px;color:var(--muted)">No custom categories yet.</span></div>
+      <div class="ccat-add-row">
+        <input id="set-new-exp" placeholder="New expense category name...">
+        <button class="btn btn-p btn-sm" id="set-add-exp">+ Add</button>
+      </div>
     </div>
     <!-- App Info / AI Summary -->
     <div class="set-section">
@@ -1219,6 +1344,7 @@ let finance=S.get('finance',[]);
 let customIncSrc=S.get('customIncSrc',[]);
 let customExpCat=S.get('customExpCat',[]);
 let profileData=S.get('profile',{displayName:'Admin',username:'admin',password:'admin'});
+let sectionNames=S.get('sectionNames',{habits:'Habits',tasks:'Tasks',goals:'Goals',evbday:'Events & Birthday'});
 let _loggedIn=sessionStorage.getItem('lt4_session')==='1';
 let _editFinId=null;
 let finPeriod='month',finType='income';
@@ -1339,6 +1465,17 @@ function svgDonut(pct,color,sz=52){
     <text x="${c}" y="${c+4}" text-anchor="middle" fill="white" font-size="10" font-weight="700" font-family="Segoe UI">${pct}%</text>
   </svg>`;
 }
+function svgDonutBig(pct,c1,c2,sz=80){
+  const r=32,c=40,circ=2*Math.PI*r,off=circ-(pct/100)*circ;
+  const id='dg'+Math.random().toString(36).slice(2,7);
+  return `<svg viewBox="0 0 80 80" width="${sz}" height="${sz}" class="sb-analog-svg">
+    <defs><linearGradient id="${id}" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="${c1}"/><stop offset="100%" stop-color="${c2}"/></linearGradient></defs>
+    <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="7"/>
+    <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="url(#${id})" stroke-width="7" stroke-linecap="round"
+      stroke-dasharray="${circ.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}"
+      transform="rotate(-90 ${c} ${c})" style="transition:stroke-dashoffset .6s ease"/>
+  </svg>`;
+}
 
 // ===== CLOCK =====
 function tick(){
@@ -1397,9 +1534,45 @@ function renderDaily(){
   wGoals.forEach(g=>{if(getWLog().weekGoals[g.id])gDone++;});
   const gPct=gTot?Math.round(gDone/gTot*100):0;
 
-  document.getElementById('ring-habits').innerHTML=svgDonut(hPct,'#a78bfa')+'<div class="ring-lbl"><div class="ring-name">Habits</div><div class="ring-sub">'+hDone+' of '+habits.length+' done</div></div>';
-  document.getElementById('ring-tasks').innerHTML=svgDonut(tPct,'#60a5fa')+'<div class="ring-lbl"><div class="ring-name">Tasks</div><div class="ring-sub">'+tDone+' of '+dayT.length+' done</div></div>';
-  document.getElementById('ring-goals').innerHTML=svgDonut(gPct,'#34d399')+'<div class="ring-lbl"><div class="ring-name">Daily/Weekly Goals</div><div class="ring-sub">'+gDone+' of '+gTot+' done</div></div>';
+  // Two big rings: Habit+Task combined, Goals
+  const htTotal=habits.length+dayT.length, htDone=hDone+tDone;
+  const htPct=htTotal?Math.round(htDone/htTotal*100):0;
+  const htRing=document.getElementById('ring-habit-task');
+  const gRing=document.getElementById('ring-goals');
+  if(htRing)htRing.innerHTML=svgDonutBig(htPct,'#a78bfa','#60a5fa')+'<div class="big-ring-pct" style="color:#a78bfa">'+htPct+'%</div><div class="big-ring-lbl">'+sectionNames.habits+' + '+sectionNames.tasks+'</div>';
+  if(gRing)gRing.innerHTML=svgDonutBig(gPct,'#34d399','#10b981')+'<div class="big-ring-pct" style="color:#34d399">'+gPct+'%</div><div class="big-ring-lbl">'+sectionNames.goals+'</div>';
+
+  // Goal deadline alerts
+  const deadlineAlerts=document.getElementById('goal-deadline-alerts');
+  if(deadlineAlerts){
+    const td2=today();
+    const alertGoals=goals.filter(g=>{
+      if(!g.deadline)return false;
+      const diff=Math.ceil((new Date(g.deadline)-new Date(td2))/(1000*60*60*24));
+      // check if goal is incomplete
+      let done=false;
+      if(g.type==='daily')done=!!log.goals[g.id];
+      else if(g.type==='weekly')done=!!getWLog().weekGoals[g.id];
+      else done=(g.current||0)>=(g.target||1);
+      return !done&&diff>=0&&diff<=2;
+    });
+    if(alertGoals.length){
+      deadlineAlerts.innerHTML=alertGoals.map(g=>{
+        const diff=Math.ceil((new Date(g.deadline)-new Date(td2))/(1000*60*60*24));
+        const isToday=diff===0;
+        return `<div class="gda-item${diff===1?' warn-1':''}">
+          <div class="gda-icon">${isToday?'🚨':'⚠️'}</div>
+          <div class="gda-content">
+            <div class="gda-title">Goal Deadline ${isToday?'TODAY':diff===1?'TOMORROW':'in '+diff+' days'}: ${g.name}</div>
+            <div class="gda-sub">${isToday?'Deadline is today!':diff===1?'Due tomorrow — finish it!':'Due on '+g.deadline} &nbsp;·&nbsp; ${g.type} goal</div>
+          </div>
+          <button class="btn btn-g btn-sm" data-vl="goals">View →</button>
+        </div>`;
+      }).join('');
+    }else{
+      deadlineAlerts.innerHTML='';
+    }
+  }
 
   // priorities
   renderPriorities(td,log,dayT);
@@ -1483,6 +1656,16 @@ function renderMonthly(){
   const now=new Date();now.setMonth(now.getMonth()+monthOff);
   const yr=now.getFullYear(),mo=now.getMonth(),td=today();
   document.getElementById('m-label').textContent=MONTHS[mo]+' '+yr;
+  // Notify strip: birthdays + events today
+  const mStrip=document.getElementById('monthly-notify-strip');
+  if(mStrip){
+    const todayBds2=bdToday();
+    const todayEvs2=events.filter(ev=>ev.date===td);
+    let pills='';
+    todayBds2.forEach(b=>{ pills+=`<div class="dns-pill bday">🎂 ${b.name}'s Birthday!</div>`; });
+    todayEvs2.forEach(ev=>{ pills+=`<div class="dns-pill event">📌 ${ev.title}</div>`; });
+    mStrip.innerHTML=pills;
+  }
   const first=new Date(yr,mo,1).getDay(),dIn=new Date(yr,mo+1,0).getDate();
   document.getElementById('m-dns').innerHTML=['Su','Mo','Tu','We','Th','Fr','Sa'].map(d=>`<div class="mdn">${d}</div>`).join('');
   let cells='',scores=[];
@@ -1521,6 +1704,16 @@ function renderMonthly(){
 function renderYearly(){
   const yr=new Date().getFullYear();
   document.getElementById('y-label').textContent=yr;
+  // Notify strip: birthdays + events today
+  const yStrip=document.getElementById('yearly-notify-strip');
+  if(yStrip){
+    const todayBds3=bdToday();
+    const todayEvs3=events.filter(ev=>ev.date===today());
+    let pills='';
+    todayBds3.forEach(b=>{ pills+=`<div class="dns-pill bday">🎂 ${b.name}'s Birthday!</div>`; });
+    todayEvs3.forEach(ev=>{ pills+=`<div class="dns-pill event">📌 ${ev.title}</div>`; });
+    yStrip.innerHTML=pills;
+  }
   const mData=MONTHS.map((mn,mi)=>{
     let sc=[];const dd=new Date(yr,mi+1,0).getDate();
     for(let d=1;d<=dd;d++){const date=`${yr}-${String(mi+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const s=dayScore(date);if(s>0)sc.push(s);}
@@ -1762,6 +1955,7 @@ function saveTask(){
 function openGoalModal(){
   document.getElementById('gm-name').value='';document.getElementById('gm-target').value='';document.getElementById('gm-unit').value='';
   document.getElementById('gm-pri').value='med';
+  const dlEl=document.getElementById('gm-deadline');if(dlEl)dlEl.value='';
   selC=HCOLS[0];
   document.getElementById('gm-clrs').innerHTML=HCOLS.map(c=>`<div class="clr${c===selC?' on':''}" style="background:${c}" data-pc="${c}"></div>`).join('');
   const showNum=()=>{const t=document.getElementById('gm-type').value;document.getElementById('gm-num').style.display=t==='monthly'||t==='yearly'?'block':'none';};
@@ -1771,7 +1965,9 @@ function openGoalModal(){
 function saveGoal(){
   const name=document.getElementById('gm-name').value.trim();if(!name){toast('Enter a goal name','w');return;}
   const type=document.getElementById('gm-type').value;
+  const deadline=document.getElementById('gm-deadline')?.value||'';
   const goal={id:'g_'+Date.now(),name,type,pri:document.getElementById('gm-pri').value,color:selC};
+  if(deadline)goal.deadline=deadline;
   if(type==='monthly'||type==='yearly'){const t=parseInt(document.getElementById('gm-target').value)||0;if(!t){toast('Enter a target number','w');return;}goal.target=t;goal.current=0;goal.unit=document.getElementById('gm-unit').value.trim()||'units';}
   goals.push(goal);save();closeM('gm');toast('Goal set! 🎯','s');renderAll(true);
 }
@@ -1851,7 +2047,31 @@ document.addEventListener('click',function(e){
   if(id==='gm-save'){saveGoal();return;}if(id==='gm-cancel'){closeM('gm');return;}
   if(id==='m-prev'){monthOff--;renderMonthly();return;}
   if(id==='m-next'){monthOff++;renderMonthly();return;}
-  if(id==='boe'||id==='boe2'||id==='boe3'||id==='boe4'){openEventModal(today());return;}
+  if(id==='boe'||id==='boe2'||id==='boe3'||id==='boe4'||id==='boe5'){openEventModal(today());return;}
+  if(id==='event-banner-dismiss'){document.getElementById('event-banner').style.display='none';return;}
+  if(id==='clk-prev'||id==='clk-next'){_cycleClockMode(id==='clk-next');return;}
+  if(id==='set-add-inc'){
+    const inp=document.getElementById('set-new-inc');
+    const label=(inp?.value||'').trim();if(!label){toast('Enter a name','w');return;}
+    const col=_CUST_COLS[customIncSrc.length%_CUST_COLS.length];
+    customIncSrc.push({id:'cis_'+Date.now(),label,col});
+    S.set('customIncSrc',customIncSrc);inp.value='';renderSettings();toast('Income source added ✅','s');return;
+  }
+  if(id==='set-add-exp'){
+    const inp=document.getElementById('set-new-exp');
+    const label=(inp?.value||'').trim();if(!label){toast('Enter a name','w');return;}
+    const col=_CUST_COLS[customExpCat.length%_CUST_COLS.length];
+    customExpCat.push({id:'cec_'+Date.now(),label,col});
+    S.set('customExpCat',customExpCat);inp.value='';renderSettings();toast('Expense category added ✅','s');return;
+  }
+  // Section name save buttons (data-sn attribute)
+  const snKey=t.closest('[data-sn]')?.dataset?.sn||t.dataset?.sn;
+  if(snKey&&['habits','tasks','goals','evbday'].includes(snKey)){
+    const val=document.getElementById('sn-'+snKey)?.value.trim();
+    if(!val){toast('Enter a name','w');return;}
+    sectionNames[snKey]=val;S.set('sectionNames',sectionNames);
+    applySectionNames();toast('Label updated ✅','s');return;
+  }
   if(id==='em-save'){saveEvent();return;}
   if(id==='em-cancel'){closeM('em');return;}
   if(id==='evd-cancel'){closeM('evd');_evDay=null;return;}
@@ -2113,12 +2333,47 @@ function renderBdayWidget(){
       if(emptyEl)emptyEl.style.display='';
     }
   }
+  // Event banner & widget
+  const todayEvs=events.filter(ev=>ev.date===today());
+  const evBanner=document.getElementById('event-banner');
+  if(evBanner){
+    if(todayEvs.length&&evBanner.style.display==='none'){
+      document.getElementById('event-banner-names').textContent=todayEvs.map(e=>e.title).join(', ');
+      document.getElementById('event-banner-sub').textContent=
+        todayEvs.length===1?`${EVTYPES[todayEvs[0].type]||'📌'} ${todayEvs[0].notes||'You have an event today!'}`
+        :`${todayEvs.length} events scheduled for today!`;
+      evBanner.style.display='flex';
+    }
+  }
+  // Event upcoming widget
+  const estrip=document.getElementById('daily-event-strip');
+  const eEmpty=document.getElementById('event-widget-empty');
+  if(estrip){
+    const up14=events.filter(ev=>ev.date>=today()).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,8);
+    if(up14.length){
+      if(eEmpty)eEmpty.style.display='none';
+      estrip.innerHTML=up14.map(ev=>{
+        const col=ev.color||'#3b82f6';
+        const isToday=ev.date===today();
+        const diff=Math.ceil((new Date(ev.date)-new Date(today()))/(1000*60*60*24));
+        return `<div class="up-pill${isToday?' is-today':''}">
+          <div class="up-n" style="color:${col}">${ev.title.substring(0,10)}</div>
+          <div class="up-d" style="color:${isToday?'#60a5fa':col}">${isToday?'📌':diff}</div>
+          <div class="up-l">${isToday?'TODAY':'days'}</div>
+        </div>`;
+      }).join('');
+    }else{
+      estrip.innerHTML='';
+      if(eEmpty)eEmpty.style.display='';
+    }
+  }
+
   // Show alarm dot on sidebar nav if today has birthdays
   const navBd=document.getElementById('nav-birthdays');
   if(navBd){
     const existing=navBd.querySelector('.alarm-dot');
     if(todayBds.length&&!existing){
-      navBd.innerHTML+='<span class="alarm-dot"></span>';
+      const dot=document.createElement('span');dot.className='alarm-dot';navBd.appendChild(dot);
     }
   }
 }
@@ -2222,6 +2477,14 @@ function saveBirthday(){
 // Run birthday checks on load
 renderBdayWidget();
 checkBdayAlarms();
+
+// Enter key for settings inline add inputs
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Enter')return;
+  const id=document.activeElement?.id;
+  if(id==='set-new-inc')document.getElementById('set-add-inc')?.click();
+  if(id==='set-new-exp')document.getElementById('set-add-exp')?.click();
+});
 
 // First-time currency setup
 (function(){
@@ -2765,6 +3028,79 @@ if(autoOn){document.getElementById('th-auto').classList.add('on');autoTimer=setI
 
   setTimeout(loop,900); // initial delay after page load
 })();
+
+// ===== ANALOG CLOCK =====
+(function initAnalogClock(){
+  const MODES=['Digital','Analog','Minimal'];
+  let _mode=parseInt(S.get('clockMode','0'))||0;
+  const digital=document.getElementById('sb-digital-clock');
+  const analogWrap=document.getElementById('sb-analog-wrap');
+  const canvas=document.getElementById('sb-analog-canvas');
+  const label=document.getElementById('clk-mode-label');
+
+  function applyMode(){
+    S.set('clockMode',String(_mode));
+    if(label)label.textContent=MODES[_mode];
+    if(_mode===0){
+      if(digital)digital.style.display='';
+      if(analogWrap)analogWrap.style.display='none';
+    }else{
+      if(digital)digital.style.display='none';
+      if(analogWrap)analogWrap.style.display='flex';
+    }
+  }
+
+  window._cycleClockMode=function(forward){
+    _mode=(_mode+(forward?1:MODES.length-1))%MODES.length;
+    applyMode();
+  };
+
+  function drawAnalog(){
+    if(!canvas||_mode===0)return;
+    const ctx=canvas.getContext('2d');
+    const now=new Date();
+    const W=90,H=90,cx=45,cy=45,r=38;
+    ctx.clearRect(0,0,W,H);
+
+    // Face
+    ctx.beginPath();ctx.arc(cx,cy,r,0,2*Math.PI);
+    if(_mode===2){
+      ctx.strokeStyle='rgba(167,139,250,.4)';ctx.lineWidth=1.5;ctx.stroke();
+    }else{
+      ctx.fillStyle='rgba(255,255,255,.04)';ctx.fill();
+      ctx.strokeStyle='rgba(167,139,250,.5)';ctx.lineWidth=1.5;ctx.stroke();
+      // Hour marks
+      for(let i=0;i<12;i++){
+        const a=i*Math.PI/6,x1=cx+Math.cos(a)*(r-5),y1=cy+Math.sin(a)*(r-5),x2=cx+Math.cos(a)*(r-2),y2=cy+Math.sin(a)*(r-2);
+        ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.strokeStyle='rgba(167,139,250,.6)';ctx.lineWidth=1.5;ctx.stroke();
+      }
+    }
+
+    const sec=now.getSeconds(),min=now.getMinutes(),hr=now.getHours()%12;
+    const sAngle=(sec/60)*2*Math.PI-Math.PI/2;
+    const mAngle=((min+sec/60)/60)*2*Math.PI-Math.PI/2;
+    const hAngle=((hr+min/60)/12)*2*Math.PI-Math.PI/2;
+
+    // Hour hand
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(hAngle)*(r*0.5),cy+Math.sin(hAngle)*(r*0.5));
+    ctx.strokeStyle='#a78bfa';ctx.lineWidth=3;ctx.lineCap='round';ctx.stroke();
+    // Minute hand
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(mAngle)*(r*0.72),cy+Math.sin(mAngle)*(r*0.72));
+    ctx.strokeStyle='#60a5fa';ctx.lineWidth=2;ctx.lineCap='round';ctx.stroke();
+    // Second hand
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(sAngle)*(r*0.85),cy+Math.sin(sAngle)*(r*0.85));
+    ctx.strokeStyle='#f472b6';ctx.lineWidth=1;ctx.lineCap='round';ctx.stroke();
+    // Center dot
+    ctx.beginPath();ctx.arc(cx,cy,3,0,2*Math.PI);ctx.fillStyle='#a78bfa';ctx.fill();
+  }
+
+  applyMode();
+  setInterval(drawAnalog,1000);
+  drawAnalog();
+})();
+
+// ===== SECTION NAMES INIT =====
+applySectionNames();
 
 // ===== 500+ MOTIVATIONAL QUOTES =====
 const QUOTES=[
@@ -3351,6 +3687,9 @@ async function fetchWeather(){
     document.getElementById('w-temp').textContent=Math.round(cw.temperature)+'°C';
     document.getElementById('w-desc').textContent=wDesc;
     document.getElementById('w-meta').textContent='Wind '+Math.round(cw.windspeed)+' km/h';
+    // Sidebar weather chip
+    const chip=document.getElementById('sb-weather-chip');
+    if(chip){chip.style.display='flex';document.getElementById('swc-icon').textContent=wIcon;document.getElementById('swc-temp').textContent=Math.round(cw.temperature)+'°C';document.getElementById('swc-desc').textContent=wDesc;}
     // Reverse geocode city (best effort)
     try{
       const gr=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
@@ -3364,6 +3703,27 @@ async function fetchWeather(){
     if(card)card.style.display='none';
     _weatherPref='off';S.set('weatherPref','off');
   }
+}
+
+// ===== SECTION NAMES =====
+function applySectionNames(){
+  // Nav spans
+  ['habits','tasks','goals','evbday'].forEach(k=>{
+    const span=document.querySelector('.nav-lbl-'+k);
+    if(span){
+      const base=k==='evbday'?'📅 ':k==='tasks'?'':k==='goals'?'':'';
+      span.textContent=base+sectionNames[k]+(k==='tasks'?' & Priorities':'');
+    }
+  });
+  // Page headers
+  const phSels={habits:'#view-habits .ph-t',tasks:'#view-tasks .ph-t',goals:'#view-goals .ph-t',evbday:'#view-birthdays .ph-t'};
+  Object.entries(phSels).forEach(([k,sel])=>{const el=document.querySelector(sel);if(el)el.textContent=sectionNames[k];});
+  // Sidebar stats labels
+  const sbH=document.querySelector('#sb-h+.sb-sl,.sb-st .sb-sl');
+  // Daily dashboard stat card labels
+  const sHlbl=document.querySelector('#s-h');
+  const sTlbl=document.querySelector('#s-t');
+  // Ring labels update on next renderDaily
 }
 
 // ===== SETTINGS =====
@@ -3380,15 +3740,18 @@ function renderSettings(){
   // Custom income sources
   const inc=document.getElementById('set-inc-cats');
   if(inc){
-    if(!customIncSrc.length)inc.innerHTML='<span style="font-size:11px;color:var(--muted)">No custom sources yet. Add them from Finance → Add Income.</span>';
+    if(!customIncSrc.length)inc.innerHTML='<span style="font-size:11px;color:var(--muted)">No custom sources yet. Type a name below and click + Add.</span>';
     else inc.innerHTML=customIncSrc.map(s=>`<div class="ccat-chip" style="border-color:${s.col}40;color:${s.col}">🔹 ${s.label}<button class="ccat-del" data-dcs="${s.id}">✕</button></div>`).join('');
   }
   // Custom expense categories
   const exp=document.getElementById('set-exp-cats');
   if(exp){
-    if(!customExpCat.length)exp.innerHTML='<span style="font-size:11px;color:var(--muted)">No custom categories yet. Add them from Finance → Add Expense.</span>';
+    if(!customExpCat.length)exp.innerHTML='<span style="font-size:11px;color:var(--muted)">No custom categories yet. Type a name below and click + Add.</span>';
     else exp.innerHTML=customExpCat.map(c=>`<div class="ccat-chip" style="border-color:${c.col}40;color:${c.col}">💰 ${c.label}<button class="ccat-del" data-dce="${c.id}">✕</button></div>`).join('');
   }
+  // Section names
+  const snFields={habits:'sn-habits',tasks:'sn-tasks',goals:'sn-goals',evbday:'sn-evbday'};
+  Object.entries(snFields).forEach(([k,id])=>{const el=document.getElementById(id);if(el)el.value=sectionNames[k]||'';});
 }
 
 function genAISummary(){
