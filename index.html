@@ -2179,12 +2179,16 @@ function saveGoal(){
 }
 
 // ===== FLOATING NOTIFICATIONS =====
-const _fnotifSeen=new Set();
+const _NOTIF_CD=5*60*1000; // 5-minute cooldown between repeats
+const _fnotifTimes=new Map(); // id → timestamp last shown
 function showFloatNotif(id,icon,title,sub,cls,labelTxt){
-  if(_fnotifSeen.has(id))return;
+  const now=Date.now();
+  if(_fnotifTimes.has(id)&&now-_fnotifTimes.get(id)<_NOTIF_CD)return;
   const stack=document.getElementById('float-notif-stack');
   if(!stack)return;
-  _fnotifSeen.add(id);
+  _fnotifTimes.set(id,now);
+  const old=document.getElementById('fn-'+id);
+  if(old)old.remove();
   const delay=(stack.children.length*120)+'ms';
   const el=document.createElement('div');
   el.className='fnotif '+(cls||'fn-blue');
@@ -2193,13 +2197,14 @@ function showFloatNotif(id,icon,title,sub,cls,labelTxt){
   const lbl=labelTxt||({'fn-blue':'Event','fn-red':'Urgent','fn-orange':'Warning','fn-pink':'Birthday'}[cls||'fn-blue']||'Alert');
   el.innerHTML=`<div class="fnotif-dot"></div><div class="fnotif-icon-wrap">${icon}</div><div class="fnotif-body"><div class="fnotif-label">${lbl}</div><div class="fnotif-title">${title}</div>${sub?`<div class="fnotif-sub">${sub}</div>`:''}</div><button class="fnotif-x" data-fn="${id}">✕</button>`;
   stack.appendChild(el);
+  setTimeout(()=>dismissFloatNotif(id),10000); // auto-dismiss after 10s
 }
 function dismissFloatNotif(id){
   const el=document.getElementById('fn-'+id);
   if(!el)return;
   el.classList.add('fnotif-out');
   setTimeout(()=>el.remove(),300);
-  _fnotifSeen.delete(id);
+  // cooldown stays active after dismiss — reappears after 5 min
 }
 
 // ===== TOAST =====
@@ -4363,6 +4368,48 @@ function deleteVBItem(){
   closeM('vb-modal');_vbEditId=null;
   renderVision();toast('Vision removed','w');
 }
+
+// ===== PERIODIC NOTIFICATION CHECKER (every 5 min) =====
+function checkNotifs(){
+  const td2=today();const log=getLog(td2);
+  goals.filter(g=>{
+    if(!g.deadline)return false;
+    const diff=Math.ceil((new Date(g.deadline)-new Date(td2))/(1000*60*60*24));
+    let done=false;
+    if(g.type==='daily')done=!!log.goals[g.id];
+    else if(g.type==='weekly')done=!!getWLog().weekGoals[g.id];
+    else done=(g.current||0)>=(g.target||1);
+    return !done&&diff>=0&&diff<=2;
+  }).forEach(g=>{
+    const diff=Math.ceil((new Date(g.deadline)-new Date(td2))/(1000*60*60*24));
+    const isToday=diff===0;
+    const lbl=isToday?'Deadline Today':diff===1?'Due Tomorrow':'Deadline Alert';
+    const sub=isToday?'Complete it now — due today!':(diff===1?"Due tomorrow, don't miss it!":'Due on '+g.deadline+' · '+g.type+' goal');
+    showFloatNotif('gd-'+g.id,isToday?'🚨':'⚠️',g.name,sub,isToday?'fn-red':'fn-orange',lbl);
+  });
+  const todayBds=bdToday();
+  if(todayBds.length){
+    const names=todayBds.map(b=>b.name).join(' & ');
+    showFloatNotif('bd-today','🎂','Happy Birthday, '+names+'!','Wishing them a wonderful day 🎉','fn-pink','Birthday Today');
+  }
+  bdUpcoming(2).filter(b=>!b.isToday&&b.daysUntil===1).forEach(b=>{
+    showFloatNotif('bd-tmrw-'+b.id,'🎁',b.name+"'s Birthday Tomorrow","Don't forget to wish them! 🎈",'fn-pink','Birthday Alert');
+  });
+  const todayEvs=events.filter(ev=>ev.date===today());
+  if(todayEvs.length){
+    const evNames=todayEvs.map(e=>e.title).join(', ');
+    const sub2=todayEvs.length===1?`${EVTYPES[todayEvs[0].type]||'📌'} ${todayEvs[0].note||'Scheduled for today'}`:`${todayEvs.length} events scheduled for today`;
+    showFloatNotif('ev-today','📅',evNames,sub2,'fn-blue',"Today's Events");
+  }
+  const upEvs=events.filter(ev=>ev.date>today()).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,5);
+  if(upEvs.length){
+    const next=upEvs[0];
+    const diff2=Math.ceil((new Date(next.date+' 00:00')-new Date())/(1000*60*60*24));
+    const dayStr=diff2<=1?'Tomorrow':'In '+diff2+' days';
+    showFloatNotif('ev-upcoming','📌',next.title,`${dayStr} · ${upEvs.length} event${upEvs.length>1?'s':''} upcoming`,'fn-blue','Upcoming Events');
+  }
+}
+setInterval(checkNotifs,5*60*1000);
 
 // Init drag zone after page ready
 initDragZone();
