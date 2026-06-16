@@ -590,10 +590,12 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
 .drag-handle:hover{opacity:.9!important;color:var(--pl)}
 
 /* RED BUG BUTTON */
-#bug-btn{position:fixed;bottom:20px;right:20px;width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#ef4444,#dc2626);border:none;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(239,68,68,.45),0 2px 6px rgba(0,0,0,.3);z-index:2000;transition:all .2s;color:#fff}
-#bug-btn:hover{transform:scale(1.1) rotate(-10deg);box-shadow:0 6px 24px rgba(239,68,68,.6)}
+#bug-btn{position:fixed;top:14px;right:16px;width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#ef4444,#dc2626);border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(239,68,68,.5),0 2px 6px rgba(0,0,0,.3);z-index:4000;transition:all .2s;color:#fff}
+#bug-btn:hover{transform:scale(1.15) rotate(-10deg);box-shadow:0 6px 24px rgba(239,68,68,.7)}
 #bug-btn.spin{animation:bugSpin .4s ease}
 @keyframes bugSpin{0%{transform:scale(1)}50%{transform:scale(1.25) rotate(20deg)}100%{transform:scale(1)}}
+/* push notification stack below bug button */
+#float-notif-stack{top:62px!important}
 
 /* TIMETABLE */
 .tt-grid{overflow-x:auto;margin-top:10px}
@@ -769,6 +771,32 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
       <button class="bday-x" id="bday-dismiss">✕</button>
     </div>
 
+    <!-- WEATHER (always at top, not draggable) -->
+    <div class="weather-card" id="weather-card" style="display:none">
+      <div class="w-icon" id="w-icon">🌤</div>
+      <div>
+        <div style="display:flex;align-items:baseline;gap:8px">
+          <div class="w-temp" id="w-temp">--°C</div>
+          <div class="w-desc" id="w-desc">Loading...</div>
+        </div>
+        <div class="w-meta" id="w-meta">Wind -- km/h · Humidity --%</div>
+        <div class="w-loc" id="w-loc">📍 Detecting location...</div>
+      </div>
+      <button class="btn btn-g btn-sm" id="w-refresh" style="margin-left:auto" title="Refresh weather">🔄</button>
+    </div>
+    <div id="weather-ask" class="card" style="margin-bottom:10px;padding:10px 14px;display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div>
+          <div style="font-size:12px;font-weight:700">🌦 Show Weather?</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">Allow location access to see current weather</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-g btn-sm" id="w-deny">No thanks</button>
+          <button class="btn btn-p btn-sm" id="w-allow">Allow 📍</button>
+        </div>
+      </div>
+    </div>
+
     <!-- DRAG ZONE: reorderable dashboard sections -->
     <div id="daily-drag-zone">
 
@@ -781,34 +809,6 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
             <button class="btn btn-g btn-sm" data-vl="birthdays" style="margin-left:2px">All →</button>
           </div>
           <div class="up-strip" id="daily-bday-strip"></div>
-        </div>
-      </div>
-
-      <div class="drag-blk" draggable="true" data-blk="weather">
-        <div class="drag-handle" title="Drag to reorder">⠿</div>
-        <div class="weather-card" id="weather-card" style="display:none">
-          <div class="w-icon" id="w-icon">🌤</div>
-          <div>
-            <div style="display:flex;align-items:baseline;gap:8px">
-              <div class="w-temp" id="w-temp">--°C</div>
-              <div class="w-desc" id="w-desc">Loading...</div>
-            </div>
-            <div class="w-meta" id="w-meta">Wind -- km/h · Humidity --%</div>
-            <div class="w-loc" id="w-loc">📍 Detecting location...</div>
-          </div>
-          <button class="btn btn-g btn-sm" id="w-refresh" style="margin-left:auto" title="Refresh weather">🔄</button>
-        </div>
-        <div id="weather-ask" class="card" style="margin-bottom:10px;padding:10px 14px;display:none">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-            <div>
-              <div style="font-size:12px;font-weight:700">🌦 Show Weather?</div>
-              <div style="font-size:10px;color:var(--muted);margin-top:2px">Allow location access to see current weather</div>
-            </div>
-            <div style="display:flex;gap:6px">
-              <button class="btn btn-g btn-sm" id="w-deny">No thanks</button>
-              <button class="btn btn-p btn-sm" id="w-allow">Allow 📍</button>
-            </div>
-          </div>
         </div>
       </div>
 
