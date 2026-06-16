@@ -24,8 +24,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .sb-icon{width:32px;height:32px;background:linear-gradient(135deg,#7c3aed,#3b82f6);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;flex-shrink:0}
 .sb-sub{font-size:9px;color:var(--muted)}
 .sb-clock{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:7px 12px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.2)}
-.sb-date{font-size:10px;color:var(--muted)}
-.sb-time{font-size:13px;font-weight:700;color:var(--pl);letter-spacing:1px}
+.sb-date{font-size:12px;color:var(--muted)}
+.sb-time{font-size:20px;font-weight:700;color:var(--pl);letter-spacing:1px}
 
 .sb-ring{display:flex;flex-direction:column;align-items:center;padding:14px 0 8px;border-bottom:1px solid var(--border)}
 .sb-rs{font-size:9px;color:var(--muted);margin-top:3px}
@@ -491,10 +491,30 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
 .sb-clk-label{flex:1;text-align:center;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
 .sb-analog-svg circle,.sb-analog-svg line{transition:stroke .3s}
 
-/* SIDEBAR WEATHER CHIP */
-.sb-weather-chip{display:flex;align-items:center;gap:5px;padding:5px 10px;background:rgba(255,255,255,.03);border-bottom:1px solid var(--border);font-size:10px;color:var(--muted)}
-.sb-weather-chip .swc-icon{font-size:14px}
-.sb-weather-chip .swc-temp{font-weight:700;color:var(--pl);font-size:11px}
+/* SIDEBAR CLOCK WEATHER ROW */
+.sb-clk-row{display:flex;justify-content:space-between;align-items:center}
+.sb-clk-weather{display:flex;align-items:center;gap:7px;margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,.07)}
+.sb-clk-weather .swc-icon-wrap{font-size:24px;line-height:1;flex-shrink:0}
+.sb-clk-weather .swc-temp{font-weight:700;color:var(--pl);font-size:15px}
+.sb-clk-weather .swc-desc-txt{font-size:11px;color:var(--muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ANIMATED WEATHER ICONS */
+.wani-sun{display:inline-block;animation:wSpin 10s linear infinite;filter:drop-shadow(0 0 5px rgba(251,191,36,.6))}
+.wani-cloud{display:inline-block;animation:wFloat 4s ease-in-out infinite}
+.wani-fog{display:inline-block;animation:wFade 2s ease-in-out infinite alternate}
+.wani-rain{display:inline-block;animation:wBounce .6s ease-in-out infinite alternate}
+.wani-snow{display:inline-block;animation:wSnow 3s ease-in-out infinite}
+.wani-thunder{display:inline-block;animation:wFlash .9s ease-in-out infinite}
+@keyframes wSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes wFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes wFade{from{opacity:.45}to{opacity:1}}
+@keyframes wBounce{from{transform:translateY(-3px)}to{transform:translateY(3px)}}
+@keyframes wSnow{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(4px) rotate(180deg)}}
+@keyframes wFlash{0%,100%{filter:brightness(1) drop-shadow(0 0 0px transparent)}50%{filter:brightness(2.2) drop-shadow(0 0 10px rgba(251,191,36,.9))}}
+/* SIDEBAR ICON PICKER */
+.si-opt{width:36px;height:36px;border-radius:8px;border:2px solid var(--border);background:rgba(255,255,255,.04);cursor:pointer;font-size:18px;display:inline-flex;align-items:center;justify-content:center;transition:all .15s;color:#fff;padding:0}
+.si-opt[data-si="initials"]{font-size:10px;font-weight:800;letter-spacing:-.5px}
+.si-opt:hover{border-color:var(--pl);transform:scale(1.1)}
+.si-opt.active{border-color:var(--pl);background:rgba(var(--pa),.25);box-shadow:0 0 0 3px rgba(var(--pa),.15)}
 
 /* DASHBOARD NOTIFY STRIPS */
 .dash-notify-strip{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
@@ -666,8 +686,15 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
     </div>
 
     <div class="sb-clock" id="sb-digital-clock">
-      <span class="sb-date" id="sb-date">Loading...</span>
-      <span class="sb-time" id="sb-time">--:--</span>
+      <div class="sb-clk-row">
+        <span class="sb-date" id="sb-date">Loading...</span>
+        <span class="sb-time" id="sb-time">--:--</span>
+      </div>
+      <div class="sb-clk-weather" id="sb-clk-weather" style="display:none">
+        <span class="swc-icon-wrap" id="swc-icon"></span>
+        <span class="swc-temp" id="swc-temp">--°C</span>
+        <span class="swc-desc-txt" id="swc-desc"></span>
+      </div>
     </div>
   </div>
 
@@ -679,13 +706,6 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
     <button class="sb-clk-arrow" id="clk-prev">‹</button>
     <div class="sb-clk-label" id="clk-mode-label">Digital</div>
     <button class="sb-clk-arrow" id="clk-next">›</button>
-  </div>
-
-  <!-- SIDEBAR WEATHER CHIP -->
-  <div class="sb-weather-chip" id="sb-weather-chip" style="display:none">
-    <span class="swc-icon" id="swc-icon">🌤</span>
-    <span class="swc-temp" id="swc-temp">--°C</span>
-    <span id="swc-desc" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
   </div>
 
   <!-- MOTIVATIONAL TICKER -->
@@ -1346,6 +1366,21 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
         <input class="fi" type="password" id="set-pass1" style="width:130px" placeholder="New password">
         <input class="fi" type="password" id="set-pass2" style="width:130px" placeholder="Confirm">
         <button class="btn btn-p btn-sm" id="set-pass-save">Update</button>
+      </div>
+      <div class="set-row" style="flex-wrap:wrap;gap:10px">
+        <div><div class="set-lbl">Sidebar Icon</div><div class="set-hint">Top-left corner avatar — click to change</div></div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <button class="si-opt" data-si="initials" title="Use app initials">AB</button>
+          <button class="si-opt" data-si="🐛" title="Bug">🐛</button>
+          <button class="si-opt" data-si="🕷️" title="Spider">🕷️</button>
+          <button class="si-opt" data-si="🔴" title="Red dot">🔴</button>
+          <button class="si-opt" data-si="🔥" title="Fire">🔥</button>
+          <button class="si-opt" data-si="⭐" title="Star">⭐</button>
+          <button class="si-opt" data-si="🎯" title="Target">🎯</button>
+          <button class="si-opt" data-si="🏆" title="Trophy">🏆</button>
+          <button class="si-opt" data-si="💎" title="Diamond">💎</button>
+          <button class="si-opt" data-si="🚀" title="Rocket">🚀</button>
+        </div>
       </div>
     </div>
     <!-- Currency -->
@@ -2359,6 +2394,9 @@ document.addEventListener('click',function(e){
   const dce=t.closest('[data-dce]');
   if(dce){e.stopPropagation();customExpCat=customExpCat.filter(c=>c.id!==dce.dataset.dce);S.set('customExpCat',customExpCat);toast('Removed','w');renderSettings();return;}
   // Settings buttons
+  // Sidebar icon picker
+  const siOpt=t.closest('[data-si]');
+  if(siOpt){profileData.sbIcon=siOpt.dataset.si;S.set('profile',profileData);applySbIcon();document.querySelectorAll('.si-opt').forEach(b=>b.classList.toggle('active',b.dataset.si===siOpt.dataset.si));toast('Icon updated! ✅','s');return;}
   if(id==='set-dname-save'){const v=document.getElementById('set-dname').value.trim();if(!v){toast('Enter a name','w');return;}profileData.displayName=v;S.set('profile',profileData);updateWelcome();toast('✅ Display name updated!','s');return;}
   if(id==='set-uname-save'){const v=document.getElementById('set-uname').value.trim();if(!v){toast('Enter a username','w');return;}profileData.username=v;S.set('profile',profileData);toast('✅ Username updated!','s');return;}
   if(id==='set-pass-save'){const p1=document.getElementById('set-pass1').value,p2=document.getElementById('set-pass2').value;if(!p1){toast('Enter a password','w');return;}if(p1!==p2){toast('Passwords do not match','w');return;}profileData.password=p1;S.set('profile',profileData);document.getElementById('set-pass1').value='';document.getElementById('set-pass2').value='';toast('✅ Password updated!','s');return;}
@@ -2441,6 +2479,7 @@ function seed(){
   save();
 }
 seed();renderAll(true);
+applySbIcon();
 
 // ===== BIRTHDAY SYSTEM =====
 function bdToday(){
@@ -3211,7 +3250,7 @@ if(autoOn){document.getElementById('th-auto').classList.add('on');autoTimer=setI
   nameEl.textContent = saved;
   subEl.textContent  = savedSub;
   document.title     = saved;
-  iconEl.textContent = saved.slice(0,2).toUpperCase();
+  applySbIcon();
   const heroEl=document.getElementById('lt-hero-name');
   if(heroEl)heroEl.textContent=saved;
 
@@ -3227,7 +3266,7 @@ if(autoOn){document.getElementById('th-auto').classList.add('on');autoTimer=setI
     nameEl.textContent=val;
     S.set('appName',val);
     document.title=val;
-    iconEl.textContent=val.slice(0,2).toUpperCase();
+    applySbIcon();
     const h=document.getElementById('lt-hero-name');
     if(h){h.textContent=val;if(window._hackerLoop)setTimeout(_hackerLoop,200);}
   }
@@ -3917,6 +3956,32 @@ function updateWelcome(){
   if(av)av.textContent=(profileData.displayName||'A').slice(0,1).toUpperCase();
 }
 
+// ===== SIDEBAR ICON =====
+function getSbWeatherIcon(code){
+  if(code===0)return '<span class="wani-sun">☀️</span>';
+  if(code<=2)return '<span class="wani-cloud">⛅</span>';
+  if(code===3)return '<span class="wani-cloud">☁️</span>';
+  if(code<=48)return '<span class="wani-fog">🌫️</span>';
+  if(code<=67)return '<span class="wani-rain">🌧️</span>';
+  if(code<=77)return '<span class="wani-snow">❄️</span>';
+  if(code<=82)return '<span class="wani-rain">🌦️</span>';
+  return '<span class="wani-thunder">⛈️</span>';
+}
+function applySbIcon(){
+  const icon=profileData.sbIcon||'initials';
+  const el=document.getElementById('sb-icon-txt');
+  if(!el)return;
+  if(icon==='initials'){
+    const name=S.get('appName','Life Tracker');
+    const parts=name.trim().split(/\s+/);
+    el.textContent=parts.length>=2?(parts[0][0]+parts[1][0]).toUpperCase():name.slice(0,2).toUpperCase();
+    el.style.fontSize='';
+  }else{
+    el.textContent=icon;
+    el.style.fontSize='20px';
+  }
+}
+
 // ===== WEATHER =====
 let _weatherPref=S.get('weatherPref',null); // 'on','off', null=ask
 function initWeather(){
@@ -3943,9 +4008,9 @@ async function fetchWeather(){
     document.getElementById('w-temp').textContent=Math.round(cw.temperature)+'°C';
     document.getElementById('w-desc').textContent=wDesc;
     document.getElementById('w-meta').textContent='Wind '+Math.round(cw.windspeed)+' km/h';
-    // Sidebar weather chip
-    const chip=document.getElementById('sb-weather-chip');
-    if(chip){chip.style.display='flex';document.getElementById('swc-icon').textContent=wIcon;document.getElementById('swc-temp').textContent=Math.round(cw.temperature)+'°C';document.getElementById('swc-desc').textContent=wDesc;}
+    // Sidebar clock weather row
+    const clkW=document.getElementById('sb-clk-weather');
+    if(clkW){clkW.style.display='flex';document.getElementById('swc-icon').innerHTML=getSbWeatherIcon(wc);document.getElementById('swc-temp').textContent=Math.round(cw.temperature)+'°C';document.getElementById('swc-desc').textContent=wDesc;}
     // Reverse geocode city (best effort)
     try{
       const gr=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
@@ -4005,6 +4070,9 @@ function renderSettings(){
     if(!customExpCat.length)exp.innerHTML='<span style="font-size:11px;color:var(--muted)">No custom categories yet. Type a name below and click + Add.</span>';
     else exp.innerHTML=customExpCat.map(c=>`<div class="ccat-chip" style="border-color:${c.col}40;color:${c.col}">💰 ${c.label}<button class="ccat-del" data-dce="${c.id}">✕</button></div>`).join('');
   }
+  // Sidebar icon picker — highlight active
+  const curIcon=profileData.sbIcon||'initials';
+  document.querySelectorAll('.si-opt').forEach(b=>b.classList.toggle('active',b.dataset.si===curIcon));
   // Section names
   const snFields={habits:'sn-habits',tasks:'sn-tasks',goals:'sn-goals',evbday:'sn-evbday'};
   Object.entries(snFields).forEach(([k,id])=>{const el=document.getElementById(id);if(el)el.value=sectionNames[k]||'';});
