@@ -551,11 +551,36 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
 .ccat-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px 4px 8px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--border);background:rgba(255,255,255,.04)}
 .ccat-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:10px;padding:0;line-height:1}
 .ccat-del:hover{color:var(--danger)}
-/* finance widget */
-.fw-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
-.fw-stat{text-align:center;padding:9px 6px;background:rgba(255,255,255,.03);border-radius:8px;border:1px solid var(--border)}
-.fw-sv{font-size:14px;font-weight:800}
-.fw-sl{font-size:9px;color:var(--muted);margin-top:1px}
+/* WELCOME BANNER RING */
+.wb-ring-wrap{position:relative;width:62px;height:62px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.wb-ring-pct{position:absolute;font-size:12px;font-weight:900;color:#fff;text-align:center;line-height:1}
+.wb-ring-lbl{font-size:7px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
+/* FINANCE WIDGET REDESIGN */
+.fw-trio{display:grid;grid-template-columns:1fr 110px 1fr;gap:10px;margin-top:12px;align-items:center}
+.fw-side{background:rgba(255,255,255,.04);border-radius:12px;padding:11px 13px;border:1px solid rgba(255,255,255,.07)}
+.fw-side.inc{border-color:rgba(16,185,129,.25);background:rgba(16,185,129,.06)}
+.fw-side.exp{border-color:rgba(248,113,113,.25);background:rgba(248,113,113,.06)}
+.fw-side-arrow{font-size:22px;font-weight:900;line-height:1;margin-bottom:3px}
+.fw-side.inc .fw-side-arrow{color:#10b981}
+.fw-side.exp .fw-side-arrow{color:#f87171}
+.fw-side-lbl{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:3px}
+.fw-side-val{font-size:15px;font-weight:900}
+.fw-side.inc .fw-side-val{color:#10b981}
+.fw-side.exp .fw-side-val{color:#f87171}
+.fw-center{text-align:center}
+.fw-center-lbl{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px}
+.fw-balance{font-size:22px;font-weight:900;letter-spacing:-.5px;margin-bottom:8px}
+.fw-bar-track{height:7px;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden;display:flex;gap:1px}
+.fw-bar-i{background:linear-gradient(90deg,#10b981,#34d399);border-radius:4px 0 0 4px;height:100%;transition:width .5s ease;min-width:0}
+.fw-bar-e{background:linear-gradient(90deg,#ef4444,#f87171);border-radius:0 4px 4px 0;height:100%;transition:width .5s ease;min-width:0}
+.fw-bar-labels{display:flex;justify-content:space-between;margin-top:4px}
+.fw-bar-lbl{font-size:8px;color:var(--muted);font-weight:600}
+/* fw-tx list */
+.fw-tx-list{margin-top:10px;border-top:1px solid var(--border);padding-top:8px}
+.fw-tx-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.fw-tx-ico{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.fw-tx-name{font-size:11px;font-weight:600;color:var(--text);flex:1}
+.fw-tx-amt{font-size:12px;font-weight:800}
 /* summary net balance */
 .net-pos{color:#10b981!important}.net-neg{color:#f87171!important}
 /* currency grid */
@@ -787,7 +812,19 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
         <div class="welcome-greeting" id="welcome-greeting">Good morning, Admin! 👋</div>
         <div class="welcome-sub" id="welcome-sub">Loading date...</div>
       </div>
-      <div class="welcome-avatar" id="welcome-avatar">A</div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="wb-ring-wrap">
+          <svg width="62" height="62" viewBox="0 0 62 62">
+            <circle cx="31" cy="31" r="25" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="5"/>
+            <circle id="wb-rc" cx="31" cy="31" r="25" fill="none" stroke="url(#wb-rg)" stroke-width="5"
+              stroke-linecap="round" stroke-dasharray="157" stroke-dashoffset="157"
+              transform="rotate(-90 31 31)" style="transition:stroke-dashoffset .6s ease"/>
+            <defs><linearGradient id="wb-rg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#a78bfa"/><stop offset="100%" stop-color="#60a5fa"/></linearGradient></defs>
+          </svg>
+          <div class="wb-ring-pct"><span id="wb-pct">0%</span><div class="wb-ring-lbl">today</div></div>
+        </div>
+        <div class="welcome-avatar" id="welcome-avatar">A</div>
+      </div>
     </div>
 
     <!-- BIRTHDAY CELEBRATION BANNER (shown when today is someone's birthday) -->
@@ -801,31 +838,9 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
       <button class="bday-x" id="bday-dismiss">✕</button>
     </div>
 
-    <!-- WEATHER (always at top, not draggable) -->
-    <div class="weather-card" id="weather-card" style="display:none">
-      <div class="w-icon" id="w-icon">🌤</div>
-      <div>
-        <div style="display:flex;align-items:baseline;gap:8px">
-          <div class="w-temp" id="w-temp">--°C</div>
-          <div class="w-desc" id="w-desc">Loading...</div>
-        </div>
-        <div class="w-meta" id="w-meta">Wind -- km/h · Humidity --%</div>
-        <div class="w-loc" id="w-loc">📍 Detecting location...</div>
-      </div>
-      <button class="btn btn-g btn-sm" id="w-refresh" style="margin-left:auto" title="Refresh weather">🔄</button>
-    </div>
-    <div id="weather-ask" class="card" style="margin-bottom:10px;padding:10px 14px;display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-        <div>
-          <div style="font-size:12px;font-weight:700">🌦 Show Weather?</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:2px">Allow location access to see current weather</div>
-        </div>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-g btn-sm" id="w-deny">No thanks</button>
-          <button class="btn btn-p btn-sm" id="w-allow">Allow 📍</button>
-        </div>
-      </div>
-    </div>
+    <!-- hidden weather elements keep JS working; display in sidebar only -->
+    <div id="weather-card" style="display:none"><div id="w-icon"></div><div id="w-temp"></div><div id="w-desc"></div><div id="w-meta"></div><div id="w-loc"></div></div>
+    <div id="weather-ask" style="display:none"><button id="w-deny"></button><button id="w-allow"></button></div>
 
     <!-- DRAG ZONE: reorderable dashboard sections -->
     <div id="daily-drag-zone">
@@ -853,11 +868,25 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
               <button class="btn btn-g btn-sm" data-vl="finance" style="font-size:10px">Full View →</button>
             </div>
           </div>
-          <div class="fw-stats">
-            <div class="fw-stat"><div class="fw-sv" id="fw-inc" style="color:#10b981">0</div><div class="fw-sl">Income</div></div>
-            <div class="fw-stat"><div class="fw-sv" id="fw-exp" style="color:#f87171">0</div><div class="fw-sl">Expenses</div></div>
-            <div class="fw-stat"><div class="fw-sv" id="fw-net">0</div><div class="fw-sl">Net Balance</div></div>
+          <div class="fw-trio">
+            <div class="fw-side inc">
+              <div class="fw-side-arrow">↑</div>
+              <div class="fw-side-lbl">Income</div>
+              <div class="fw-side-val" id="fw-inc">0</div>
+            </div>
+            <div class="fw-center">
+              <div class="fw-center-lbl">Balance</div>
+              <div class="fw-balance" id="fw-net">+0</div>
+              <div class="fw-bar-track"><div class="fw-bar-i" id="fw-bar-i" style="width:50%"></div><div class="fw-bar-e" id="fw-bar-e" style="width:50%"></div></div>
+              <div class="fw-bar-labels"><span class="fw-bar-lbl" style="color:#10b981">in</span><span class="fw-bar-lbl" style="color:#f87171">out</span></div>
+            </div>
+            <div class="fw-side exp">
+              <div class="fw-side-arrow">↓</div>
+              <div class="fw-side-lbl">Expenses</div>
+              <div class="fw-side-val" id="fw-exp">0</div>
+            </div>
           </div>
+          <div class="fw-tx-list" id="fw-tx"></div>
         </div>
       </div>
 
@@ -1757,6 +1786,10 @@ function renderSB(){
   const td=today(),score=dayScore(td),log=getLog(td);
   document.getElementById('sb-rc').style.strokeDashoffset=195-195*(score/100);
   document.getElementById('sb-pct').textContent=score+'%';
+  const wbRc=document.getElementById('wb-rc');
+  const wbPct=document.getElementById('wb-pct');
+  if(wbRc)wbRc.style.strokeDashoffset=157-157*(score/100);
+  if(wbPct)wbPct.textContent=score+'%';
   document.getElementById('sb-h').textContent=habits.filter(h=>log.habits[h.id]).length;
   document.getElementById('sb-t').textContent=tasks.filter(t=>t.date===td&&log.tasks[t.id]).length;
   document.getElementById('sb-sk').textContent=bestStreak();
@@ -2245,7 +2278,7 @@ function showFloatNotif(id,icon,title,sub,cls,labelTxt){
   const lbl=labelTxt||({'fn-blue':'Event','fn-red':'Urgent','fn-orange':'Warning','fn-pink':'Birthday'}[cls||'fn-blue']||'Alert');
   el.innerHTML=`<div class="fnotif-dot"></div><div class="fnotif-icon-wrap">${icon}</div><div class="fnotif-body"><div class="fnotif-label">${lbl}</div><div class="fnotif-title">${title}</div>${sub?`<div class="fnotif-sub">${sub}</div>`:''}</div><button class="fnotif-x" data-fn="${id}">✕</button>`;
   stack.appendChild(el);
-  setTimeout(()=>dismissFloatNotif(id),10000); // auto-dismiss after 10s
+  setTimeout(()=>dismissFloatNotif(id),5000); // auto-dismiss after 5s
 }
 function dismissFloatNotif(id){
   const el=document.getElementById('fn-'+id);
@@ -3033,11 +3066,16 @@ function renderFinanceWidget(){
   const inc=todayTx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
   const exp=todayTx.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
   const net=inc-exp;
+  const total=inc+exp||1;
   document.getElementById('fw-inc').textContent=currSym+' '+fmtMoney(inc);
   document.getElementById('fw-exp').textContent=currSym+' '+fmtMoney(exp);
   const nEl=document.getElementById('fw-net');
-  nEl.textContent=(net>=0?'+':'')+' '+currSym+' '+fmtMoney(net);
-  nEl.className='fw-sv '+(net>0?'net-pos':net<0?'net-neg':'');
+  nEl.textContent=(net>=0?'+ ':'')+currSym+' '+fmtMoney(Math.abs(net));
+  nEl.className='fw-balance '+(net>0?'net-pos':net<0?'net-neg':'');
+  const barI=document.getElementById('fw-bar-i');
+  const barE=document.getElementById('fw-bar-e');
+  if(barI)barI.style.width=Math.round(inc/total*100)+'%';
+  if(barE)barE.style.width=Math.round(exp/total*100)+'%';
   const fwTx=document.getElementById('fw-tx');
   if(!fwTx)return;
   if(todayTx.length){
@@ -3048,14 +3086,14 @@ function renderFinanceWidget(){
       const lbl=_finLabel(tx);
       const icon=lbl.split(' ')[0];
       const name=lbl.slice(lbl.indexOf(' ')+1);
-      return `<div class="f-tx-item" style="padding:6px 0;border-bottom:1px solid var(--border)">
-        <div class="f-tx-icon" style="background:${col}18;width:26px;height:26px;font-size:12px">${icon}</div>
-        <div class="f-tx-info"><div class="f-tx-name">${name}${tx.note?' · '+tx.note:''}</div></div>
-        <div class="f-tx-amt" style="color:${col};font-size:12px">${isInc?'+':'−'}${fmtMoney(tx.amount)}</div>
+      return `<div class="fw-tx-row">
+        <div class="fw-tx-ico" style="background:${col}20">${icon}</div>
+        <div class="fw-tx-name">${name}${tx.note?' · '+tx.note:''}</div>
+        <div class="fw-tx-amt" style="color:${col}">${isInc?'+':'−'}${currSym} ${fmtMoney(tx.amount)}</div>
       </div>`;
     }).join('');
-  } else {
-    fwTx.innerHTML='<div style="font-size:10px;color:var(--muted);text-align:center;padding:6px 0">No transactions today yet.</div>';
+  }else{
+    fwTx.innerHTML='<div style="font-size:11px;color:var(--muted);text-align:center;padding:10px 0;opacity:.6">No transactions today — tap + Income or − Expense</div>';
   }
 }
 
@@ -3999,16 +4037,12 @@ function applySbIcon(){
 // ===== WEATHER =====
 let _weatherPref=S.get('weatherPref',null); // 'on','off', null=ask
 function initWeather(){
+  // Auto-fetch weather (sidebar only); no dashboard prompt needed
   if(_weatherPref==='off')return;
-  if(_weatherPref==='on'){fetchWeather();return;}
-  const ask=document.getElementById('weather-ask');
-  if(ask)ask.style.display='';
+  fetchWeather();
 }
 async function fetchWeather(){
-  const card=document.getElementById('weather-card');
-  const ask=document.getElementById('weather-ask');
-  if(ask)ask.style.display='none';
-  if(card)card.style.display='';
+  // weather-card is hidden in dashboard; only sidebar clock updates
   try{
     const pos=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{timeout:8000}));
     const {latitude:lat,longitude:lon}=pos.coords;
@@ -4035,7 +4069,6 @@ async function fetchWeather(){
     }catch{}
     _weatherPref='on';S.set('weatherPref','on');
   }catch(e){
-    if(card)card.style.display='none';
     _weatherPref='off';S.set('weatherPref','off');
   }
 }
