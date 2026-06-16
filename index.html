@@ -617,22 +617,25 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
 /* push notification stack below bug button */
 #float-notif-stack{top:62px!important}
 
-/* TIMETABLE */
-.tt-grid{overflow-x:auto;margin-top:10px}
-.tt-table{min-width:640px;width:100%;border-collapse:collapse}
-.tt-table th{font-size:10px;font-weight:700;text-align:center;padding:8px 4px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:2}
-.tt-table th.tt-time-col{width:54px;text-align:right;padding-right:8px}
-.tt-table td{border:1px solid var(--border);height:38px;vertical-align:top;position:relative;cursor:pointer;transition:background .1s;padding:0}
-.tt-table td:hover{background:rgba(var(--pa),.06)}
-.tt-time-cell{font-size:9px;color:var(--muted);text-align:right;padding:4px 8px 0 0;vertical-align:top;background:var(--card);border:none;white-space:nowrap;cursor:default}
-.tt-block{position:absolute;inset:2px;border-radius:6px;padding:2px 5px;font-size:10px;font-weight:700;color:#fff;overflow:hidden;display:flex;align-items:center;gap:3px;line-height:1.2;cursor:pointer;transition:filter .1s}
-.tt-block:hover{filter:brightness(1.2)}
-.tt-empty-day{text-align:center;padding:6px 0}
-.tt-add-btn{font-size:16px;color:var(--muted);opacity:0;display:block;text-align:center;line-height:38px}
-.tt-table td:hover .tt-add-btn{opacity:.4}
-.tt-day-today th{color:var(--pl)!important;background:rgba(var(--pa),.08)!important}
-.tt-nav{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.tt-week-lbl{font-size:12px;font-weight:700;flex:1}
+/* TIMETABLE — DAILY SCHEDULE */
+.tt-daily-wrap{margin-top:10px}
+.tt-nav{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.tt-week-lbl{font-size:13px;font-weight:800;flex:1;text-align:center;color:var(--text)}
+.tt-schedule{width:100%;border-radius:16px;overflow:hidden;border-collapse:collapse;box-shadow:0 4px 24px rgba(0,0,0,.28)}
+.tt-schedule thead th{padding:12px 16px;font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;text-align:left;border-bottom:2px solid rgba(0,0,0,.1)}
+.th-time{background:#fde68a;color:#78350f;width:140px}
+.th-act{background:#a7f3d0;color:#065f46;width:45%}
+.th-tip{background:#bfdbfe;color:#1e40af}
+.tt-row{cursor:pointer;transition:filter .15s}
+.tt-row:hover{filter:brightness(.93)}
+.tt-row td{padding:11px 16px;font-size:12px;vertical-align:middle;border-bottom:1px solid rgba(0,0,0,.06)}
+.tt-row .td-time{font-size:11px;font-weight:700;color:rgba(0,0,0,.6);white-space:nowrap;font-family:'Courier New',monospace}
+.tt-row .td-act{font-weight:700;color:rgba(0,0,0,.85);display:flex;align-items:center;gap:8px;font-size:13px}
+.tt-row .td-act span{font-size:20px;flex-shrink:0}
+.tt-row .td-tip{font-size:11px;color:rgba(0,0,0,.55);line-height:1.4}
+.tt-add-row{cursor:pointer;background:rgba(255,255,255,.025)!important;border:2px dashed rgba(255,255,255,.1)!important}
+.tt-add-row:hover{background:rgba(var(--pa),.07)!important;border-color:rgba(var(--pa),.35)!important}
+.tt-add-row td{padding:14px;text-align:center;font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.8px;text-transform:uppercase;border:none!important}
 
 /* VISION BOARD — MOODBOARD COLLAGE */
 .vb-board{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:140px;gap:3px;border-radius:20px;overflow:hidden;background:#080808;margin-top:10px}
@@ -1482,17 +1485,16 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
 <!-- TIMETABLE VIEW -->
 <div class="view" id="view-timetable">
   <div class="ph">
-    <div><div class="ph-t">📋 Timetable</div><div class="ph-s">Your weekly schedule</div></div>
-    <div class="ph-a">
-      <button class="btn btn-g btn-sm" id="tt-prev">‹ Prev</button>
-      <span id="tt-week-lbl" style="font-size:11px;color:var(--muted);padding:0 6px"></span>
-      <button class="btn btn-g btn-sm" id="tt-next">Next ›</button>
-      <button class="btn btn-p btn-sm" id="tt-today-btn">Today</button>
-    </div>
+    <div><div class="ph-t">📋 Daily Timetable</div><div class="ph-s">Your day at a glance</div></div>
+    <div class="ph-a"><button class="btn btn-p btn-sm" id="tt-add-top">+ Add Block</button></div>
   </div>
-  <div class="card" style="padding:12px;overflow:hidden">
-    <div class="tt-grid"><div id="tt-table-wrap"></div></div>
+  <div class="tt-nav">
+    <button class="btn btn-g btn-sm" id="tt-prev">‹</button>
+    <span id="tt-week-lbl" class="tt-week-lbl"></span>
+    <button class="btn btn-g btn-sm" id="tt-next">›</button>
+    <button class="btn btn-p btn-sm" id="tt-today-btn">Today</button>
   </div>
+  <div id="tt-table-wrap"></div>
 </div>
 
 <!-- VISION BOARD VIEW -->
@@ -1509,7 +1511,10 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
   <div class="modal">
     <div class="modal-t" id="tt-modal-title">Add Schedule Block</div>
     <input type="hidden" id="tt-edit-id">
-    <div class="fg"><label>Title</label><input class="fi" id="tt-title" placeholder="e.g. Math Class, Gym, Meeting..."></div>
+    <div style="display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:start">
+      <div class="fg"><label>Emoji</label><input class="fi" id="tt-emoji" placeholder="📚" style="font-size:22px;text-align:center;padding:6px"></div>
+      <div class="fg"><label>Activity</label><input class="fi" id="tt-title" placeholder="e.g. Study Session, Gym, Lunch..."></div>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
       <div class="fg"><label>Day</label>
         <select class="fi" id="tt-day">
@@ -1522,7 +1527,7 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
       <div class="fg"><label>Start</label><input class="fi" type="time" id="tt-start" value="09:00"></div>
       <div class="fg"><label>End</label><input class="fi" type="time" id="tt-end" value="10:00"></div>
     </div>
-    <div class="fg"><label>Note</label><input class="fi" id="tt-note" placeholder="Optional note..."></div>
+    <div class="fg"><label>Focus / Tips</label><input class="fi" id="tt-note" placeholder="e.g. Stay focused, No phone, Drink water..."></div>
     <div class="fg"><label>Color</label>
       <div class="clr-row" id="tt-clrs">
         <div class="clr on" style="background:#7c3aed" data-c="#7c3aed"></div>
@@ -2361,17 +2366,18 @@ document.addEventListener('click',function(e){
   if(id==='tt-prev'){_ttWeekOff--;renderTimetable();return;}
   if(id==='tt-next'){_ttWeekOff++;renderTimetable();return;}
   if(id==='tt-today-btn'){_ttWeekOff=0;renderTimetable();return;}
-  const ttCell=t.closest('td[data-day][data-h]');
-  if(ttCell&&document.getElementById('view-timetable')?.classList.contains('on')){
-    const ttBlk=t.closest('[data-ttid]');
-    if(ttBlk){openTTModal(null,null,ttBlk.dataset.ttid);}
-    else{openTTModal(parseInt(ttCell.dataset.day),parseInt(ttCell.dataset.h));}
-    return;
+  if(id==='tt-add-top'||t.closest('#tt-add-row')){
+    const d=new Date();d.setDate(d.getDate()+_ttWeekOff);
+    openTTModal(d.getDay());return;
+  }
+  const ttRow=t.closest('tr[data-ttid]');
+  if(ttRow&&document.getElementById('view-timetable')?.classList.contains('on')){
+    openTTModal(null,null,ttRow.dataset.ttid);return;
   }
   const ttClr=t.closest('#tt-clrs .clr');
   if(ttClr){_selTTColor=ttClr.dataset.c;document.querySelectorAll('#tt-clrs .clr').forEach(c=>c.classList.toggle('on',c.dataset.c===_selTTColor));return;}
   // VISION BOARD
-  if(id==='vb-add-btn'||id==='vb-add-btn2'||id==='vb-add-inline'){openVBModal();return;}
+  if(id==='vb-add-btn'||id==='vb-add-btn2'||t.closest('#vb-add-inline')){openVBModal();return;}
   if(id==='vb-modal-save'){saveVBItem();return;}
   if(id==='vb-modal-cancel'){closeM('vb-modal');_vbEditId=null;return;}
   if(id==='vb-modal-del'){deleteVBItem();return;}
@@ -4255,46 +4261,45 @@ function saveDragOrder(){
 const TT_DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const TT_HOURS=Array.from({length:17},(_,i)=>i+6); // 6am to 10pm
 
+const TT_ROW_BG=['#fff9f0','#fce7f3','#ecfdf5','#eff6ff','#fdf4ff','#fff7ed','#f0fdfa','#fefce8'];
+
 function renderTimetable(){
   const now=new Date();
-  const weekStart=new Date(now);
-  weekStart.setDate(now.getDate()-now.getDay()+_ttWeekOff*7);
-  weekStart.setHours(0,0,0,0);
-  const days=TT_DAYS.map((_,i)=>{const d=new Date(weekStart);d.setDate(weekStart.getDate()+i);return d;});
+  const sel=new Date(now);
+  sel.setDate(now.getDate()+_ttWeekOff);
+  sel.setHours(0,0,0,0);
+  const isToday=sel.toDateString()===now.toDateString();
   const lbl=document.getElementById('tt-week-lbl');
-  if(lbl){
-    const s=days[0],e=days[6];
-    lbl.textContent=s.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' – '+e.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-  }
+  if(lbl)lbl.textContent=(isToday?'📅 Today — ':'')+sel.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
   const wrap=document.getElementById('tt-table-wrap');
   if(!wrap)return;
-  const todayDay=new Date().getDay();
-  let html='<table class="tt-table"><thead><tr><th class="tt-time-col">Time</th>';
-  days.forEach((d,i)=>{
-    const isToday=d.toDateString()===new Date().toDateString();
-    html+=`<th style="${isToday?'color:var(--pl);background:rgba(var(--pa),.1)':''}">${TT_DAYS[d.getDay()]}<br><span style="font-size:14px;font-weight:800;color:${isToday?'var(--pl)':'var(--text)'}">${d.getDate()}</span></th>`;
-  });
-  html+='</tr></thead><tbody>';
-  TT_HOURS.forEach(h=>{
-    const hStr=h<12?h+':00 AM':h===12?'12:00 PM':(h-12)+':00 PM';
-    html+=`<tr><td class="tt-time-cell">${hStr}</td>`;
-    days.forEach(d=>{
-      const dayIdx=d.getDay();
-      const dateStr=d.toISOString().slice(0,10);
-      const blocks=timetable.filter(b=>b.day===dayIdx&&parseInt(b.start)===h);
-      if(blocks.length){
-        html+=`<td data-day="${dayIdx}" data-h="${h}" data-date="${dateStr}" style="padding:0">`;
-        blocks.forEach(b=>{
-          const dur=Math.max(1,parseInt(b.end||b.start+1)-parseInt(b.start));
-          html+=`<div class="tt-block" style="background:${b.color||'#7c3aed'}" data-ttid="${b.id}" title="${b.note||b.title}">${b.title}${b.note?'<span style="opacity:.7;margin-left:3px;font-size:9px">'+b.note+'</span>':''}</div>`;
-        });
-        html+='</td>';
-      }else{
-        html+=`<td data-day="${dayIdx}" data-h="${h}" data-date="${dateStr}"><span class="tt-add-btn" title="Add block">+</span></td>`;
-      }
+  const dayIdx=sel.getDay();
+  const blocks=[...timetable.filter(b=>b.day===dayIdx)].sort((a,b)=>a.start-b.start);
+  const fmt=h=>{const hh=h<12?h+':00 AM':h===12?'12:00 PM':(h-12)+':00 PM';return hh;};
+  let html=`<table class="tt-schedule"><thead><tr>
+    <th class="th-time">⏰ Time</th>
+    <th class="th-act">☀️ Activity</th>
+    <th class="th-tip">💡 Focus / Tips</th>
+  </tr></thead><tbody>`;
+  if(!blocks.length){
+    html+=`<tr><td colspan="3" style="padding:52px;text-align:center;background:#f9f7f4;color:#aaa">
+      <div style="font-size:36px;margin-bottom:10px">📋</div>
+      <div style="font-size:13px;font-weight:700;color:#888">No schedule for ${sel.toLocaleDateString('en-US',{weekday:'long'})}</div>
+      <div style="font-size:11px;margin-top:4px">Click <b>+ Add Block</b> to start building your day</div>
+    </td></tr>`;
+  }else{
+    blocks.forEach((b,i)=>{
+      const bg=TT_ROW_BG[i%TT_ROW_BG.length];
+      const startH=Math.floor(b.start),endH=b.end?Math.floor(b.end):null;
+      const timeStr=fmt(startH)+(endH?` – ${fmt(endH)}`:'');
+      html+=`<tr class="tt-row" data-ttid="${b.id}" style="background:${bg}">
+        <td class="td-time">${timeStr}</td>
+        <td class="td-act"><span>${b.emoji||'📌'}</span>${b.title}</td>
+        <td class="td-tip">${b.note||'—'}</td>
+      </tr>`;
     });
-    html+='</tr>';
-  });
+  }
+  html+=`<tr class="tt-add-row" id="tt-add-row"><td colspan="3">＋ Add Block</td></tr>`;
   html+='</tbody></table>';
   wrap.innerHTML=html;
 }
@@ -4307,6 +4312,7 @@ function openTTModal(day,h,id){
   if(id){
     const b=timetable.find(x=>x.id===id);
     if(!b)return;
+    document.getElementById('tt-emoji').value=b.emoji||'📌';
     document.getElementById('tt-title').value=b.title||'';
     document.getElementById('tt-day').value=b.day;
     document.getElementById('tt-start').value=String(b.start).padStart(2,'0')+':00';
@@ -4315,6 +4321,7 @@ function openTTModal(day,h,id){
     _selTTColor=b.color||'#7c3aed';
     delBtn.style.display='';
   }else{
+    document.getElementById('tt-emoji').value='📌';
     document.getElementById('tt-title').value='';
     document.getElementById('tt-day').value=day!==undefined?day:new Date().getDay();
     document.getElementById('tt-start').value=String(h||9).padStart(2,'0')+':00';
@@ -4335,11 +4342,12 @@ function saveTTBlock(){
   const start=parseInt(startVal.split(':')[0]);
   const end=parseInt(endVal.split(':')[0]);
   const note=document.getElementById('tt-note').value.trim();
+  const emoji=document.getElementById('tt-emoji').value.trim()||'📌';
   if(_ttEditId){
     const idx=timetable.findIndex(b=>b.id===_ttEditId);
-    if(idx>=0)timetable[idx]={...timetable[idx],title,day,start,end,note,color:_selTTColor};
+    if(idx>=0)timetable[idx]={...timetable[idx],emoji,title,day,start,end,note,color:_selTTColor};
   }else{
-    timetable.push({id:'tt_'+Date.now(),title,day,start,end,note,color:_selTTColor});
+    timetable.push({id:'tt_'+Date.now(),emoji,title,day,start,end,note,color:_selTTColor});
   }
   S.set('timetable',timetable);
   closeM('tt-modal');_ttEditId=null;
