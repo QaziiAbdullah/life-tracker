@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Life Tracker — Qazi Abdullah</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#0a0a14;--card:#12121f;--card2:#1a1a2e;--sb:#0d0d1c;
@@ -15,14 +18,14 @@
 body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;font-size:13px}
 
 /* SIDEBAR */
-.sb{width:240px;min-height:100vh;background:var(--sb);border-right:1px solid var(--border);position:fixed;left:0;top:0;bottom:0;display:flex;flex-direction:column;z-index:50}
+.sb{width:240px;min-height:100vh;background:var(--sb);border-right:1px solid rgba(255,255,255,.07);position:fixed;left:0;top:0;bottom:0;display:flex;flex-direction:column;z-index:50;box-shadow:4px 0 24px rgba(0,0,0,.25)}
 .sb-logo{padding:14px 14px 10px;border-bottom:1px solid var(--border)}
 .sb-brand{display:flex;align-items:center;gap:9px;margin-bottom:8px}
 .sb-icon{width:32px;height:32px;background:linear-gradient(135deg,#7c3aed,#3b82f6);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;flex-shrink:0}
 .sb-sub{font-size:9px;color:var(--muted)}
-.sb-clock{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:6px 10px;display:flex;justify-content:space-between;align-items:center}
+.sb-clock{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:7px 12px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.2)}
 .sb-date{font-size:10px;color:var(--muted)}
-.sb-time{font-size:11px;font-weight:700;color:var(--pl);font-variant-numeric:tabular-nums}
+.sb-time{font-size:13px;font-weight:700;color:var(--pl);letter-spacing:1px}
 
 .sb-ring{display:flex;flex-direction:column;align-items:center;padding:14px 0 8px;border-bottom:1px solid var(--border)}
 .sb-rs{font-size:9px;color:var(--muted);margin-top:3px}
@@ -34,10 +37,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
 .sb-nav{padding:8px 8px;flex:1;overflow-y:auto}
 .nl{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);padding:0 8px;margin:10px 0 4px}
-.ni{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;cursor:pointer;color:var(--muted);font-size:12px;font-weight:500;margin-bottom:2px;transition:all .15s;user-select:none}
-.ni:hover{background:rgba(var(--pa),.15);color:var(--pl)}
-.ni.on{background:rgba(var(--pa),.22);color:var(--pl);font-weight:600}
-.nd{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+.ni{display:flex;align-items:center;gap:8px;padding:8px 11px;border-radius:10px;cursor:pointer;color:var(--muted);font-size:12px;font-weight:500;margin-bottom:2px;transition:all .15s;user-select:none}
+.ni:hover{background:rgba(var(--pa),.13);color:var(--pl)}
+.ni.on{background:linear-gradient(90deg,rgba(var(--pa),.28),rgba(var(--pa),.12));color:var(--pl);font-weight:700;border-left:2px solid var(--pl);margin-left:-2px}
+.nd{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
 
 /* EDITABLE NAME */
 .sb-name-wrap{display:flex;align-items:center;gap:4px;position:relative}
@@ -91,8 +94,8 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
 .btn-sm{padding:4px 9px;font-size:11px}
 
 /* STAT CARDS */
-.srow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
-.sc{background:var(--card);border-radius:12px;padding:14px 14px 12px;border:1px solid var(--border);position:relative;overflow:hidden}
+.srow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.sc{background:var(--card);border-radius:16px;padding:16px 16px 14px;border:1px solid rgba(255,255,255,.08);position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.25),0 8px 24px rgba(0,0,0,.1)}
 .sc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
 .sc.cp::before{background:linear-gradient(90deg,#7c3aed,#a78bfa)}
 .sc.cg::before{background:linear-gradient(90deg,#059669,#34d399)}
@@ -104,22 +107,22 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
 .sc-sub{font-size:10px;color:var(--muted);margin-top:5px}
 
 /* cards */
-.card{background:var(--card);border-radius:13px;padding:16px;border:1px solid var(--border);margin-bottom:14px}
+.card{background:var(--card);border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,.08);margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.25),0 8px 24px rgba(0,0,0,.12)}
 .card-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.card-t{font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.card-t{font-size:11px;font-weight:700;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted)}
 
 /* ANALYTICS ROW */
-.an-row{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:14px}
-.an-chart{background:var(--card);border-radius:13px;padding:16px;border:1px solid var(--border)}
-.an-rings{background:var(--card);border-radius:13px;padding:16px;border:1px solid var(--border);display:flex;flex-direction:column;gap:12px}
+.an-row{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:16px}
+.an-chart{background:var(--card);border-radius:16px;padding:18px;border:1px solid rgba(255,255,255,.08);box-shadow:0 2px 8px rgba(0,0,0,.25),0 8px 24px rgba(0,0,0,.1)}
+.an-rings{background:var(--card);border-radius:16px;padding:18px;border:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.25),0 8px 24px rgba(0,0,0,.1)}
 .ring-item{display:flex;align-items:center;gap:10px}
 .ring-lbl{flex:1}
 .ring-name{font-size:12px;font-weight:600}
 .ring-sub{font-size:10px;color:var(--muted)}
 
 /* PRIORITY SECTION */
-.pri-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
-.pri-col{background:var(--card);border-radius:13px;border:1px solid var(--border);overflow:hidden}
+.pri-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px}
+.pri-col{background:var(--card);border-radius:16px;border:1px solid rgba(255,255,255,.08);overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.2)}
 .pri-hd{padding:10px 14px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
 .pri-hd.h{background:rgba(239,68,68,.08);color:#f87171;border-bottom-color:rgba(239,68,68,.15)}
 .pri-hd.m{background:rgba(245,158,11,.08);color:#fbbf24;border-bottom-color:rgba(245,158,11,.15)}
@@ -263,7 +266,7 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
 /* OVERLAY / MODAL */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:200;display:none;align-items:center;justify-content:center}
 .overlay.open{display:flex}
-.modal{background:var(--card2);border-radius:15px;padding:24px;width:400px;max-width:95vw;border:1px solid var(--border);animation:fi .2s ease}
+.modal{background:var(--card2);border-radius:18px;padding:26px;width:410px;max-width:95vw;border:1px solid rgba(255,255,255,.1);animation:fi .2s ease;box-shadow:0 24px 64px rgba(0,0,0,.6),0 8px 24px rgba(0,0,0,.3)}
 .modal-t{font-size:16px;font-weight:700;margin-bottom:16px}
 .fg{margin-bottom:11px}
 .fg label{font-size:10px;color:var(--muted);display:block;margin-bottom:4px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
@@ -397,10 +400,10 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
 .login-err{color:var(--danger);font-size:11px;text-align:center;margin-top:8px;display:none}
 
 /* WELCOME BANNER */
-.welcome-banner{background:linear-gradient(135deg,rgba(var(--pa),.18),rgba(var(--pa),.06));border:1px solid rgba(var(--pa),.25);border-radius:14px;padding:16px 20px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.welcome-banner{background:linear-gradient(135deg,rgba(var(--pa),.2),rgba(var(--pa),.07));border:1px solid rgba(var(--pa),.22);border-radius:18px;padding:18px 22px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 4px 20px rgba(var(--pa),.1)}
 .welcome-greeting{font-size:22px;font-weight:800;letter-spacing:-.4px;background:linear-gradient(90deg,var(--pl),var(--primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .welcome-sub{font-size:11px;color:var(--muted);margin-top:3px}
-.welcome-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#3b82f6);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;flex-shrink:0}
+.welcome-avatar{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,var(--primary),#3b82f6);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;flex-shrink:0;box-shadow:0 4px 12px rgba(var(--pa),.4)}
 
 /* WEATHER WIDGET */
 .weather-card{background:linear-gradient(135deg,rgba(3,105,161,.15),rgba(6,182,212,.08));border:1px solid rgba(14,165,233,.2);border-radius:13px;padding:13px 16px;margin-bottom:14px;display:flex;align-items:center;gap:14px}
@@ -425,24 +428,24 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
 .ccat-add-row input{flex:1;background:var(--card2);border:1px solid var(--border);border-radius:7px;padding:6px 10px;color:var(--text);font-size:11px;outline:none}
 .ccat-add-row input:focus{border-color:var(--primary)}
 
-/* EVENT BANNER */
-.event-banner{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,rgba(59,130,246,.15),rgba(6,182,212,.08));border:1px solid rgba(59,130,246,.3);border-radius:12px;padding:12px 16px;margin-bottom:14px;position:relative}
-.event-banner-icon{font-size:26px;flex-shrink:0}
-.event-banner-txt{flex:1}
-.event-banner-title{font-size:14px;font-weight:700;color:#60a5fa}
-.event-banner-sub{font-size:11px;color:var(--muted);margin-top:2px}
-.event-banner-x{background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px;padding:4px 6px;border-radius:6px;line-height:1}
-.event-banner-x:hover{color:var(--text)}
-
-/* GOAL DEADLINE ALERT */
-.goal-deadline-alerts{margin-bottom:14px}
-.gda-item{display:flex;align-items:center;gap:10px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:10px 14px;margin-bottom:6px;animation:glowPulse 2s ease-in-out infinite}
-.gda-item.warn-1{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3)}
-.gda-icon{font-size:22px;flex-shrink:0}
-.gda-content{flex:1}
-.gda-title{font-size:12px;font-weight:700;color:#f87171}
-.gda-item.warn-1 .gda-title{color:#fbbf24}
-.gda-sub{font-size:10px;color:var(--muted);margin-top:1px}
+/* FLOATING NOTIFICATION STACK */
+#float-notif-stack{position:fixed;top:16px;right:16px;z-index:1500;display:flex;flex-direction:column;gap:8px;max-width:296px;pointer-events:none}
+.fnotif{pointer-events:all;background:rgba(18,18,31,.96);border:1px solid rgba(255,255,255,.1);border-radius:13px;padding:11px 12px 11px 16px;display:flex;align-items:flex-start;gap:9px;box-shadow:0 8px 32px rgba(0,0,0,.55),0 2px 8px rgba(0,0,0,.3);position:relative;overflow:hidden;animation:fnotifIn .4s cubic-bezier(.34,1.4,.64,1) forwards,fnotifFloat 4s ease-in-out 0.5s infinite;backdrop-filter:blur(12px)}
+.fnotif::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px}
+.fnotif.fn-blue::before{background:linear-gradient(180deg,#3b82f6,#06b6d4)}
+.fnotif.fn-red::before{background:linear-gradient(180deg,#ef4444,#f97316)}
+.fnotif.fn-orange::before{background:linear-gradient(180deg,#f59e0b,#fbbf24)}
+.fnotif.fn-pink::before{background:linear-gradient(180deg,#f472b6,#e879f9)}
+.fnotif-icon{font-size:20px;flex-shrink:0;margin-top:0px;line-height:1}
+.fnotif-body{flex:1;min-width:0}
+.fnotif-title{font-size:11.5px;font-weight:700;color:var(--text);line-height:1.35}
+.fnotif-sub{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.4}
+.fnotif-x{background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;padding:2px 4px;border-radius:5px;flex-shrink:0;line-height:1;transition:all .12s;margin-top:-1px}
+.fnotif-x:hover{color:var(--text);background:rgba(255,255,255,.08)}
+@keyframes fnotifIn{from{opacity:0;transform:translateX(110%)}to{opacity:1;transform:translateX(0)}}
+@keyframes fnotifFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.fnotif.fnotif-out{animation:fnotifOut .28s ease forwards}
+@keyframes fnotifOut{to{opacity:0;transform:translateX(110%)}}
 
 /* ANALOG CLOCK */
 .sb-analog-wrap{padding:8px 12px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:4px}
@@ -472,8 +475,8 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
 
 /* LIFE TRACKER HERO HEADER */
 .lt-hero{text-align:center;padding:10px 0 6px;margin-bottom:14px}
-.lt-hero-title{font-size:38px;font-weight:900;letter-spacing:-1.5px;line-height:1;background:linear-gradient(135deg,#a78bfa 0%,#60a5fa 40%,#34d399 70%,#f472b6 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-size:300% 100%;animation:shimmer 4s linear infinite,heroFloat 6s ease-in-out infinite;transition:filter .2s}
-.lt-hero-title.hacking{background:linear-gradient(135deg,#00ff41 0%,#39ff14 40%,#00e5ff 70%,#00ff41 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-size:300% 100%;animation:shimmer 1s linear infinite,heroFloat 6s ease-in-out infinite;filter:drop-shadow(0 0 8px #00ff4188)}
+.lt-hero-title{font-family:'UnifrakturMaguntia',serif;font-size:44px;font-weight:normal;letter-spacing:1px;line-height:1.1;background:linear-gradient(135deg,#a78bfa 0%,#60a5fa 40%,#34d399 70%,#f472b6 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-size:300% 100%;animation:shimmer 4s linear infinite,heroFloat 6s ease-in-out infinite;transition:filter .2s}
+.lt-hero-title.hacking{font-family:'UnifrakturMaguntia',serif;background:linear-gradient(135deg,#00ff41 0%,#39ff14 40%,#00e5ff 70%,#00ff41 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-size:300% 100%;animation:shimmer 1s linear infinite,heroFloat 6s ease-in-out infinite;filter:drop-shadow(0 0 8px #00ff4188)}
 .lt-hero-sub{font-size:12px;color:var(--muted);margin-top:4px;letter-spacing:2px;text-transform:uppercase}
 @keyframes heroFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 
@@ -643,9 +646,6 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
       <div class="welcome-avatar" id="welcome-avatar">A</div>
     </div>
 
-    <!-- GOAL DEADLINE ALERTS -->
-    <div id="goal-deadline-alerts" class="goal-deadline-alerts"></div>
-
     <!-- BIRTHDAY CELEBRATION BANNER (shown when today is someone's birthday) -->
     <div id="bday-banner" style="display:none" class="bday-banner">
       <div class="bday-cake">🎂</div>
@@ -666,27 +666,6 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
       </div>
       <div class="up-strip" id="daily-bday-strip"></div>
       <div id="bday-widget-empty" style="display:none;font-size:11px;color:var(--muted);padding:6px 2px">No upcoming birthdays in the next 30 days. <span style="color:var(--pl);cursor:pointer" data-vl="birthdays">Add one →</span></div>
-    </div>
-
-    <!-- EVENT CELEBRATION BANNER (shown when today has events) -->
-    <div id="event-banner" style="display:none" class="event-banner">
-      <div class="event-banner-icon">📌</div>
-      <div class="event-banner-txt">
-        <div class="event-banner-title">Today's Events: <span id="event-banner-names"></span></div>
-        <div class="event-banner-sub" id="event-banner-sub">You have events scheduled today!</div>
-      </div>
-      <button class="event-banner-x" id="event-banner-dismiss">✕</button>
-    </div>
-
-    <!-- UPCOMING EVENTS WIDGET -->
-    <div id="event-widget" class="card" style="margin-bottom:14px">
-      <div class="card-h">
-        <div class="card-t">📌 Upcoming Events</div>
-        <button class="btn btn-p btn-sm" id="boe5">+ Add Event</button>
-        <button class="btn btn-g btn-sm" data-vl="birthdays" style="margin-left:2px">All →</button>
-      </div>
-      <div id="daily-event-strip" class="up-strip"></div>
-      <div id="event-widget-empty" style="display:none;font-size:11px;color:var(--muted);padding:6px 2px">No upcoming events. <span style="color:var(--pl);cursor:pointer" data-vl="birthdays">Add one →</span></div>
     </div>
 
     <!-- WEATHER WIDGET -->
@@ -1478,11 +1457,14 @@ function svgDonutBig(pct,c1,c2,sz=80){
 }
 
 // ===== CLOCK =====
+const _DS=['𝟘','𝟙','𝟚','𝟛','𝟜','𝟝','𝟞','𝟟','𝟠','𝟡'];
+function toDS(s){return String(s).replace(/[0-9]/g,c=>_DS[+c]);}
+
 function tick(){
   const now=new Date();
   document.getElementById('sb-date').textContent=now.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
   const h=now.getHours(),m=String(now.getMinutes()).padStart(2,'0'),ap=h>=12?'PM':'AM',h12=h%12||12;
-  document.getElementById('sb-time').textContent=h12+':'+m+' '+ap;
+  document.getElementById('sb-time').textContent=toDS(h12)+':'+toDS(m)+' '+ap;
   document.getElementById('daily-date').textContent=now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 }
 setInterval(tick,1000);tick();
@@ -1542,36 +1524,25 @@ function renderDaily(){
   if(htRing)htRing.innerHTML=svgDonutBig(htPct,'#a78bfa','#60a5fa')+'<div class="big-ring-pct" style="color:#a78bfa">'+htPct+'%</div><div class="big-ring-lbl">'+sectionNames.habits+' + '+sectionNames.tasks+'</div>';
   if(gRing)gRing.innerHTML=svgDonutBig(gPct,'#34d399','#10b981')+'<div class="big-ring-pct" style="color:#34d399">'+gPct+'%</div><div class="big-ring-lbl">'+sectionNames.goals+'</div>';
 
-  // Goal deadline alerts
-  const deadlineAlerts=document.getElementById('goal-deadline-alerts');
-  if(deadlineAlerts){
+  // Goal deadline alerts → floating notifications
+  {
     const td2=today();
     const alertGoals=goals.filter(g=>{
       if(!g.deadline)return false;
       const diff=Math.ceil((new Date(g.deadline)-new Date(td2))/(1000*60*60*24));
-      // check if goal is incomplete
       let done=false;
       if(g.type==='daily')done=!!log.goals[g.id];
       else if(g.type==='weekly')done=!!getWLog().weekGoals[g.id];
       else done=(g.current||0)>=(g.target||1);
       return !done&&diff>=0&&diff<=2;
     });
-    if(alertGoals.length){
-      deadlineAlerts.innerHTML=alertGoals.map(g=>{
-        const diff=Math.ceil((new Date(g.deadline)-new Date(td2))/(1000*60*60*24));
-        const isToday=diff===0;
-        return `<div class="gda-item${diff===1?' warn-1':''}">
-          <div class="gda-icon">${isToday?'🚨':'⚠️'}</div>
-          <div class="gda-content">
-            <div class="gda-title">Goal Deadline ${isToday?'TODAY':diff===1?'TOMORROW':'in '+diff+' days'}: ${g.name}</div>
-            <div class="gda-sub">${isToday?'Deadline is today!':diff===1?'Due tomorrow — finish it!':'Due on '+g.deadline} &nbsp;·&nbsp; ${g.type} goal</div>
-          </div>
-          <button class="btn btn-g btn-sm" data-vl="goals">View →</button>
-        </div>`;
-      }).join('');
-    }else{
-      deadlineAlerts.innerHTML='';
-    }
+    alertGoals.forEach(g=>{
+      const diff=Math.ceil((new Date(g.deadline)-new Date(td2))/(1000*60*60*24));
+      const isToday=diff===0;
+      const label='Goal Deadline '+(isToday?'TODAY':diff===1?'TOMORROW':'in '+diff+' days')+': '+g.name;
+      const sub=isToday?'Deadline is today — complete it now!':(diff===1?'Due tomorrow — finish it!':'Due on '+g.deadline+' · '+g.type+' goal');
+      showFloatNotif('gd-'+g.id,isToday?'🚨':'⚠️',label,sub,isToday?'fn-red':'fn-orange');
+    });
   }
 
   // priorities
@@ -1972,6 +1943,27 @@ function saveGoal(){
   goals.push(goal);save();closeM('gm');toast('Goal set! 🎯','s');renderAll(true);
 }
 
+// ===== FLOATING NOTIFICATIONS =====
+const _fnotifSeen=new Set();
+function showFloatNotif(id,icon,title,sub,cls){
+  if(_fnotifSeen.has(id))return;
+  _fnotifSeen.add(id);
+  const stack=document.getElementById('float-notif-stack');
+  if(!stack)return;
+  const el=document.createElement('div');
+  el.className='fnotif '+(cls||'fn-blue');
+  el.id='fn-'+id;
+  el.innerHTML=`<div class="fnotif-icon">${icon}</div><div class="fnotif-body"><div class="fnotif-title">${title}</div>${sub?`<div class="fnotif-sub">${sub}</div>`:''}</div><button class="fnotif-x" data-fn="${id}">✕</button>`;
+  stack.appendChild(el);
+}
+function dismissFloatNotif(id){
+  const el=document.getElementById('fn-'+id);
+  if(!el)return;
+  el.classList.add('fnotif-out');
+  setTimeout(()=>el.remove(),300);
+  _fnotifSeen.delete(id);
+}
+
 // ===== TOAST =====
 let _tt;
 function toast(msg,type='s'){
@@ -2048,7 +2040,7 @@ document.addEventListener('click',function(e){
   if(id==='m-prev'){monthOff--;renderMonthly();return;}
   if(id==='m-next'){monthOff++;renderMonthly();return;}
   if(id==='boe'||id==='boe2'||id==='boe3'||id==='boe4'||id==='boe5'){openEventModal(today());return;}
-  if(id==='event-banner-dismiss'){document.getElementById('event-banner').style.display='none';return;}
+  const fnBtn=t.closest('[data-fn]');if(fnBtn){dismissFloatNotif(fnBtn.dataset.fn);return;}
   if(id==='clk-prev'||id==='clk-next'){_cycleClockMode(id==='clk-next');return;}
   if(id==='set-add-inc'){
     const inp=document.getElementById('set-new-inc');
@@ -2333,39 +2325,22 @@ function renderBdayWidget(){
       if(emptyEl)emptyEl.style.display='';
     }
   }
-  // Event banner & widget
+  // Today's events → floating notification
   const todayEvs=events.filter(ev=>ev.date===today());
-  const evBanner=document.getElementById('event-banner');
-  if(evBanner){
-    if(todayEvs.length&&evBanner.style.display==='none'){
-      document.getElementById('event-banner-names').textContent=todayEvs.map(e=>e.title).join(', ');
-      document.getElementById('event-banner-sub').textContent=
-        todayEvs.length===1?`${EVTYPES[todayEvs[0].type]||'📌'} ${todayEvs[0].notes||'You have an event today!'}`
-        :`${todayEvs.length} events scheduled for today!`;
-      evBanner.style.display='flex';
-    }
+  if(todayEvs.length){
+    const names=todayEvs.map(e=>e.title).join(', ');
+    const sub=todayEvs.length===1
+      ?`${EVTYPES[todayEvs[0].type]||'📌'} ${todayEvs[0].note||'You have an event today!'}`
+      :`${todayEvs.length} events scheduled today!`;
+    showFloatNotif('ev-today','📅',"Today's Events: "+names,sub,'fn-blue');
   }
-  // Event upcoming widget
-  const estrip=document.getElementById('daily-event-strip');
-  const eEmpty=document.getElementById('event-widget-empty');
-  if(estrip){
-    const up14=events.filter(ev=>ev.date>=today()).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,8);
-    if(up14.length){
-      if(eEmpty)eEmpty.style.display='none';
-      estrip.innerHTML=up14.map(ev=>{
-        const col=ev.color||'#3b82f6';
-        const isToday=ev.date===today();
-        const diff=Math.ceil((new Date(ev.date)-new Date(today()))/(1000*60*60*24));
-        return `<div class="up-pill${isToday?' is-today':''}">
-          <div class="up-n" style="color:${col}">${ev.title.substring(0,10)}</div>
-          <div class="up-d" style="color:${isToday?'#60a5fa':col}">${isToday?'📌':diff}</div>
-          <div class="up-l">${isToday?'TODAY':'days'}</div>
-        </div>`;
-      }).join('');
-    }else{
-      estrip.innerHTML='';
-      if(eEmpty)eEmpty.style.display='';
-    }
+  // Upcoming events (next 7 days) → floating notification
+  const upEvs=events.filter(ev=>ev.date>today()).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,5);
+  if(upEvs.length){
+    const next=upEvs[0];
+    const diff=Math.ceil((new Date(next.date+' 00:00')-new Date())/(1000*60*60*24));
+    const dayStr=diff<=1?'tomorrow':'in '+diff+' days';
+    showFloatNotif('ev-upcoming','📌',upEvs.length+' Upcoming Event'+(upEvs.length>1?'s':''),`Next: ${next.title} ${dayStr}`,'fn-blue');
   }
 
   // Show alarm dot on sidebar nav if today has birthdays
@@ -3864,5 +3839,7 @@ function openEditFinance(id){
   setInterval(next, 5000); // new quote every 5 seconds
 })();
 </script>
+<!-- FLOATING NOTIFICATION STACK -->
+<div id="float-notif-stack"></div>
 </body>
 </html>
