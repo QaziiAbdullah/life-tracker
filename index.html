@@ -634,24 +634,31 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
 .tt-nav{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .tt-week-lbl{font-size:12px;font-weight:700;flex:1}
 
-/* VISION BOARD */
-.vb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
-@media(max-width:900px){.vb-grid{grid-template-columns:repeat(2,1fr)}}
-.vb-card{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.2);transition:transform .2s,box-shadow .2s;cursor:pointer}
-.vb-card:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,.3)}
-.vb-card-top{height:90px;display:flex;align-items:center;justify-content:center;font-size:44px;position:relative}
-.vb-card-top::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.3))}
-.vb-card-body{padding:12px 14px}
-.vb-card-title{font-size:13px;font-weight:800;color:var(--text);margin-bottom:3px}
-.vb-card-quote{font-size:10px;color:var(--muted);font-style:italic;line-height:1.5;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.vb-card-cat{font-size:9px;font-weight:700;padding:2px 8px;border-radius:12px;display:inline-block}
-.vb-card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
-.vb-done{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);cursor:pointer}
-.vb-done input[type=checkbox]{accent-color:var(--primary)}
-.vb-add-card{border:2px dashed rgba(255,255,255,.12);border-radius:16px;height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:all .2s;background:rgba(255,255,255,.02)}
-.vb-add-card:hover{border-color:rgba(var(--pa),.4);background:rgba(var(--pa),.05)}
-.vb-add-icon{font-size:28px;opacity:.4}
-.vb-add-lbl{font-size:11px;color:var(--muted);font-weight:600}
+/* VISION BOARD — MOODBOARD COLLAGE */
+.vb-board{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:140px;gap:3px;border-radius:20px;overflow:hidden;background:#080808;margin-top:10px}
+.vb-tile{position:relative;overflow:hidden;cursor:pointer}
+.vb-tile-bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform .5s ease}
+.vb-tile:hover .vb-tile-bg{transform:scale(1.07)}
+.vb-tile-shade{position:absolute;inset:0;background:linear-gradient(160deg,rgba(0,0,0,.1) 0%,rgba(0,0,0,.55) 100%);transition:background .3s}
+.vb-tile:hover .vb-tile-shade{background:linear-gradient(160deg,rgba(0,0,0,.0) 0%,rgba(0,0,0,.3) 100%)}
+.vb-tile-emoji{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:56px;transition:transform .5s ease;filter:drop-shadow(0 4px 16px rgba(0,0,0,.6))}
+.vb-tile:hover .vb-tile-emoji{transform:scale(1.12)}
+.vb-tile-label{position:absolute;bottom:12px;left:14px;right:14px;font-family:'Georgia',Times,serif;font-size:17px;font-style:italic;font-weight:700;color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.9);letter-spacing:.5px;line-height:1.2}
+.vb-tile-sub{position:absolute;bottom:30px;left:14px;font-size:9px;color:rgba(255,255,255,.55);letter-spacing:1.5px;text-transform:uppercase}
+.vb-tile-done-badge{position:absolute;top:10px;right:10px;background:rgba(16,185,129,.92);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.vb-tile.h2{grid-row:span 2}
+.vb-tile.w2{grid-column:span 2}
+/* Center Year Card */
+.vb-center{display:flex;flex-direction:column;align-items:center;justify-content:center;grid-row:span 2;cursor:default;background:#f0ece4;gap:1px;position:relative;overflow:hidden}
+.vb-center::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 70%,rgba(0,0,0,.06) 0%,transparent 70%)}
+.vb-center-heart{font-size:30px;animation:vcBeat 2.2s ease-in-out infinite;line-height:1;position:relative;z-index:1}
+.vb-center-year{font-family:'Georgia',Times,serif;font-size:46px;font-weight:900;color:#111;letter-spacing:-2px;line-height:1;position:relative;z-index:1}
+.vb-center-txt{font-family:'Georgia',Times,serif;font-size:13px;font-weight:700;color:#444;letter-spacing:3px;text-transform:uppercase;margin-top:4px;position:relative;z-index:1}
+@keyframes vcBeat{0%,100%{transform:scale(1)}50%{transform:scale(1.22)}}
+/* Add tile */
+.vb-add-tile{border:2px dashed rgba(255,255,255,.12);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:all .2s;background:rgba(255,255,255,.02)}
+.vb-add-tile:hover{border-color:rgba(var(--pa),.5);background:rgba(var(--pa),.06)}
+/* Modal selectors */
 .vb-cat-sel{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
 .vb-cat-pill{padding:3px 10px;border-radius:14px;font-size:10px;font-weight:700;border:1px solid var(--border);cursor:pointer;transition:all .15s;background:transparent;color:var(--muted)}
 .vb-cat-pill.on{background:var(--primary);color:#fff;border-color:var(--primary)}
@@ -1546,6 +1553,7 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
     </div>
     <div class="fg"><label>Affirmation / Quote</label><input class="fi" id="vb-quote" placeholder="I will achieve..."></div>
     <div class="fg"><label>Note</label><input class="fi" id="vb-note" placeholder="How / When / Why..."></div>
+    <div class="fg"><label>Photo URL <span style="font-size:9px;color:var(--muted);font-weight:400">(optional — paste an image link for a real photo background)</span></label><input class="fi" id="vb-img-url" placeholder="https://images.unsplash.com/..."></div>
     <div class="fg"><label>Category</label>
       <div class="vb-cat-sel" id="vb-cat-sel">
         <div class="vb-cat-pill on" data-vcat="career">💼 Career</div>
@@ -2367,8 +2375,8 @@ document.addEventListener('click',function(e){
   if(id==='vb-modal-save'){saveVBItem();return;}
   if(id==='vb-modal-cancel'){closeM('vb-modal');_vbEditId=null;return;}
   if(id==='vb-modal-del'){deleteVBItem();return;}
-  const vbCard=t.closest('.vb-card[data-vid]');
-  if(vbCard&&!t.closest('[data-vd]')){openVBModal(vbCard.dataset.vid);return;}
+  const vbCard=t.closest('.vb-tile[data-vid]');
+  if(vbCard){openVBModal(vbCard.dataset.vid);return;}
   const vbDone=t.closest('[data-vd]');
   if(vbDone){const v=visionItems.find(x=>x.id===vbDone.dataset.vd);if(v){v.done=t.checked;S.set('visionItems',visionItems);}return;}
   const vbCatPill=t.closest('#vb-cat-sel .vb-cat-pill');
@@ -4349,33 +4357,68 @@ function deleteTTBlock(){
 const VB_CATS={career:'💼',health:'💪',finance:'💰',travel:'✈️',family:'❤️',growth:'🌱',material:'🏠'};
 const VB_CAT_COLORS={career:'#7c3aed',health:'#10b981',finance:'#f59e0b',travel:'#06b6d4',family:'#f472b6',growth:'#059669',material:'#d97706'};
 
+// Background gradients per category (moody, photo-like)
+const VB_BG={
+  career:'linear-gradient(150deg,#1e1b4b 0%,#312e81 50%,#1e1b4b 100%)',
+  health:'linear-gradient(150deg,#052e16 0%,#065f46 50%,#052e16 100%)',
+  finance:'linear-gradient(150deg,#451a03 0%,#92400e 50%,#451a03 100%)',
+  travel:'linear-gradient(150deg,#0c1445 0%,#164e63 50%,#0c1445 100%)',
+  family:'linear-gradient(150deg,#4a0520 0%,#9d174d 50%,#4a0520 100%)',
+  growth:'linear-gradient(150deg,#052e16 0%,#166534 50%,#052e16 100%)',
+  material:'linear-gradient(150deg,#1c0700 0%,#78350f 50%,#1c0700 100%)',
+};
+// Cycling span pattern for tiles: [colSpan, rowSpan]
+const VB_SPANS=[[1,2],[2,1],[1,1],[1,1],[1,2],[1,1],[1,1],[2,1],[1,1],[1,2],[1,1],[1,1]];
+
 function renderVision(){
   const wrap=document.getElementById('vb-grid-wrap');
   if(!wrap)return;
+  const yr=new Date().getFullYear();
+  const centerCard=`<div class="vb-center"><div class="vb-center-heart">♥</div><div class="vb-center-year">${yr}</div><div class="vb-center-txt">Vision Board</div></div>`;
+
   if(!visionItems.length){
-    wrap.innerHTML='<div class="empty" style="padding:60px 20px"><div class="ei">🎯</div><div style="font-size:14px;font-weight:700;margin-bottom:6px">Your Vision Board is Empty</div><div style="font-size:11px;color:var(--muted)">Add your dreams, goals & aspirations</div><br><button class="btn btn-p" id="vb-add-btn2" style="margin-top:8px">+ Add First Vision</button></div>';
+    wrap.innerHTML=`<div class="vb-board">
+      ${centerCard}
+      <div class="vb-add-tile" id="vb-add-inline" style="grid-row:span 2">
+        <div style="font-size:30px;opacity:.3">＋</div>
+        <div style="font-size:10px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase">Add Vision</div>
+      </div>
+      <div class="vb-add-tile"><div style="font-size:22px;opacity:.2">＋</div></div>
+      <div class="vb-add-tile"><div style="font-size:22px;opacity:.2">＋</div></div>
+      <div class="vb-add-tile"><div style="font-size:22px;opacity:.2">＋</div></div>
+      <div class="vb-add-tile"><div style="font-size:22px;opacity:.2">＋</div></div>
+    </div>`;
     return;
   }
-  let html='<div class="vb-grid">';
-  visionItems.forEach(v=>{
+
+  const insertCenter=Math.max(1,Math.floor(visionItems.length/2));
+  let html='<div class="vb-board">';
+  let spanIdx=0;
+
+  visionItems.forEach((v,i)=>{
+    if(i===insertCenter) html+=centerCard;
     const catColor=VB_CAT_COLORS[v.category]||v.color||'#7c3aed';
     const catIcon=VB_CATS[v.category]||'🎯';
-    html+=`<div class="vb-card" data-vid="${v.id}">
-      <div class="vb-card-top" style="background:linear-gradient(135deg,${v.color||catColor},${v.color||catColor}99)">
-        <span style="position:relative;z-index:1">${v.emoji||catIcon}</span>
-      </div>
-      <div class="vb-card-body">
-        <div class="vb-card-title">${v.title}</div>
-        ${v.quote?`<div class="vb-card-quote">"${v.quote}"</div>`:''}
-        ${v.note?`<div style="font-size:10px;color:var(--muted);margin-bottom:5px">${v.note}</div>`:''}
-        <div class="vb-card-foot">
-          <span class="vb-card-cat" style="background:${catColor}22;color:${catColor}">${catIcon} ${v.category||'goal'}</span>
-          <label class="vb-done"><input type="checkbox" data-vd="${v.id}" ${v.done?'checked':''}> Done</label>
-        </div>
-      </div>
+    const bg=v.imageUrl?`background-image:url('${v.imageUrl.replace(/'/g,"\\'")}')`:VB_BG[v.category]||`linear-gradient(135deg,${catColor}dd,${catColor}44)`;
+    const sp=VB_SPANS[spanIdx%VB_SPANS.length];
+    const cls=(sp[0]>1?'w2':'')+(sp[1]>1?' h2':'');
+    spanIdx++;
+    html+=`<div class="vb-tile${cls?' '+cls:''}" data-vid="${v.id}">
+      <div class="vb-tile-bg" style="${bg};background-size:cover;background-position:center"></div>
+      <div class="vb-tile-shade"></div>
+      ${!v.imageUrl?`<div class="vb-tile-emoji">${v.emoji||catIcon}</div>`:''}
+      ${v.quote&&!v.imageUrl?`<div class="vb-tile-sub">${v.quote.slice(0,30)}${v.quote.length>30?'…':''}</div>`:''}
+      <div class="vb-tile-label">${v.title}</div>
+      ${v.done?'<div class="vb-tile-done-badge">✓</div>':''}
     </div>`;
   });
-  html+=`<div class="vb-add-card" id="vb-add-inline"><div class="vb-add-icon">＋</div><div class="vb-add-lbl">Add New Vision</div></div>`;
+
+  if(visionItems.length<=insertCenter) html+=centerCard;
+
+  html+=`<div class="vb-add-tile" id="vb-add-inline">
+    <div style="font-size:26px;opacity:.3">＋</div>
+    <div style="font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase">Add Vision</div>
+  </div>`;
   html+='</div>';
   wrap.innerHTML=html;
 }
@@ -4391,6 +4434,7 @@ function openVBModal(id){
     document.getElementById('vb-title').value=v.title||'';
     document.getElementById('vb-quote').value=v.quote||'';
     document.getElementById('vb-note').value=v.note||'';
+    document.getElementById('vb-img-url').value=v.imageUrl||'';
     _selVBColor=v.color||'#7c3aed';
     _selVBCat=v.category||'career';
     delBtn.style.display='';
@@ -4399,6 +4443,7 @@ function openVBModal(id){
     document.getElementById('vb-title').value='';
     document.getElementById('vb-quote').value='';
     document.getElementById('vb-note').value='';
+    document.getElementById('vb-img-url').value='';
     _selVBColor='#7c3aed';_selVBCat='career';
     delBtn.style.display='none';
   }
@@ -4415,6 +4460,7 @@ function saveVBItem(){
     title,
     quote:document.getElementById('vb-quote').value.trim(),
     note:document.getElementById('vb-note').value.trim(),
+    imageUrl:document.getElementById('vb-img-url').value.trim(),
     color:_selVBColor,
     category:_selVBCat,
     done:_vbEditId?(visionItems.find(v=>v.id===_vbEditId)?.done||false):false
