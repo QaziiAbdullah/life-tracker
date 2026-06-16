@@ -563,6 +563,76 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
 .f-bc-val{font-size:10px;font-weight:700;width:70px;text-align:right;flex-shrink:0}
 /* finance report section on daily */
 .fin-widget{border-top:3px solid #10b981}
+
+/* COMPACT WELCOME BANNER */
+.welcome-banner{padding:10px 16px!important;margin-bottom:12px!important}
+.welcome-greeting{font-size:17px!important}
+.welcome-sub{font-size:10px!important;margin-top:1px!important}
+.welcome-avatar{width:38px!important;height:38px!important;font-size:14px!important;border-radius:10px!important}
+
+/* COMPACT WEATHER */
+.weather-card{padding:10px 14px!important;margin-bottom:10px!important}
+.w-icon{font-size:26px!important}
+.w-temp{font-size:20px!important}
+.w-desc{font-size:11px!important}
+.w-meta{font-size:9px!important}
+.w-loc{font-size:9px!important}
+
+/* DRAG SECTIONS */
+#daily-drag-zone{position:relative}
+.drag-blk{position:relative;margin-bottom:0}
+.drag-blk.drag-active{opacity:.35;outline:2px dashed rgba(var(--pa),.6);outline-offset:3px;border-radius:14px}
+.drag-blk.drag-over-top{border-top:2px solid var(--pl)!important;margin-top:-2px}
+.drag-blk.drag-over-bot{border-bottom:2px solid var(--pl)!important}
+.drag-handle{position:absolute;top:50%;left:-4px;transform:translateY(-50%);width:18px;height:32px;display:flex;align-items:center;justify-content:center;cursor:grab;color:var(--muted);opacity:0;transition:opacity .2s;z-index:5;font-size:13px;letter-spacing:-2px;line-height:1;user-select:none;border-radius:4px}
+.drag-handle:active{cursor:grabbing}
+.drag-blk:hover .drag-handle{opacity:.5}
+.drag-handle:hover{opacity:.9!important;color:var(--pl)}
+
+/* RED BUG BUTTON */
+#bug-btn{position:fixed;bottom:20px;right:20px;width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#ef4444,#dc2626);border:none;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(239,68,68,.45),0 2px 6px rgba(0,0,0,.3);z-index:2000;transition:all .2s;color:#fff}
+#bug-btn:hover{transform:scale(1.1) rotate(-10deg);box-shadow:0 6px 24px rgba(239,68,68,.6)}
+#bug-btn.spin{animation:bugSpin .4s ease}
+@keyframes bugSpin{0%{transform:scale(1)}50%{transform:scale(1.25) rotate(20deg)}100%{transform:scale(1)}}
+
+/* TIMETABLE */
+.tt-grid{overflow-x:auto;margin-top:10px}
+.tt-table{min-width:640px;width:100%;border-collapse:collapse}
+.tt-table th{font-size:10px;font-weight:700;text-align:center;padding:8px 4px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:2}
+.tt-table th.tt-time-col{width:54px;text-align:right;padding-right:8px}
+.tt-table td{border:1px solid var(--border);height:38px;vertical-align:top;position:relative;cursor:pointer;transition:background .1s;padding:0}
+.tt-table td:hover{background:rgba(var(--pa),.06)}
+.tt-time-cell{font-size:9px;color:var(--muted);text-align:right;padding:4px 8px 0 0;vertical-align:top;background:var(--card);border:none;white-space:nowrap;cursor:default}
+.tt-block{position:absolute;inset:2px;border-radius:6px;padding:2px 5px;font-size:10px;font-weight:700;color:#fff;overflow:hidden;display:flex;align-items:center;gap:3px;line-height:1.2;cursor:pointer;transition:filter .1s}
+.tt-block:hover{filter:brightness(1.2)}
+.tt-empty-day{text-align:center;padding:6px 0}
+.tt-add-btn{font-size:16px;color:var(--muted);opacity:0;display:block;text-align:center;line-height:38px}
+.tt-table td:hover .tt-add-btn{opacity:.4}
+.tt-day-today th{color:var(--pl)!important;background:rgba(var(--pa),.08)!important}
+.tt-nav{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.tt-week-lbl{font-size:12px;font-weight:700;flex:1}
+
+/* VISION BOARD */
+.vb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+@media(max-width:900px){.vb-grid{grid-template-columns:repeat(2,1fr)}}
+.vb-card{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.2);transition:transform .2s,box-shadow .2s;cursor:pointer}
+.vb-card:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,.3)}
+.vb-card-top{height:90px;display:flex;align-items:center;justify-content:center;font-size:44px;position:relative}
+.vb-card-top::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.3))}
+.vb-card-body{padding:12px 14px}
+.vb-card-title{font-size:13px;font-weight:800;color:var(--text);margin-bottom:3px}
+.vb-card-quote{font-size:10px;color:var(--muted);font-style:italic;line-height:1.5;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.vb-card-cat{font-size:9px;font-weight:700;padding:2px 8px;border-radius:12px;display:inline-block}
+.vb-card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+.vb-done{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);cursor:pointer}
+.vb-done input[type=checkbox]{accent-color:var(--primary)}
+.vb-add-card{border:2px dashed rgba(255,255,255,.12);border-radius:16px;height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:all .2s;background:rgba(255,255,255,.02)}
+.vb-add-card:hover{border-color:rgba(var(--pa),.4);background:rgba(var(--pa),.05)}
+.vb-add-icon{font-size:28px;opacity:.4}
+.vb-add-lbl{font-size:11px;color:var(--muted);font-weight:600}
+.vb-cat-sel{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.vb-cat-pill{padding:3px 10px;border-radius:14px;font-size:10px;font-weight:700;border:1px solid var(--border);cursor:pointer;transition:all .15s;background:transparent;color:var(--muted)}
+.vb-cat-pill.on{background:var(--primary);color:#fff;border-color:var(--primary)}
 </style>
 </head>
 <body>
@@ -656,6 +726,9 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
     <div class="nl">Events</div>
     <div class="ni" data-view="birthdays" id="nav-birthdays"><div class="nd"></div><span class="nav-lbl-evbday">📅 Events &amp; Birthday</span></div>
     <div class="ni" data-view="finance" id="nav-finance"><div class="nd"></div>💰 Finance</div>
+    <div class="nl">Tools</div>
+    <div class="ni" data-view="timetable"><div class="nd"></div>📋 Timetable</div>
+    <div class="ni" data-view="vision"><div class="nd"></div>🎯 Vision Board</div>
     <div class="nl">Reports</div>
     <div class="ni" data-view="summary"><div class="nd"></div>Summary</div>
     <div class="ni" data-view="settings" id="nav-settings"><div class="nd"></div>⚙️ Settings</div>
@@ -696,128 +769,141 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
       <button class="bday-x" id="bday-dismiss">✕</button>
     </div>
 
-    <!-- UPCOMING BIRTHDAYS WIDGET -->
-    <div id="bday-widget" class="card" style="margin-bottom:14px">
-      <div class="card-h">
-        <div class="card-t">🎈 Upcoming Birthdays</div>
-        <button class="btn btn-p btn-sm" id="bob2">+ Add Birthday</button>
-        <button class="btn btn-g btn-sm" data-vl="birthdays" style="margin-left:2px">All →</button>
-      </div>
-      <div class="up-strip" id="daily-bday-strip"></div>
-      <div id="bday-widget-empty" style="display:none;font-size:11px;color:var(--muted);padding:6px 2px">No upcoming birthdays in the next 30 days. <span style="color:var(--pl);cursor:pointer" data-vl="birthdays">Add one →</span></div>
-    </div>
+    <!-- DRAG ZONE: reorderable dashboard sections -->
+    <div id="daily-drag-zone">
 
-    <!-- WEATHER WIDGET -->
-    <div class="weather-card" id="weather-card" style="display:none">
-      <div class="w-icon" id="w-icon">🌤</div>
-      <div>
-        <div style="display:flex;align-items:baseline;gap:8px">
-          <div class="w-temp" id="w-temp">--°C</div>
-          <div class="w-desc" id="w-desc">Loading...</div>
-        </div>
-        <div class="w-meta" id="w-meta">Wind -- km/h · Humidity --%</div>
-        <div class="w-loc" id="w-loc">📍 Detecting location...</div>
-      </div>
-      <button class="btn btn-g btn-sm" id="w-refresh" style="margin-left:auto" title="Refresh weather">🔄</button>
-    </div>
-    <div id="weather-ask" class="card" style="margin-bottom:14px;padding:12px 16px;display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-        <div>
-          <div style="font-size:12px;font-weight:700">🌦 Show Weather?</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:2px">Allow location access to see current weather</div>
-        </div>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-g btn-sm" id="w-deny">No thanks</button>
-          <button class="btn btn-p btn-sm" id="w-allow">Allow 📍</button>
+      <div class="drag-blk" draggable="true" data-blk="bday">
+        <div class="drag-handle" title="Drag to reorder">⠿</div>
+        <div id="bday-widget" class="card" style="margin-bottom:14px;display:none">
+          <div class="card-h">
+            <div class="card-t">🎈 Upcoming Birthdays</div>
+            <button class="btn btn-p btn-sm" id="bob2">+ Add Birthday</button>
+            <button class="btn btn-g btn-sm" data-vl="birthdays" style="margin-left:2px">All →</button>
+          </div>
+          <div class="up-strip" id="daily-bday-strip"></div>
         </div>
       </div>
-    </div>
 
-    <!-- FINANCE WIDGET -->
-    <div id="fin-widget" class="card fin-widget" style="margin-bottom:14px">
-      <div class="card-h">
-        <div class="card-t">💰 Today's Finance</div>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-g btn-sm" id="fw-exp-btn">− Expense</button>
-          <button class="btn btn-p btn-sm" id="fw-inc-btn">+ Income</button>
-          <button class="btn btn-g btn-sm" data-vl="finance" style="font-size:10px">Full View →</button>
+      <div class="drag-blk" draggable="true" data-blk="weather">
+        <div class="drag-handle" title="Drag to reorder">⠿</div>
+        <div class="weather-card" id="weather-card" style="display:none">
+          <div class="w-icon" id="w-icon">🌤</div>
+          <div>
+            <div style="display:flex;align-items:baseline;gap:8px">
+              <div class="w-temp" id="w-temp">--°C</div>
+              <div class="w-desc" id="w-desc">Loading...</div>
+            </div>
+            <div class="w-meta" id="w-meta">Wind -- km/h · Humidity --%</div>
+            <div class="w-loc" id="w-loc">📍 Detecting location...</div>
+          </div>
+          <button class="btn btn-g btn-sm" id="w-refresh" style="margin-left:auto" title="Refresh weather">🔄</button>
+        </div>
+        <div id="weather-ask" class="card" style="margin-bottom:10px;padding:10px 14px;display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+            <div>
+              <div style="font-size:12px;font-weight:700">🌦 Show Weather?</div>
+              <div style="font-size:10px;color:var(--muted);margin-top:2px">Allow location access to see current weather</div>
+            </div>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-g btn-sm" id="w-deny">No thanks</button>
+              <button class="btn btn-p btn-sm" id="w-allow">Allow 📍</button>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="fw-stats">
-        <div class="fw-stat"><div class="fw-sv" id="fw-inc" style="color:#10b981">0</div><div class="fw-sl">Income</div></div>
-        <div class="fw-stat"><div class="fw-sv" id="fw-exp" style="color:#f87171">0</div><div class="fw-sl">Expenses</div></div>
-        <div class="fw-stat"><div class="fw-sv" id="fw-net">0</div><div class="fw-sl">Net Balance</div></div>
-      </div>
-    </div>
 
-    <div class="ph">
-      <div><div class="ph-t">Daily Dashboard</div><div class="ph-s" id="daily-date">Loading...</div></div>
-      <div class="ph-a">
-        <button class="btn btn-g btn-sm" id="boh">+ Habit</button>
-        <button class="btn btn-p btn-sm" id="bot">+ Task</button>
-      </div>
-    </div>
-
-    <!-- STATS -->
-    <div class="srow">
-      <div class="sc cp motion-card" style="animation-delay:0s"><div class="sv" id="s-ov" style="color:#a78bfa">0%</div><div class="sl">Today Score</div><div class="sc-sub" id="s-msg">—</div></div>
-      <div class="sc cg motion-card" style="animation-delay:.4s"><div class="sv" id="s-h" style="color:#34d399">0/0</div><div class="sl">Habits Done</div><div class="sc-sub" id="s-hst">streak: 0d</div></div>
-      <div class="sc co motion-card" style="animation-delay:.8s"><div class="sv" id="s-t" style="color:#fbbf24">0/0</div><div class="sl">Tasks Done</div><div class="sc-sub" id="s-tpri">0 high priority</div></div>
-      <div class="sc cb motion-card" style="animation-delay:1.2s"><div class="sv" id="s-wa" style="color:#60a5fa">0%</div><div class="sl">7-Day Avg</div><div class="sc-sub" id="s-wbest">best: —</div></div>
-    </div>
-
-    <!-- ANALYSIS ROW -->
-    <div class="an-row">
-      <div class="an-chart">
-        <div class="card-h" style="margin-bottom:8px"><div class="card-t">Weekly Progress Analysis</div><div id="week-range" style="font-size:10px;color:var(--muted)"></div></div>
-        <div id="line-chart-wrap"></div>
-      </div>
-      <div class="an-rings">
-        <div class="card-h" style="margin-bottom:8px"><div class="card-t">Today Progress</div></div>
-        <div class="big-rings">
-          <div class="big-ring-item" id="ring-habit-task"></div>
-          <div class="big-ring-item" id="ring-goals"></div>
+      <div class="drag-blk" draggable="true" data-blk="finance">
+        <div class="drag-handle" title="Drag to reorder">⠿</div>
+        <div id="fin-widget" class="card fin-widget" style="margin-bottom:14px">
+          <div class="card-h">
+            <div class="card-t">💰 Today's Finance</div>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-g btn-sm" id="fw-exp-btn">− Expense</button>
+              <button class="btn btn-p btn-sm" id="fw-inc-btn">+ Income</button>
+              <button class="btn btn-g btn-sm" data-vl="finance" style="font-size:10px">Full View →</button>
+            </div>
+          </div>
+          <div class="fw-stats">
+            <div class="fw-stat"><div class="fw-sv" id="fw-inc" style="color:#10b981">0</div><div class="fw-sl">Income</div></div>
+            <div class="fw-stat"><div class="fw-sv" id="fw-exp" style="color:#f87171">0</div><div class="fw-sl">Expenses</div></div>
+            <div class="fw-stat"><div class="fw-sv" id="fw-net">0</div><div class="fw-sl">Net Balance</div></div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- PRIORITIES -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">Priority Tasks — Today</div>
-      <button class="btn btn-g btn-sm" id="bot2">+ Add Task</button>
-    </div>
-    <div class="pri-row" id="pri-row">
-      <div class="pri-col"><div class="pri-hd h"><span>🔴 High</span><span class="pri-cnt" id="pc-h">0</span></div><div class="pri-body" id="pri-h"></div></div>
-      <div class="pri-col"><div class="pri-hd m"><span>🟡 Medium</span><span class="pri-cnt" id="pc-m">0</span></div><div class="pri-body" id="pri-m"></div></div>
-      <div class="pri-col"><div class="pri-hd l"><span>🟢 Low</span><span class="pri-cnt" id="pc-l">0</span></div><div class="pri-body" id="pri-l"></div></div>
-    </div>
+      <div class="drag-blk" draggable="true" data-blk="stats">
+        <div class="drag-handle" title="Drag to reorder">⠿</div>
+        <div class="ph" style="margin-bottom:12px">
+          <div><div class="ph-t">Daily Dashboard</div><div class="ph-s" id="daily-date">Loading...</div></div>
+          <div class="ph-a">
+            <button class="btn btn-g btn-sm" id="boh">+ Habit</button>
+            <button class="btn btn-p btn-sm" id="bot">+ Task</button>
+          </div>
+        </div>
+        <div class="srow">
+          <div class="sc cp motion-card" style="animation-delay:0s"><div class="sv" id="s-ov" style="color:#a78bfa">0%</div><div class="sl">Today Score</div><div class="sc-sub" id="s-msg">—</div></div>
+          <div class="sc cg motion-card" style="animation-delay:.4s"><div class="sv" id="s-h" style="color:#34d399">0/0</div><div class="sl">Habits Done</div><div class="sc-sub" id="s-hst">streak: 0d</div></div>
+          <div class="sc co motion-card" style="animation-delay:.8s"><div class="sv" id="s-t" style="color:#fbbf24">0/0</div><div class="sl">Tasks Done</div><div class="sc-sub" id="s-tpri">0 high priority</div></div>
+          <div class="sc cb motion-card" style="animation-delay:1.2s"><div class="sv" id="s-wa" style="color:#60a5fa">0%</div><div class="sl">7-Day Avg</div><div class="sc-sub" id="s-wbest">best: —</div></div>
+        </div>
+        <div class="an-row" style="margin-top:12px">
+          <div class="an-chart">
+            <div class="card-h" style="margin-bottom:8px"><div class="card-t">Weekly Progress Analysis</div><div id="week-range" style="font-size:10px;color:var(--muted)"></div></div>
+            <div id="line-chart-wrap"></div>
+          </div>
+          <div class="an-rings">
+            <div class="card-h" style="margin-bottom:8px"><div class="card-t">Today Progress</div></div>
+            <div class="big-rings">
+              <div class="big-ring-item" id="ring-habit-task"></div>
+              <div class="big-ring-item" id="ring-goals"></div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-    <!-- QUICK ADD -->
-    <div class="qadd" style="margin-bottom:14px">
-      <span style="font-size:11px;color:var(--muted);white-space:nowrap">Quick Add:</span>
-      <div class="qadd-sep"></div>
-      <input type="text" id="qi" placeholder="Type task and press Enter...">
-      <div class="qadd-sep"></div>
-      <select id="qp">
-        <option value="high">🔴 High</option>
-        <option value="med" selected>🟡 Med</option>
-        <option value="low">🟢 Low</option>
-      </select>
-      <div class="qadd-sep"></div>
-      <button class="btn btn-p btn-sm" id="qadd-btn">Add</button>
-    </div>
+      <div class="drag-blk" draggable="true" data-blk="priority">
+        <div class="drag-handle" title="Drag to reorder">⠿</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;margin-top:4px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">Priority Tasks — Today</div>
+          <button class="btn btn-g btn-sm" id="bot2">+ Add Task</button>
+        </div>
+        <div class="pri-row" id="pri-row">
+          <div class="pri-col"><div class="pri-hd h"><span>🔴 High</span><span class="pri-cnt" id="pc-h">0</span></div><div class="pri-body" id="pri-h"></div></div>
+          <div class="pri-col"><div class="pri-hd m"><span>🟡 Medium</span><span class="pri-cnt" id="pc-m">0</span></div><div class="pri-body" id="pri-m"></div></div>
+          <div class="pri-col"><div class="pri-hd l"><span>🟢 Low</span><span class="pri-cnt" id="pc-l">0</span></div><div class="pri-body" id="pri-l"></div></div>
+        </div>
+        <div class="qadd" style="margin-top:10px;margin-bottom:14px">
+          <span style="font-size:11px;color:var(--muted);white-space:nowrap">Quick Add:</span>
+          <div class="qadd-sep"></div>
+          <input type="text" id="qi" placeholder="Type task and press Enter...">
+          <div class="qadd-sep"></div>
+          <select id="qp">
+            <option value="high">🔴 High</option>
+            <option value="med" selected>🟡 Med</option>
+            <option value="low">🟢 Low</option>
+          </select>
+          <div class="qadd-sep"></div>
+          <button class="btn btn-p btn-sm" id="qadd-btn">Add</button>
+        </div>
+      </div>
 
-    <!-- HABITS -->
-    <div class="card">
-      <div class="card-h"><div class="card-t">Today's Habits</div><button class="btn btn-g btn-sm" id="boh2">+ Add</button></div>
-      <div id="daily-habits"></div>
-    </div>
+      <div class="drag-blk" draggable="true" data-blk="habits">
+        <div class="drag-handle" title="Drag to reorder">⠿</div>
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-h"><div class="card-t">Today's Habits</div><button class="btn btn-g btn-sm" id="boh2">+ Add</button></div>
+          <div id="daily-habits"></div>
+        </div>
+      </div>
 
-    <!-- GOALS QUICK -->
-    <div class="card">
-      <div class="card-h"><div class="card-t">Goals Overview</div><button class="btn btn-g btn-sm" data-vl="goals">All Goals →</button></div>
-      <div id="daily-goals"></div>
-    </div>
+      <div class="drag-blk" draggable="true" data-blk="goals">
+        <div class="drag-handle" title="Drag to reorder">⠿</div>
+        <div class="card">
+          <div class="card-h"><div class="card-t">Goals Overview</div><button class="btn btn-g btn-sm" data-vl="goals">All Goals →</button></div>
+          <div id="daily-goals"></div>
+        </div>
+      </div>
+
+    </div><!-- /daily-drag-zone -->
   </div>
 
   <!-- WEEKLY -->
@@ -1351,6 +1437,113 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px;min-height:100vh}
   </div>
 </div>
 
+<!-- TIMETABLE VIEW -->
+<div class="view" id="view-timetable">
+  <div class="ph">
+    <div><div class="ph-t">📋 Timetable</div><div class="ph-s">Your weekly schedule</div></div>
+    <div class="ph-a">
+      <button class="btn btn-g btn-sm" id="tt-prev">‹ Prev</button>
+      <span id="tt-week-lbl" style="font-size:11px;color:var(--muted);padding:0 6px"></span>
+      <button class="btn btn-g btn-sm" id="tt-next">Next ›</button>
+      <button class="btn btn-p btn-sm" id="tt-today-btn">Today</button>
+    </div>
+  </div>
+  <div class="card" style="padding:12px;overflow:hidden">
+    <div class="tt-grid"><div id="tt-table-wrap"></div></div>
+  </div>
+</div>
+
+<!-- VISION BOARD VIEW -->
+<div class="view" id="view-vision">
+  <div class="ph">
+    <div><div class="ph-t">🎯 Vision Board</div><div class="ph-s">Your dreams, goals &amp; aspirations</div></div>
+    <div class="ph-a"><button class="btn btn-p btn-sm" id="vb-add-btn">+ Add Vision</button></div>
+  </div>
+  <div id="vb-grid-wrap"></div>
+</div>
+
+<!-- TIMETABLE ADD MODAL -->
+<div class="overlay" id="tt-modal">
+  <div class="modal">
+    <div class="modal-t" id="tt-modal-title">Add Schedule Block</div>
+    <input type="hidden" id="tt-edit-id">
+    <div class="fg"><label>Title</label><input class="fi" id="tt-title" placeholder="e.g. Math Class, Gym, Meeting..."></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+      <div class="fg"><label>Day</label>
+        <select class="fi" id="tt-day">
+          <option value="1">Monday</option><option value="2">Tuesday</option>
+          <option value="3">Wednesday</option><option value="4">Thursday</option>
+          <option value="5">Friday</option><option value="6">Saturday</option>
+          <option value="0">Sunday</option>
+        </select>
+      </div>
+      <div class="fg"><label>Start</label><input class="fi" type="time" id="tt-start" value="09:00"></div>
+      <div class="fg"><label>End</label><input class="fi" type="time" id="tt-end" value="10:00"></div>
+    </div>
+    <div class="fg"><label>Note</label><input class="fi" id="tt-note" placeholder="Optional note..."></div>
+    <div class="fg"><label>Color</label>
+      <div class="clr-row" id="tt-clrs">
+        <div class="clr on" style="background:#7c3aed" data-c="#7c3aed"></div>
+        <div class="clr" style="background:#3b82f6" data-c="#3b82f6"></div>
+        <div class="clr" style="background:#10b981" data-c="#10b981"></div>
+        <div class="clr" style="background:#f59e0b" data-c="#f59e0b"></div>
+        <div class="clr" style="background:#ef4444" data-c="#ef4444"></div>
+        <div class="clr" style="background:#f472b6" data-c="#f472b6"></div>
+        <div class="clr" style="background:#06b6d4" data-c="#06b6d4"></div>
+      </div>
+    </div>
+    <div class="mbtn">
+      <button class="btn btn-g" id="tt-modal-del" style="display:none;margin-right:auto;color:#f87171">Delete</button>
+      <button class="btn btn-g" id="tt-modal-cancel">Cancel</button>
+      <button class="btn btn-p" id="tt-modal-save">Save Block</button>
+    </div>
+  </div>
+</div>
+
+<!-- VISION BOARD ADD MODAL -->
+<div class="overlay" id="vb-modal">
+  <div class="modal">
+    <div class="modal-t" id="vb-modal-title">Add Vision</div>
+    <input type="hidden" id="vb-edit-id">
+    <div style="display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:start">
+      <div class="fg"><label>Icon</label><input class="fi" id="vb-emoji" placeholder="🎯" style="font-size:22px;text-align:center;padding:6px"></div>
+      <div class="fg"><label>Title</label><input class="fi" id="vb-title" placeholder="My dream / goal..."></div>
+    </div>
+    <div class="fg"><label>Affirmation / Quote</label><input class="fi" id="vb-quote" placeholder="I will achieve..."></div>
+    <div class="fg"><label>Note</label><input class="fi" id="vb-note" placeholder="How / When / Why..."></div>
+    <div class="fg"><label>Category</label>
+      <div class="vb-cat-sel" id="vb-cat-sel">
+        <div class="vb-cat-pill on" data-vcat="career">💼 Career</div>
+        <div class="vb-cat-pill" data-vcat="health">💪 Health</div>
+        <div class="vb-cat-pill" data-vcat="finance">💰 Finance</div>
+        <div class="vb-cat-pill" data-vcat="travel">✈️ Travel</div>
+        <div class="vb-cat-pill" data-vcat="family">❤️ Family</div>
+        <div class="vb-cat-pill" data-vcat="growth">🌱 Growth</div>
+        <div class="vb-cat-pill" data-vcat="material">🏠 Material</div>
+      </div>
+    </div>
+    <div class="fg"><label>Background Color</label>
+      <div class="clr-row" id="vb-clrs">
+        <div class="clr on" style="background:#7c3aed" data-c="#7c3aed"></div>
+        <div class="clr" style="background:#2563eb" data-c="#2563eb"></div>
+        <div class="clr" style="background:#059669" data-c="#059669"></div>
+        <div class="clr" style="background:#d97706" data-c="#d97706"></div>
+        <div class="clr" style="background:#dc2626" data-c="#dc2626"></div>
+        <div class="clr" style="background:#db2777" data-c="#db2777"></div>
+        <div class="clr" style="background:#0891b2" data-c="#0891b2"></div>
+      </div>
+    </div>
+    <div class="mbtn">
+      <button class="btn btn-g" id="vb-modal-del" style="display:none;margin-right:auto;color:#f87171">Delete</button>
+      <button class="btn btn-g" id="vb-modal-cancel">Cancel</button>
+      <button class="btn btn-p" id="vb-modal-save">Save Vision</button>
+    </div>
+  </div>
+</div>
+
+<!-- RED BUG BUTTON -->
+<button id="bug-btn" title="Report a bug or send feedback">🐛</button>
+
 <div class="toast" id="toast"><span id="t-icon">✓</span><span id="t-msg">Done!</span></div>
 
 <script>
@@ -1363,6 +1556,9 @@ let customIncSrc=S.get('customIncSrc',[]);
 let customExpCat=S.get('customExpCat',[]);
 let profileData=S.get('profile',{displayName:'Admin',username:'admin',password:'admin'});
 let sectionNames=S.get('sectionNames',{habits:'Habits',tasks:'Tasks',goals:'Goals',evbday:'Events & Birthday'});
+let timetable=S.get('timetable',[]);
+let visionItems=S.get('visionItems',[]);
+let _ttWeekOff=0,_selTTColor='#7c3aed',_selVBColor='#7c3aed',_selVBCat='career',_vbEditId=null,_ttEditId=null;
 let _loggedIn=sessionStorage.getItem('lt4_session')==='1';
 let _editFinId=null;
 let finPeriod='month',finType='income';
@@ -1889,7 +2085,7 @@ function _do(){
   renderSB();
   const v=document.querySelector('.view.on');if(!v)return;
   const n=v.id.replace('view-','');
-  ({daily:renderDaily,weekly:renderWeekly,monthly:renderMonthly,yearly:renderYearly,habits:renderHabits,tasks:renderTasks,goals:renderGoals,birthdays:renderBirthdays,finance:renderFinance,summary:renderSum,settings:renderSettings}[n]||Function)();
+  ({daily:renderDaily,weekly:renderWeekly,monthly:renderMonthly,yearly:renderYearly,habits:renderHabits,tasks:renderTasks,goals:renderGoals,birthdays:renderBirthdays,finance:renderFinance,summary:renderSum,settings:renderSettings,timetable:renderTimetable,vision:renderVision}[n]||Function)();
 }
 
 // ===== NAVIGATION =====
@@ -2110,6 +2306,37 @@ document.addEventListener('click',function(e){
   if(id==='em-cancel'){closeM('em');return;}
   if(id==='evd-cancel'){closeM('evd');_evDay=null;return;}
   if(id==='evd-add'){const d=_evDay||today();closeM('evd');openEventModal(d);return;}
+  // TIMETABLE
+  if(id==='tt-modal-save'){saveTTBlock();return;}
+  if(id==='tt-modal-cancel'){closeM('tt-modal');_ttEditId=null;return;}
+  if(id==='tt-modal-del'){deleteTTBlock();return;}
+  if(id==='tt-prev'){_ttWeekOff--;renderTimetable();return;}
+  if(id==='tt-next'){_ttWeekOff++;renderTimetable();return;}
+  if(id==='tt-today-btn'){_ttWeekOff=0;renderTimetable();return;}
+  const ttCell=t.closest('td[data-day][data-h]');
+  if(ttCell&&document.getElementById('view-timetable')?.classList.contains('on')){
+    const ttBlk=t.closest('[data-ttid]');
+    if(ttBlk){openTTModal(null,null,ttBlk.dataset.ttid);}
+    else{openTTModal(parseInt(ttCell.dataset.day),parseInt(ttCell.dataset.h));}
+    return;
+  }
+  const ttClr=t.closest('#tt-clrs .clr');
+  if(ttClr){_selTTColor=ttClr.dataset.c;document.querySelectorAll('#tt-clrs .clr').forEach(c=>c.classList.toggle('on',c.dataset.c===_selTTColor));return;}
+  // VISION BOARD
+  if(id==='vb-add-btn'||id==='vb-add-btn2'||id==='vb-add-inline'){openVBModal();return;}
+  if(id==='vb-modal-save'){saveVBItem();return;}
+  if(id==='vb-modal-cancel'){closeM('vb-modal');_vbEditId=null;return;}
+  if(id==='vb-modal-del'){deleteVBItem();return;}
+  const vbCard=t.closest('.vb-card[data-vid]');
+  if(vbCard&&!t.closest('[data-vd]')){openVBModal(vbCard.dataset.vid);return;}
+  const vbDone=t.closest('[data-vd]');
+  if(vbDone){const v=visionItems.find(x=>x.id===vbDone.dataset.vd);if(v){v.done=t.checked;S.set('visionItems',visionItems);}return;}
+  const vbCatPill=t.closest('#vb-cat-sel .vb-cat-pill');
+  if(vbCatPill){_selVBCat=vbCatPill.dataset.vcat;document.querySelectorAll('#vb-cat-sel .vb-cat-pill').forEach(p=>p.classList.toggle('on',p.dataset.vcat===_selVBCat));return;}
+  const vbClr=t.closest('#vb-clrs .clr');
+  if(vbClr){_selVBColor=vbClr.dataset.c;document.querySelectorAll('#vb-clrs .clr').forEach(c=>c.classList.toggle('on',c.dataset.c===_selVBColor));return;}
+  // BUG BUTTON
+  if(id==='bug-btn'){document.getElementById('bug-btn').classList.add('spin');setTimeout(()=>document.getElementById('bug-btn').classList.remove('spin'),400);toast('🐛 Feature coming soon — bug reporting!','s');return;}
   // Finance buttons
   // Login
   if(id==='login-btn'){doLogin();return;}
@@ -2338,6 +2565,8 @@ function renderBirthdays(){
 function renderBdayWidget(){
   const todayBds=bdToday();
   const banner=document.getElementById('bday-banner');
+  // Birthday banner only on actual birthday
+  if(banner) banner.style.display=todayBds.length?'flex':'none';
   if(todayBds.length&&banner){
     const names=todayBds.map(b=>b.name).join(' & ');
     document.getElementById('bday-names').textContent=names;
@@ -2345,15 +2574,21 @@ function renderBdayWidget(){
       todayBds.length===1
         ?`${todayBds[0].wish||'Wishing you a wonderful birthday!'}`
         :`${todayBds.length} people are celebrating today! 🎊`;
-    banner.style.display='flex';
+    // Birthday today → floating popup
+    showFloatNotif('bd-today','🎂','Happy Birthday, '+names+'!','Wishing them a wonderful day 🎉','fn-pink','Birthday Today');
   }
-  // Upcoming widget (next 30 days)
+  // 1-day-before birthday floating popup
+  const tmrwBds=bdUpcoming(2).filter(b=>!b.isToday&&b.daysUntil===1);
+  tmrwBds.forEach(b=>{
+    showFloatNotif('bd-tmrw-'+b.id,'🎁',b.name+"'s Birthday Tomorrow","Don't forget to wish them! 🎈",'fn-pink','Birthday Alert');
+  });
+  // Upcoming widget (next 30 days) — hide if none
   const up30=bdUpcoming(30);
+  const widget=document.getElementById('bday-widget');
   const dstrip=document.getElementById('daily-bday-strip');
-  const emptyEl=document.getElementById('bday-widget-empty');
+  if(widget) widget.style.display=up30.length?'':'none';
   if(dstrip){
     if(up30.length){
-      if(emptyEl)emptyEl.style.display='none';
       dstrip.innerHTML=up30.map(b=>{
         const c=b.color||BCOL[b.cat]||'#e11d48';
         return `<div class="up-pill${b.isToday?' is-today':''}">
@@ -2364,7 +2599,6 @@ function renderBdayWidget(){
       }).join('');
     }else{
       dstrip.innerHTML='';
-      if(emptyEl)emptyEl.style.display='';
     }
   }
   // Today's events → floating notification
@@ -3878,8 +4112,260 @@ function openEditFinance(id){
       el.classList.remove('fade');
     },450);
   }
-  setInterval(next, 5000); // new quote every 5 seconds
+  setInterval(next, 5000);
 })();
+
+// ===== DRAG-AND-DROP DASHBOARD REORDER =====
+function initDragZone(){
+  const zone=document.getElementById('daily-drag-zone');
+  if(!zone)return;
+  let dragging=null;
+  // Apply saved order on load
+  const saved=S.get('dashOrder',null);
+  if(saved&&Array.isArray(saved)){
+    saved.forEach(blk=>{
+      const el=zone.querySelector('[data-blk="'+blk+'"]');
+      if(el)zone.appendChild(el);
+    });
+  }
+  zone.addEventListener('dragstart',e=>{
+    const handle=e.target.closest('.drag-handle');
+    const blk=e.target.closest('.drag-blk');
+    if(!blk)return;
+    dragging=blk;
+    e.dataTransfer.effectAllowed='move';
+    e.dataTransfer.setData('text/plain','');
+    setTimeout(()=>{if(dragging)dragging.classList.add('drag-active');},0);
+  });
+  zone.addEventListener('dragend',()=>{
+    if(dragging)dragging.classList.remove('drag-active');
+    zone.querySelectorAll('.drag-over-top,.drag-over-bot').forEach(el=>{
+      el.classList.remove('drag-over-top','drag-over-bot');
+    });
+    dragging=null;
+    saveDragOrder();
+  });
+  zone.addEventListener('dragover',e=>{
+    e.preventDefault();
+    const over=e.target.closest('.drag-blk');
+    if(!over||!dragging||over===dragging)return;
+    zone.querySelectorAll('.drag-over-top,.drag-over-bot').forEach(el=>{
+      el.classList.remove('drag-over-top','drag-over-bot');
+    });
+    const rect=over.getBoundingClientRect();
+    if(e.clientY<rect.top+rect.height/2){
+      over.classList.add('drag-over-top');
+      zone.insertBefore(dragging,over);
+    }else{
+      over.classList.add('drag-over-bot');
+      zone.insertBefore(dragging,over.nextSibling);
+    }
+  });
+  zone.addEventListener('drop',e=>e.preventDefault());
+}
+function saveDragOrder(){
+  const zone=document.getElementById('daily-drag-zone');
+  if(!zone)return;
+  const order=[...zone.querySelectorAll(':scope>.drag-blk')].map(el=>el.dataset.blk);
+  S.set('dashOrder',order);
+}
+
+// ===== TIMETABLE =====
+const TT_DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const TT_HOURS=Array.from({length:17},(_,i)=>i+6); // 6am to 10pm
+
+function renderTimetable(){
+  const now=new Date();
+  const weekStart=new Date(now);
+  weekStart.setDate(now.getDate()-now.getDay()+_ttWeekOff*7);
+  weekStart.setHours(0,0,0,0);
+  const days=TT_DAYS.map((_,i)=>{const d=new Date(weekStart);d.setDate(weekStart.getDate()+i);return d;});
+  const lbl=document.getElementById('tt-week-lbl');
+  if(lbl){
+    const s=days[0],e=days[6];
+    lbl.textContent=s.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' – '+e.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  }
+  const wrap=document.getElementById('tt-table-wrap');
+  if(!wrap)return;
+  const todayDay=new Date().getDay();
+  let html='<table class="tt-table"><thead><tr><th class="tt-time-col">Time</th>';
+  days.forEach((d,i)=>{
+    const isToday=d.toDateString()===new Date().toDateString();
+    html+=`<th style="${isToday?'color:var(--pl);background:rgba(var(--pa),.1)':''}">${TT_DAYS[d.getDay()]}<br><span style="font-size:14px;font-weight:800;color:${isToday?'var(--pl)':'var(--text)'}">${d.getDate()}</span></th>`;
+  });
+  html+='</tr></thead><tbody>';
+  TT_HOURS.forEach(h=>{
+    const hStr=h<12?h+':00 AM':h===12?'12:00 PM':(h-12)+':00 PM';
+    html+=`<tr><td class="tt-time-cell">${hStr}</td>`;
+    days.forEach(d=>{
+      const dayIdx=d.getDay();
+      const dateStr=d.toISOString().slice(0,10);
+      const blocks=timetable.filter(b=>b.day===dayIdx&&parseInt(b.start)===h);
+      if(blocks.length){
+        html+=`<td data-day="${dayIdx}" data-h="${h}" data-date="${dateStr}" style="padding:0">`;
+        blocks.forEach(b=>{
+          const dur=Math.max(1,parseInt(b.end||b.start+1)-parseInt(b.start));
+          html+=`<div class="tt-block" style="background:${b.color||'#7c3aed'}" data-ttid="${b.id}" title="${b.note||b.title}">${b.title}${b.note?'<span style="opacity:.7;margin-left:3px;font-size:9px">'+b.note+'</span>':''}</div>`;
+        });
+        html+='</td>';
+      }else{
+        html+=`<td data-day="${dayIdx}" data-h="${h}" data-date="${dateStr}"><span class="tt-add-btn" title="Add block">+</span></td>`;
+      }
+    });
+    html+='</tr>';
+  });
+  html+='</tbody></table>';
+  wrap.innerHTML=html;
+}
+
+function openTTModal(day,h,id){
+  _ttEditId=id||null;
+  const m=document.getElementById('tt-modal');
+  const delBtn=document.getElementById('tt-modal-del');
+  document.getElementById('tt-modal-title').textContent=id?'Edit Block':'Add Schedule Block';
+  if(id){
+    const b=timetable.find(x=>x.id===id);
+    if(!b)return;
+    document.getElementById('tt-title').value=b.title||'';
+    document.getElementById('tt-day').value=b.day;
+    document.getElementById('tt-start').value=String(b.start).padStart(2,'0')+':00';
+    document.getElementById('tt-end').value=String(b.end||b.start+1).padStart(2,'0')+':00';
+    document.getElementById('tt-note').value=b.note||'';
+    _selTTColor=b.color||'#7c3aed';
+    delBtn.style.display='';
+  }else{
+    document.getElementById('tt-title').value='';
+    document.getElementById('tt-day').value=day!==undefined?day:new Date().getDay();
+    document.getElementById('tt-start').value=String(h||9).padStart(2,'0')+':00';
+    document.getElementById('tt-end').value=String((h||9)+1).padStart(2,'0')+':00';
+    document.getElementById('tt-note').value='';
+    _selTTColor='#7c3aed';
+    delBtn.style.display='none';
+  }
+  document.querySelectorAll('#tt-clrs .clr').forEach(c=>{c.classList.toggle('on',c.dataset.c===_selTTColor);});
+  m.classList.add('open');
+}
+function saveTTBlock(){
+  const title=document.getElementById('tt-title').value.trim();
+  if(!title){toast('Enter a title','w');return;}
+  const day=parseInt(document.getElementById('tt-day').value);
+  const startVal=document.getElementById('tt-start').value;
+  const endVal=document.getElementById('tt-end').value;
+  const start=parseInt(startVal.split(':')[0]);
+  const end=parseInt(endVal.split(':')[0]);
+  const note=document.getElementById('tt-note').value.trim();
+  if(_ttEditId){
+    const idx=timetable.findIndex(b=>b.id===_ttEditId);
+    if(idx>=0)timetable[idx]={...timetable[idx],title,day,start,end,note,color:_selTTColor};
+  }else{
+    timetable.push({id:'tt_'+Date.now(),title,day,start,end,note,color:_selTTColor});
+  }
+  S.set('timetable',timetable);
+  closeM('tt-modal');_ttEditId=null;
+  renderTimetable();toast('Block saved ✅','s');
+}
+function deleteTTBlock(){
+  if(!_ttEditId)return;
+  timetable=timetable.filter(b=>b.id!==_ttEditId);
+  S.set('timetable',timetable);
+  closeM('tt-modal');_ttEditId=null;
+  renderTimetable();toast('Block removed','w');
+}
+
+// ===== VISION BOARD =====
+const VB_CATS={career:'💼',health:'💪',finance:'💰',travel:'✈️',family:'❤️',growth:'🌱',material:'🏠'};
+const VB_CAT_COLORS={career:'#7c3aed',health:'#10b981',finance:'#f59e0b',travel:'#06b6d4',family:'#f472b6',growth:'#059669',material:'#d97706'};
+
+function renderVision(){
+  const wrap=document.getElementById('vb-grid-wrap');
+  if(!wrap)return;
+  if(!visionItems.length){
+    wrap.innerHTML='<div class="empty" style="padding:60px 20px"><div class="ei">🎯</div><div style="font-size:14px;font-weight:700;margin-bottom:6px">Your Vision Board is Empty</div><div style="font-size:11px;color:var(--muted)">Add your dreams, goals & aspirations</div><br><button class="btn btn-p" id="vb-add-btn2" style="margin-top:8px">+ Add First Vision</button></div>';
+    return;
+  }
+  let html='<div class="vb-grid">';
+  visionItems.forEach(v=>{
+    const catColor=VB_CAT_COLORS[v.category]||v.color||'#7c3aed';
+    const catIcon=VB_CATS[v.category]||'🎯';
+    html+=`<div class="vb-card" data-vid="${v.id}">
+      <div class="vb-card-top" style="background:linear-gradient(135deg,${v.color||catColor},${v.color||catColor}99)">
+        <span style="position:relative;z-index:1">${v.emoji||catIcon}</span>
+      </div>
+      <div class="vb-card-body">
+        <div class="vb-card-title">${v.title}</div>
+        ${v.quote?`<div class="vb-card-quote">"${v.quote}"</div>`:''}
+        ${v.note?`<div style="font-size:10px;color:var(--muted);margin-bottom:5px">${v.note}</div>`:''}
+        <div class="vb-card-foot">
+          <span class="vb-card-cat" style="background:${catColor}22;color:${catColor}">${catIcon} ${v.category||'goal'}</span>
+          <label class="vb-done"><input type="checkbox" data-vd="${v.id}" ${v.done?'checked':''}> Done</label>
+        </div>
+      </div>
+    </div>`;
+  });
+  html+=`<div class="vb-add-card" id="vb-add-inline"><div class="vb-add-icon">＋</div><div class="vb-add-lbl">Add New Vision</div></div>`;
+  html+='</div>';
+  wrap.innerHTML=html;
+}
+
+function openVBModal(id){
+  _vbEditId=id||null;
+  const delBtn=document.getElementById('vb-modal-del');
+  document.getElementById('vb-modal-title').textContent=id?'Edit Vision':'Add Vision';
+  if(id){
+    const v=visionItems.find(x=>x.id===id);
+    if(!v)return;
+    document.getElementById('vb-emoji').value=v.emoji||'🎯';
+    document.getElementById('vb-title').value=v.title||'';
+    document.getElementById('vb-quote').value=v.quote||'';
+    document.getElementById('vb-note').value=v.note||'';
+    _selVBColor=v.color||'#7c3aed';
+    _selVBCat=v.category||'career';
+    delBtn.style.display='';
+  }else{
+    document.getElementById('vb-emoji').value='🎯';
+    document.getElementById('vb-title').value='';
+    document.getElementById('vb-quote').value='';
+    document.getElementById('vb-note').value='';
+    _selVBColor='#7c3aed';_selVBCat='career';
+    delBtn.style.display='none';
+  }
+  document.querySelectorAll('#vb-clrs .clr').forEach(c=>c.classList.toggle('on',c.dataset.c===_selVBColor));
+  document.querySelectorAll('#vb-cat-sel .vb-cat-pill').forEach(p=>p.classList.toggle('on',p.dataset.vcat===_selVBCat));
+  document.getElementById('vb-modal').classList.add('open');
+}
+function saveVBItem(){
+  const title=document.getElementById('vb-title').value.trim();
+  if(!title){toast('Enter a title','w');return;}
+  const item={
+    id:_vbEditId||'vi_'+Date.now(),
+    emoji:document.getElementById('vb-emoji').value||'🎯',
+    title,
+    quote:document.getElementById('vb-quote').value.trim(),
+    note:document.getElementById('vb-note').value.trim(),
+    color:_selVBColor,
+    category:_selVBCat,
+    done:_vbEditId?(visionItems.find(v=>v.id===_vbEditId)?.done||false):false
+  };
+  if(_vbEditId){
+    const idx=visionItems.findIndex(v=>v.id===_vbEditId);
+    if(idx>=0)visionItems[idx]=item;
+  }else{
+    visionItems.push(item);
+  }
+  S.set('visionItems',visionItems);
+  closeM('vb-modal');_vbEditId=null;
+  renderVision();toast('Vision saved ✅','s');
+}
+function deleteVBItem(){
+  if(!_vbEditId)return;
+  visionItems=visionItems.filter(v=>v.id!==_vbEditId);
+  S.set('visionItems',visionItems);
+  closeM('vb-modal');_vbEditId=null;
+  renderVision();toast('Vision removed','w');
+}
+
+// Init drag zone after page ready
+initDragZone();
 </script>
 </body>
 </html>
