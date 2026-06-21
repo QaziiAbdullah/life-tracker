@@ -157,6 +157,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 #lib-form-panel.open{display:flex}
 .lib-finp{flex:1;min-width:160px;padding:7px 12px;border:1px solid rgba(212,165,62,.35);border-radius:8px;background:#1a0800;color:#fbe9c6;font-size:12px;outline:none}
 .lib-finp::placeholder{color:rgba(212,165,62,.4)}
+.lib-or-sep{color:rgba(212,165,62,.45);font-size:11px;font-style:italic;flex-shrink:0}
+.lib-pdf-label{cursor:pointer;white-space:nowrap;flex-shrink:0}
+.lib-pdf-name{font-size:11px;color:rgba(212,165,62,.75);max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0}
 #lib-shelf-scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;padding:24px 16px}
 #lib-shelf-inner{display:flex;flex-direction:column;gap:0;width:100%;max-width:920px}
 #lib-empty-msg{display:none;color:rgba(212,165,62,.45);font-size:13px;text-align:center;margin-top:50px;max-width:320px;line-height:1.6}
@@ -1309,6 +1312,9 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
       <div id="lib-form-panel">
         <input id="lib-f-title" type="text" placeholder="Book title..." class="lib-finp" autocomplete="off">
         <input id="lib-f-url" type="text" placeholder="Paste free book link (URL)..." class="lib-finp" autocomplete="off">
+        <span class="lib-or-sep">or</span>
+        <label class="nb-tbtn lib-pdf-label" id="lib-f-pdf-label">📄 Upload PDF<input type="file" id="lib-f-pdf" accept="application/pdf" style="display:none"></label>
+        <span id="lib-f-pdf-name" class="lib-pdf-name"></span>
         <button class="nb-tbtn" id="lib-f-save">💾 Save</button>
         <button class="nb-tbtn" id="lib-f-cancel">Cancel</button>
       </div>
@@ -5563,6 +5569,37 @@ document.addEventListener('change',function(e){
   reader.readAsDataURL(file);
 });
 
+// Library — PDF upload handler (read as base64 data URL)
+document.addEventListener('change',function(e){
+  if(e.target.id!=='lib-f-pdf')return;
+  const file=e.target.files[0];
+  if(!file)return;
+  if(file.type!=='application/pdf'){toast('Please choose a PDF file','w');e.target.value='';return;}
+  const MAXB=4*1024*1024;
+  if(file.size>MAXB){toast('PDF too large (max 4MB) — browser storage is limited. Use a link instead for big books.','w');e.target.value='';return;}
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    _libPdfData=ev.target.result;
+    const ui=document.getElementById('lib-f-url');
+    if(ui)ui.value='';
+    const nameEl=document.getElementById('lib-f-pdf-name');
+    if(nameEl)nameEl.textContent='📄 '+file.name;
+  };
+  reader.readAsDataURL(file);
+});
+
+// Library — typing a URL clears any chosen PDF (mutually exclusive)
+document.addEventListener('input',function(e){
+  if(e.target.id!=='lib-f-url')return;
+  if(e.target.value.trim()&&_libPdfData){
+    _libPdfData=null;
+    const pdfInp=document.getElementById('lib-f-pdf');
+    if(pdfInp)pdfInp.value='';
+    const nameEl=document.getElementById('lib-f-pdf-name');
+    if(nameEl)nameEl.textContent='';
+  }
+});
+
 // Vision Board URL input — show preview on paste/type
 document.addEventListener('input',function(e){
   if(e.target.id!=='vb-img-url')return;
@@ -5854,9 +5891,12 @@ function saveNotebook(){nbSaveCurrent();}
 
 // ===== LIBRARY — Books added from free links =====
 function libGetBooks(){return S.get('libBooks',[]);}
-function libSaveBooks(arr){S.set('libBooks',arr);}
+function libSaveBooks(arr){
+  try{localStorage.setItem('lt4_libBooks',JSON.stringify(arr));return true;}
+  catch(e){toast('⚠️ Storage full — try a smaller PDF or use a link instead','w');return false;}
+}
 function libColorFor(i){return NB_COLORS[i%NB_COLORS.length];}
-let _libEditId=null,_libOpenId=null;
+let _libEditId=null,_libOpenId=null,_libPdfData=null;
 
 function libUpdateBadge(){
   const b=document.getElementById('sb-books-count-badge');
@@ -5884,12 +5924,13 @@ function renderLibShelf(){
       const color=libColorFor(i);
       const h=132+((i*41+7)%50);
       const title=(bk.title||'Untitled').replace(/</g,'&lt;');
+      const label=(bk.fileData?'📄 ':'')+title;
       return `<div class="lib-spine-wrap">
         <div class="lib-spine-acts">
           <span class="lib-act-ico" data-libedit="${bk.id}" title="Edit">✏</span>
           <span class="lib-act-ico del" data-libdel="${bk.id}" title="Delete">✕</span>
         </div>
-        <div class="nb-spine lib-spine" data-libopen="${bk.id}" style="background:${color};height:${h}px" title="Click to open ${title}">${title}</div>
+        <div class="nb-spine lib-spine" data-libopen="${bk.id}" style="background:${color};height:${h}px" title="Click to open ${title}">${label}</div>
       </div>`;
     }).join('')+'</div><div class="nb-shelf-plank"></div>';
   }
@@ -5905,14 +5946,29 @@ function libNormalizeUrl(u){
 
 function libShowForm(editId){
   _libEditId=editId||null;
+  _libPdfData=null;
   const panel=document.getElementById('lib-form-panel');
   const ti=document.getElementById('lib-f-title');
   const ui=document.getElementById('lib-f-url');
+  const pdfInp=document.getElementById('lib-f-pdf');
+  const pdfName=document.getElementById('lib-f-pdf-name');
+  if(pdfInp)pdfInp.value='';
   if(editId){
     const bk=libGetBooks().find(b=>b.id===editId);
-    if(bk){ti.value=bk.title;ui.value=bk.url;}
+    if(bk){
+      ti.value=bk.title;
+      if(bk.fileData){
+        ui.value='';
+        _libPdfData=bk.fileData;
+        if(pdfName)pdfName.textContent='📄 Existing PDF (choose a new file to replace)';
+      }else{
+        ui.value=bk.url||'';
+        if(pdfName)pdfName.textContent='';
+      }
+    }
   } else {
     ti.value='';ui.value='';
+    if(pdfName)pdfName.textContent='';
   }
   panel?.classList.add('open');
   ti?.focus();
@@ -5920,25 +5976,35 @@ function libShowForm(editId){
 
 function libHideForm(){
   _libEditId=null;
+  _libPdfData=null;
   document.getElementById('lib-form-panel')?.classList.remove('open');
-  const ti=document.getElementById('lib-f-title'),ui=document.getElementById('lib-f-url');
+  const ti=document.getElementById('lib-f-title'),ui=document.getElementById('lib-f-url'),pdfInp=document.getElementById('lib-f-pdf'),pdfName=document.getElementById('lib-f-pdf-name');
   if(ti)ti.value='';
   if(ui)ui.value='';
+  if(pdfInp)pdfInp.value='';
+  if(pdfName)pdfName.textContent='';
 }
 
 function libSaveForm(){
   const title=(document.getElementById('lib-f-title')?.value||'').trim();
-  const url=libNormalizeUrl(document.getElementById('lib-f-url')?.value);
+  const urlRaw=document.getElementById('lib-f-url')?.value||'';
   if(!title){toast('Enter a book title','w');return;}
-  if(!url){toast('Paste a book link','w');return;}
+  let extra;
+  if(_libPdfData){
+    extra={fileData:_libPdfData,url:''};
+  } else {
+    const url=libNormalizeUrl(urlRaw);
+    if(!url){toast('Paste a book link or upload a PDF','w');return;}
+    extra={url,fileData:''};
+  }
   let books=libGetBooks();
   if(_libEditId){
     const idx=books.findIndex(b=>b.id===_libEditId);
-    if(idx>=0)books[idx]={...books[idx],title,url};
+    if(idx>=0)books[idx]={...books[idx],title,...extra};
   } else {
-    books.push({id:'lb_'+Date.now(),title,url});
+    books.push({id:'lb_'+Date.now(),title,...extra});
   }
-  libSaveBooks(books);
+  if(!libSaveBooks(books))return;
   libHideForm();
   renderLibShelf();
   toast('Book saved 📖','s');
@@ -5958,10 +6024,11 @@ function libOpenBook(id){
   _libOpenId=id;
   document.getElementById('lib-shelf-view').style.display='none';
   document.getElementById('lib-book-view').style.display='flex';
-  document.getElementById('lib-book-topname').textContent='📖 '+bk.title;
-  document.getElementById('lib-iframe').src=bk.url;
+  document.getElementById('lib-book-topname').textContent=(bk.fileData?'📄 ':'📖 ')+bk.title;
+  const src=bk.fileData||bk.url;
+  document.getElementById('lib-iframe').src=src;
   const nt=document.getElementById('lib-open-newtab');
-  if(nt)nt.href=bk.url;
+  if(nt)nt.href=src;
 }
 
 function libBackToShelf(){
