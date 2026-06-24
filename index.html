@@ -6500,6 +6500,15 @@ initBugWalk();
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{});});
+  // Once a newly-deployed service worker takes over, the page already in memory is still
+  // running the OLD cached code — reload once so the fix actually reaches an open tab/PWA
+  // instead of waiting for the user to fully close and reopen the app.
+  let _swReloaded=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(_swReloaded)return;
+    _swReloaded=true;
+    location.reload();
+  });
 }
 </script>
 </body>
