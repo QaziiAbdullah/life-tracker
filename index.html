@@ -1,17 +1,24 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="purple">
+<html lang="en" data-theme="professional">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Life Tracker — Qazi Abdullah</title>
+<title>RedBug Life Tracking — Qazi Abdullah</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 115'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='20%25' y1='0%25' x2='80%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%235ba3ff'/%3E%3Cstop offset='100%25' stop-color='%231a56db'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M50 3 L93 22 L93 62 Q93 98 50 114 Q7 98 7 62 L7 22 Z' fill='%23c0d4f0'/%3E%3Cpath d='M50 8 L88 25 L88 62 Q88 94 50 110 Q12 94 12 62 L12 25 Z' fill='url(%23g1)'/%3E%3Cellipse cx='50' cy='44' rx='9' ry='8' fill='%231c2240'/%3E%3Cline x1='44' y1='38' x2='35' y2='28' stroke='%231c2240' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='56' y1='38' x2='65' y2='28' stroke='%231c2240' stroke-width='2.5' stroke-linecap='round'/%3E%3Cellipse cx='50' cy='63' rx='15' ry='17' fill='%231c2240'/%3E%3Cline x1='35' y1='53' x2='19' y2='47' stroke='%231c2240' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='35' y1='62' x2='17' y2='62' stroke='%231c2240' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='36' y1='71' x2='20' y2='78' stroke='%231c2240' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='65' y1='53' x2='81' y2='47' stroke='%231c2240' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='65' y1='62' x2='83' y2='62' stroke='%231c2240' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='64' y1='71' x2='80' y2='78' stroke='%231c2240' stroke-width='2.5' stroke-linecap='round'/%3E%3Ccircle cx='50' cy='65' r='11' fill='%23e53935'/%3E%3Crect x='48' y='57' width='4' height='8' rx='2' fill='white'/%3E%3Ccircle cx='50' cy='70' r='2.5' fill='white'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Share+Tech+Mono&family=VT323&family=Orbitron:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0a0a14">
+<link rel="apple-touch-icon" href="/icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RedBug Life Tracking">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root{
-  --bg:#0a0a14;--card:#12121f;--card2:#1a1a2e;--sb:#0d0d1c;
-  --primary:#7c3aed;--pl:#a78bfa;--success:#10b981;--warn:#f59e0b;
+  --bg:#0b1120;--card:#111827;--card2:#1e293b;--sb:#0a0f1c;
+  --primary:#2563eb;--pl:#93c5fd;--success:#10b981;--warn:#f59e0b;
   --danger:#ef4444;--info:#3b82f6;--text:#f1f5f9;--muted:#64748b;
   --border:rgba(255,255,255,.07);--hi:#ef4444;--me:#f59e0b;--lo:#10b981;
 }
@@ -593,7 +600,14 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px 20px;min-height:100vh
 .login-screen{position:fixed;inset:0;background:var(--bg);z-index:10002;display:flex;align-items:center;justify-content:center;flex-direction:column}
 .login-screen.hide{display:none}
 .login-box{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:36px 32px;width:340px;max-width:90vw;position:relative}
-.login-logo{text-align:center;margin-bottom:20px}
+.login-logo{text-align:center;margin-bottom:20px;perspective:700px}
+.login-logo-3d{animation:loginLogo3d 7s ease-in-out infinite;transform-style:preserve-3d;will-change:transform}
+@keyframes loginLogo3d{
+  0%,100%{transform:rotateY(0deg) rotateX(0deg)}
+  25%{transform:rotateY(22deg) rotateX(-7deg)}
+  50%{transform:rotateY(0deg) rotateX(0deg)}
+  75%{transform:rotateY(-22deg) rotateX(7deg)}
+}
 .login-app-name{font-size:28px;font-weight:900;letter-spacing:-.5px;background:linear-gradient(90deg,#a78bfa,#60a5fa,#34d399,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-size:300% 100%;animation:shimmer 4s linear infinite}
 .login-sub{font-size:11px;color:var(--muted);margin-top:4px}
 .login-err{color:var(--danger);font-size:11px;text-align:center;margin-top:8px;display:none}
@@ -696,6 +710,8 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px 20px;min-height:100vh
 .sb-clk-weather .swc-icon-wrap{font-size:24px;line-height:1;flex-shrink:0}
 .sb-clk-weather .swc-temp{font-weight:700;color:var(--pl);font-size:15px}
 .sb-clk-weather .swc-desc-txt{font-size:11px;color:var(--muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-clk-weather-retry{display:flex;width:100%;align-items:center;justify-content:center;gap:6px;margin-top:7px;padding:6px 4px;border-top:1px solid rgba(255,255,255,.07);background:none;border-left:none;border-right:none;border-bottom:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:inherit}
+.sb-clk-weather-retry:hover{color:var(--pl)}
 /* ANIMATED WEATHER ICONS */
 .wani-sun{display:inline-block;animation:wSpin 10s linear infinite;filter:drop-shadow(0 0 5px rgba(251,191,36,.6))}
 .wani-cloud{display:inline-block;animation:wFloat 4s ease-in-out infinite}
@@ -951,9 +967,9 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
 .tt-sleep-sub{font-size:10px;color:var(--muted);opacity:.6;margin-top:1px}
 
 /* DAILY STATS STRIP (under Good Morning) */
-.daily-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
-.ds-card{background:var(--card);border-radius:14px;padding:13px 15px;border:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:11px;box-shadow:0 2px 10px rgba(0,0,0,.2);transition:transform .15s}
-.ds-card:hover{transform:translateY(-2px)}
+.daily-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;perspective:900px}
+.ds-card{background:var(--card);border-radius:14px;padding:13px 15px;border:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:11px;box-shadow:0 2px 10px rgba(0,0,0,.2);transition:transform .15s ease-out,box-shadow .15s ease-out;transform-style:preserve-3d;will-change:transform}
+.ds-card:hover{box-shadow:0 14px 30px rgba(0,0,0,.35)}
 .ds-icon{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
 .ds-val{font-size:20px;font-weight:800;line-height:1}
 .ds-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-top:3px}
@@ -1074,7 +1090,7 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
       <div class="sb-icon" id="sb-icon-txt"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 115" width="100%" height="100%" style="display:block"><defs><linearGradient id="lg1" x1="20%" y1="0%" x2="80%" y2="100%"><stop offset="0%" stop-color="#5ba3ff"/><stop offset="100%" stop-color="#1a56db"/></linearGradient><linearGradient id="lh1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="rgba(255,255,255,.38)"/><stop offset="100%" stop-color="rgba(255,255,255,0)"/></linearGradient></defs><path d="M50 3 L93 22 L93 62 Q93 98 50 114 Q7 98 7 62 L7 22 Z" fill="#c0d4f0"/><path d="M50 8 L88 25 L88 62 Q88 94 50 110 Q12 94 12 62 L12 25 Z" fill="url(#lg1)"/><path d="M50 10 L87 26 L87 61 Q86 89 62 106 L62 12 Z" fill="url(#lh1)" opacity=".65"/><ellipse cx="50" cy="44" rx="9" ry="8" fill="#1c2240"/><line x1="44" y1="38" x2="35" y2="28" stroke="#1c2240" stroke-width="2.5" stroke-linecap="round"/><line x1="56" y1="38" x2="65" y2="28" stroke="#1c2240" stroke-width="2.5" stroke-linecap="round"/><circle cx="34" cy="27" r="2.2" fill="#1c2240"/><circle cx="66" cy="27" r="2.2" fill="#1c2240"/><ellipse cx="50" cy="63" rx="15" ry="17" fill="#1c2240"/><line x1="35" y1="53" x2="19" y2="47" stroke="#1c2240" stroke-width="2.5" stroke-linecap="round"/><line x1="35" y1="62" x2="17" y2="62" stroke="#1c2240" stroke-width="2.5" stroke-linecap="round"/><line x1="36" y1="71" x2="20" y2="78" stroke="#1c2240" stroke-width="2.5" stroke-linecap="round"/><line x1="65" y1="53" x2="81" y2="47" stroke="#1c2240" stroke-width="2.5" stroke-linecap="round"/><line x1="65" y1="62" x2="83" y2="62" stroke="#1c2240" stroke-width="2.5" stroke-linecap="round"/><line x1="64" y1="71" x2="80" y2="78" stroke="#1c2240" stroke-width="2.5" stroke-linecap="round"/><circle cx="50" cy="65" r="11" fill="#e53935"/><rect x="48" y="57" width="4" height="8" rx="2" fill="white"/><circle cx="50" cy="70" r="2.5" fill="white"/></svg></div>
       <div>
         <div class="sb-name-wrap">
-          <div class="sb-title" id="app-name" contenteditable="false" spellcheck="false">Life Tracker</div>
+          <div class="sb-title" id="app-name" contenteditable="false" spellcheck="false">RedBug Life Tracking</div>
           <button class="sb-edit-btn" id="edit-name-btn" title="Click to edit your name">✏</button>
         </div>
         <div class="sb-sub" id="app-sub">Personal Progress System</div>
@@ -1082,7 +1098,8 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
     </div>
     <!-- THEME SELECTOR -->
     <div class="theme-bar">
-      <div class="th on" data-theme="purple"  style="--tc:#8b5cf6" title="Violet Dream"></div>
+      <div class="th on" data-theme="professional" style="--tc:#2563eb" title="Professional Navy"></div>
+      <div class="th"    data-theme="purple"  style="--tc:#8b5cf6" title="Violet Dream"></div>
       <div class="th"    data-theme="ocean"   style="--tc:#22d3ee" title="Deep Sea"></div>
       <div class="th"    data-theme="emerald" style="--tc:#22c55e" title="Forest Dark"></div>
       <div class="th"    data-theme="sunset"  style="--tc:#f97316" title="Volcano"></div>
@@ -1103,6 +1120,7 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
         <span class="swc-temp" id="swc-temp">--°C</span>
         <span class="swc-desc-txt" id="swc-desc"></span>
       </div>
+      <button class="sb-clk-weather-retry" id="sb-weather-retry-btn" style="display:none">📍 Tap to show weather</button>
     </div>
   </div>
 
@@ -1361,7 +1379,7 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
   <div class="view on" id="view-daily">
     <!-- LIFE TRACKER HERO -->
     <div class="lt-hero">
-      <div class="lt-hero-title" id="lt-hero-name">Life Tracker</div>
+      <div class="lt-hero-title" id="lt-hero-name">RedBug Life Tracking</div>
       <div class="lt-hero-sub">Personal Progress System</div>
     </div>
 
@@ -1977,15 +1995,7 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
         <button class="btn btn-p btn-sm" id="set-dname-save">Save</button>
       </div>
       <div class="set-row">
-        <div><div class="set-lbl">Username</div><div class="set-hint">Used to log in</div></div>
-        <input class="fi" id="set-uname" style="width:180px" placeholder="username">
-        <button class="btn btn-p btn-sm" id="set-uname-save">Save</button>
-      </div>
-      <div class="set-row">
-        <div><div class="set-lbl">Password</div><div class="set-hint">Change your login password</div></div>
-        <input class="fi" type="password" id="set-pass1" style="width:130px" placeholder="New password">
-        <input class="fi" type="password" id="set-pass2" style="width:130px" placeholder="Confirm">
-        <button class="btn btn-p btn-sm" id="set-pass-save">Update</button>
+        <div><div class="set-lbl">Account</div><div class="set-hint">Signed in with Google — log in/out from there, no separate password</div></div>
       </div>
       <div class="set-row" style="flex-wrap:wrap;gap:10px">
         <div><div class="set-lbl">Sidebar Icon</div><div class="set-hint">Top-left corner avatar — click to change</div></div>
@@ -2082,7 +2092,7 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
 <div class="login-screen" id="login-screen">
   <div class="login-box">
     <div class="login-logo">
-      <div style="width:80px;height:92px;margin:0 auto 10px">
+      <div class="login-logo-3d" style="width:80px;height:92px;margin:0 auto 10px">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 115" width="100%" height="100%" style="display:block;filter:drop-shadow(0 6px 18px rgba(26,86,219,.45))">
           <defs>
             <linearGradient id="llg" x1="20%" y1="0%" x2="80%" y2="100%">
@@ -2114,13 +2124,13 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
           <circle cx="50" cy="70" r="2.5" fill="white"/>
         </svg>
       </div>
-      <div class="login-app-name" id="login-app-name">Life Tracker</div>
+      <div class="login-app-name" id="login-app-name">RedBug Life Tracking</div>
       <div class="login-sub">Personal Progress System</div>
     </div>
-    <div class="fg"><label>Username</label><input class="fi" id="login-user" placeholder="admin" autocomplete="username"></div>
-    <div class="fg"><label>Password</label><input class="fi" type="password" id="login-pass" placeholder="admin" autocomplete="current-password"></div>
-    <button class="btn btn-p" id="login-btn" style="width:100%;justify-content:center;margin-top:4px;padding:10px">Sign In →</button>
-    <div class="login-err" id="login-err">❌ Invalid username or password</div>
+    <div id="g-signin-btn" style="display:flex;justify-content:center;margin-top:10px;min-height:44px"></div>
+    <div class="login-sub" id="login-syncing" style="display:none;margin-top:10px">Signing you in…</div>
+    <div class="login-err" id="login-err" style="display:none">❌ Sign-in failed — please try again</div>
+    <div class="login-err" id="login-config-warn" style="display:none">⚠️ Google Sign-In isn't set up yet — see GOOGLE_CLIENT_ID in index.html</div>
   </div>
 </div>
 
@@ -2128,7 +2138,7 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
 <div class="view" id="view-timetable">
   <div class="ph">
     <div><div class="ph-t">📋 Timetable</div><div class="ph-s" id="tt-view-sub">Your day at a glance</div></div>
-    <div class="ph-a"><button class="btn btn-p btn-sm" id="tt-add-top">+ Add Block</button></div>
+    <div class="ph-a"><button class="btn btn-g btn-sm" id="tt-reset-btn" title="Clear everything and start a fresh timetable">🗑️ Reset</button><button class="btn btn-p btn-sm" id="tt-add-top">+ Add Block</button></div>
   </div>
   <div class="tt-view-tabs">
     <button class="tt-vtab on" id="tt-view-day">📅 Day</button>
@@ -2163,7 +2173,7 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
       <div class="fg"><label>Activity</label><input class="fi" id="tt-title" placeholder="e.g. Study Session, Gym, Lunch..."></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-      <div class="fg" style="grid-column:1/-1"><label>Repeat Days <span style="font-size:9px;color:var(--muted);font-weight:400">(select all that apply — saves once, repeats all year)</span></label>
+      <div class="fg" style="grid-column:1/-1"><label>Repeat Days <span style="font-size:9px;color:var(--muted);font-weight:400">(select all that apply — saves once, repeats every week until you change or reset it)</span></label>
         <div id="tt-days-row" style="display:flex;gap:5px;flex-wrap:wrap;margin-top:4px">
           <label class="tt-day-chk"><input type="checkbox" value="1" checked><span>Mon</span></label>
           <label class="tt-day-chk"><input type="checkbox" value="2"><span>Tue</span></label>
@@ -2172,6 +2182,7 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
           <label class="tt-day-chk"><input type="checkbox" value="5"><span>Fri</span></label>
           <label class="tt-day-chk"><input type="checkbox" value="6"><span>Sat</span></label>
           <label class="tt-day-chk"><input type="checkbox" value="0"><span>Sun</span></label>
+          <button type="button" class="btn btn-g btn-sm" id="tt-everyday-btn" style="margin-left:4px">Every day</button>
         </div>
       </div>
       <div class="fg"><label>Start</label><input class="fi" type="time" id="tt-start" value="09:00"></div>
@@ -2254,19 +2265,108 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
 
 <script>
 // ===== STORE =====
-const S={get(k,d){try{const v=localStorage.getItem('lt4_'+k);return v===null?d:JSON.parse(v)}catch{return d}},set(k,v){try{localStorage.setItem('lt4_'+k,JSON.stringify(v))}catch(e){if(e.name==='QuotaExceededError'||e.code===22){console.warn('Storage full:',k);}else throw e;}}};
+const S={get(k,d){try{const v=localStorage.getItem('lt4_'+k);return v===null?d:JSON.parse(v)}catch{return d}},set(k,v){try{localStorage.setItem('lt4_'+k,JSON.stringify(v));_markDirty(k);}catch(e){if(e.name==='QuotaExceededError'||e.code===22){console.warn('Storage full:',k);}else throw e;}}};
+
+// Escapes text for safe insertion into HTML markup (both element content and quoted attributes).
+function escapeHtml(s){
+  return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+// Only allows http(s)/data URLs through — blocks javascript:/vbscript: schemes that could execute when used as an iframe src or link href.
+function isSafeUrl(u){
+  u=String(u||'').trim();
+  if(!u)return false;
+  return /^https?:\/\//i.test(u)||/^data:/i.test(u);
+}
+
+// ===== SYNC LAYER (cross-device, via Google login) =====
+let _syncToken=localStorage.getItem('lt4_sync_token')||null;
+let _syncCursor=parseInt(localStorage.getItem('lt4_sync_cursor')||'0',10)||0;
+let _dirtyKeys=new Set();
+let _syncFlushTimer=null;
+const SYNC_MAX_BYTES=10*1024*1024;
+
+function _markDirty(k){
+  if(!_syncToken)return;
+  _dirtyKeys.add(k);
+  clearTimeout(_syncFlushTimer);
+  _syncFlushTimer=setTimeout(_flushSync,2500);
+}
+
+async function _flushSync(){
+  if(!_syncToken||!_dirtyKeys.size)return;
+  const keys=Array.from(_dirtyKeys);
+  const changes=[];
+  keys.forEach(k=>{
+    const raw=localStorage.getItem('lt4_'+k);
+    if(raw===null){changes.push({k,deleted:true});return;}
+    if(raw.length>SYNC_MAX_BYTES){toast('⚠️ "'+k+'" too large to sync — skipped','w');return;}
+    changes.push({k,v:raw,deleted:false});
+  });
+  if(!changes.length){_dirtyKeys.clear();return;}
+  try{
+    const r=await fetch('/api/sync.php',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_syncToken},body:JSON.stringify({changes})});
+    if(r.status===401){_forceReLogin();return;}
+    const d=await r.json();
+    if(d&&d.ok){
+      keys.forEach(k=>_dirtyKeys.delete(k));
+      if(d.server_time){_syncCursor=d.server_time;localStorage.setItem('lt4_sync_cursor',String(_syncCursor));}
+    }
+  }catch(e){/* offline/server error — keys stay dirty, retried next debounce or online event */}
+}
+
+async function _pullSync(){
+  if(!_syncToken)return;
+  try{
+    const r=await fetch('/api/sync.php?since='+_syncCursor,{headers:{'Authorization':'Bearer '+_syncToken}});
+    if(r.status===401){_forceReLogin();return;}
+    const d=await r.json();
+    if(!d||!d.ok)return;
+    const changedKeys=new Set();
+    (d.changes||[]).forEach(c=>{
+      if(_dirtyKeys.has(c.k))return; // a pending local edit wins until it's flushed
+      if(c.deleted)localStorage.removeItem('lt4_'+c.k);
+      else localStorage.setItem('lt4_'+c.k,c.v);
+      changedKeys.add(c.k);
+    });
+    if(d.server_time){_syncCursor=Math.max(_syncCursor,d.server_time);localStorage.setItem('lt4_sync_cursor',String(_syncCursor));}
+    if(changedKeys.size)_applyRemoteChanges(changedKeys);
+  }catch(e){/* offline — silently skip, retried on next interval/focus */}
+}
+
+function _applyRemoteChanges(changedKeys){
+  let needsAll=false;
+  changedKeys.forEach(k=>{
+    if(k==='habits'){habits=S.get('habits',[]);needsAll=true;}
+    else if(k==='tasks'){tasks=S.get('tasks',[]);needsAll=true;}
+    else if(k==='goals'){goals=S.get('goals',[]);needsAll=true;}
+    else if(k==='logs'){logs=S.get('logs',{});needsAll=true;}
+    else if(k==='birthdays'){birthdays=S.get('birthdays',[]);needsAll=true;}
+    else if(k==='events'){events=S.get('events',[]);needsAll=true;}
+    else if(k==='finance'){finance=S.get('finance',[]);needsAll=true;if(document.getElementById('view-finance')?.classList.contains('on')&&typeof renderFinance==='function')renderFinance();}
+    else if(k==='visionItems'){visionItems=S.get('visionItems',[]);if(typeof renderVision==='function')renderVision();}
+    else if(k==='stickyNotes'){if(typeof _stickyNotes!=='undefined')_stickyNotes=S.get('stickyNotes',[]);if(typeof renderStickyNotes==='function')renderStickyNotes();}
+    else if(k==='libBooks'){if(document.getElementById('library-modal')?.classList.contains('open')&&typeof renderLibShelf==='function')renderLibShelf();}
+    else if(k.indexOf('nb')===0){if(document.getElementById('notebook-modal')?.classList.contains('open')){if(typeof renderNbShelf==='function')renderNbShelf();if(typeof nbLoadPage==='function')nbLoadPage();}}
+  });
+  if(needsAll)renderAll(true);
+  toast('🔄 Synced from another device','s');
+}
+
+window.addEventListener('online',_flushSync);
+window.addEventListener('focus',_pullSync);
+setInterval(_pullSync,25000);
 let habits=S.get('habits',[]),tasks=S.get('tasks',[]),goals=S.get('goals',[]),logs=S.get('logs',{});
 let birthdays=S.get('birthdays',[]),events=S.get('events',[]);
 let finance=S.get('finance',[]);
 const LOGO_SVG=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 115" width="100%" height="100%" style="display:block"><defs><linearGradient id="lg1" x1="20%" y1="0%" x2="80%" y2="100%"><stop offset="0%" stop-color="#5ba3ff"/><stop offset="100%" stop-color="#1a56db"/></linearGradient><linearGradient id="lh1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="rgba(255,255,255,.38)"/><stop offset="100%" stop-color="rgba(255,255,255,0)"/></linearGradient></defs><path d="M50 3 L93 22 L93 62 Q93 98 50 114 Q7 98 7 62 L7 22 Z" fill="#c0d4f0"/><path d="M50 8 L88 25 L88 62 Q88 94 50 110 Q12 94 12 62 L12 25 Z" fill="url(#lg1)"/><path d="M50 10 L87 26 L87 61 Q86 89 62 106 L62 12 Z" fill="url(#lh1)" opacity=".65"/><ellipse cx="50" cy="44" rx="9" ry="8" fill="#1c2240"/><line x1="44" y1="38" x2="35" y2="28" stroke="#1c2240" stroke-width="2.5" stroke-linecap="round"/><line x1="56" y1="38" x2="65" y2="28" stroke="#1c2240" stroke-width="2.5" stroke-linecap="round"/><circle cx="34" cy="27" r="2.2" fill="#1c2240"/><circle cx="66" cy="27" r="2.2" fill="#1c2240"/><ellipse cx="50" cy="63" rx="15" ry="17" fill="#1c2240"/><line x1="35" y1="53" x2="19" y2="47" stroke="#1c2240" stroke-width="2.5" stroke-linecap="round"/><line x1="35" y1="62" x2="17" y2="62" stroke="#1c2240" stroke-width="2.5" stroke-linecap="round"/><line x1="36" y1="71" x2="20" y2="78" stroke="#1c2240" stroke-width="2.5" stroke-linecap="round"/><line x1="65" y1="53" x2="81" y2="47" stroke="#1c2240" stroke-width="2.5" stroke-linecap="round"/><line x1="65" y1="62" x2="83" y2="62" stroke="#1c2240" stroke-width="2.5" stroke-linecap="round"/><line x1="64" y1="71" x2="80" y2="78" stroke="#1c2240" stroke-width="2.5" stroke-linecap="round"/><circle cx="50" cy="65" r="11" fill="#e53935"/><rect x="48" y="57" width="4" height="8" rx="2" fill="white"/><circle cx="50" cy="70" r="2.5" fill="white"/></svg>`;
 let customIncSrc=S.get('customIncSrc',[]);
 let customExpCat=S.get('customExpCat',[]);
-let profileData=S.get('profile',{displayName:'Admin',username:'admin',password:'admin'});
+let profileData=S.get('profile',{displayName:'Admin'});
 let sectionNames=S.get('sectionNames',{habits:'Habits',tasks:'Tasks',goals:'Goals',evbday:'Events & Birthday'});
 let timetable=S.get('timetable',[]);
 let visionItems=S.get('visionItems',[]);
 let _ttWeekOff=0,_ttView='day',_selTTColor='#7c3aed',_selVBColor='#7c3aed',_selVBCat='career',_vbEditId=null,_ttEditId=null,_vbFileData=null;
-let _loggedIn=sessionStorage.getItem('lt4_session')==='1';
+let _loggedIn=false; // set from _syncToken in initAuth()
 let _editFinId=null;
 let finPeriod='month',finType='income';
 let selC='#7c3aed',selEC='#3b82f6',monthOff=0,sumTab='daily',goalTab='daily';
@@ -2540,8 +2640,8 @@ function renderDaily(){
       <div class="chk${done?' on':''}" data-th="${h.id}">${done?'✓':''}</div>
       <div class="tk-bar" style="background:${h.color}"></div>
       <div class="tk-info">
-        <div class="tk-name${done?' strike':''}">${h.name}${sk>1?`<span class="spill">🔥${sk}d</span>`:''}${priBadge(h.pri||'med')}</div>
-        <div class="tk-meta">${CATS[h.cat]||''}${h.cat}${h.desc?' · '+h.desc:''}</div>
+        <div class="tk-name${done?' strike':''}">${escapeHtml(h.name)}${sk>1?`<span class="spill">🔥${sk}d</span>`:''}${priBadge(h.pri||'med')}</div>
+        <div class="tk-meta">${CATS[h.cat]||''}${escapeHtml(h.cat)}${h.desc?' · '+escapeHtml(h.desc):''}</div>
       </div>
       <div class="tk-right">
         <div class="tk-pct" style="color:${h.color}">${pct}% wk</div>
@@ -2554,10 +2654,10 @@ function renderDaily(){
   if(!goals.length){gEl.innerHTML='<div class="empty">No goals yet. <span style="color:#a78bfa;cursor:pointer" data-vl="goals">Add a goal →</span></div>';return;}
   gEl.innerHTML=goals.slice(0,6).map((g,i)=>{
     const c=g.color||GCOLS[i%GCOLS.length];
-    if(g.type==='daily'){const done=!!log.goals[g.id];return `<div class="tick-item${done?' done':''}" data-tg="${g.id}" data-gt="daily"><div class="chk${done?' on':''}" data-tg="${g.id}" data-gt="daily">${done?'✓':''}</div><div class="tk-info"><div class="tk-name${done?' strike':''}">${g.name}${priBadge(g.pri||'med')}</div><div class="tk-meta" style="color:${c}">Daily Goal</div></div></div>`;}
-    if(g.type==='weekly'){const done=!!getWLog().weekGoals[g.id];return `<div class="tick-item${done?' done':''}" data-tg="${g.id}" data-gt="weekly"><div class="chk${done?' on':''}" data-tg="${g.id}" data-gt="weekly">${done?'✓':''}</div><div class="tk-info"><div class="tk-name${done?' strike':''}">${g.name}${priBadge(g.pri||'med')}</div><div class="tk-meta" style="color:${c}">Weekly Goal</div></div></div>`;}
+    if(g.type==='daily'){const done=!!log.goals[g.id];return `<div class="tick-item${done?' done':''}" data-tg="${g.id}" data-gt="daily"><div class="chk${done?' on':''}" data-tg="${g.id}" data-gt="daily">${done?'✓':''}</div><div class="tk-info"><div class="tk-name${done?' strike':''}">${escapeHtml(g.name)}${priBadge(g.pri||'med')}</div><div class="tk-meta" style="color:${c}">Daily Goal</div></div></div>`;}
+    if(g.type==='weekly'){const done=!!getWLog().weekGoals[g.id];return `<div class="tick-item${done?' done':''}" data-tg="${g.id}" data-gt="weekly"><div class="chk${done?' on':''}" data-tg="${g.id}" data-gt="weekly">${done?'✓':''}</div><div class="tk-info"><div class="tk-name${done?' strike':''}">${escapeHtml(g.name)}${priBadge(g.pri||'med')}</div><div class="tk-meta" style="color:${c}">Weekly Goal</div></div></div>`;}
     const pct=Math.min(100,Math.round((g.current||0)/g.target*100));
-    return `<div class="ng-item"><div class="ng-info"><div class="ng-name">${g.name} <span style="font-size:9px;color:var(--muted)">${g.type}</span></div><div class="ng-bar"><div class="ng-bf" style="width:${pct}%;background:${c}"></div></div><div class="ng-meta"><span>${g.current||0}/${g.target} ${g.unit}</span><span style="color:${c};font-weight:700">${pct}%</span></div></div><div class="ng-act"><button class="ng-btn" data-gi="${g.id}" data-gb="1">+1</button></div></div>`;
+    return `<div class="ng-item"><div class="ng-info"><div class="ng-name">${escapeHtml(g.name)} <span style="font-size:9px;color:var(--muted)">${g.type}</span></div><div class="ng-bar"><div class="ng-bf" style="width:${pct}%;background:${c}"></div></div><div class="ng-meta"><span>${g.current||0}/${g.target} ${escapeHtml(g.unit)}</span><span style="color:${c};font-weight:700">${pct}%</span></div></div><div class="ng-act"><button class="ng-btn" data-gi="${g.id}" data-gb="1">+1</button></div></div>`;
   }).join('');
   // Birthday widget at top of daily
   renderBdayWidget();
@@ -2578,7 +2678,7 @@ function renderPriorities(td,log,dayT){
       const cls=done?'on':'';
       return `<div class="pri-item">
         <div class="ptchk${done?' on-'+p:''}" data-tt="${t.id}" data-td="${td}">${done?'✓':''}</div>
-        <span class="pt-name${done?' strike':''}">${t.name}</span>
+        <span class="pt-name${done?' strike':''}">${escapeHtml(t.name)}</span>
         <span class="tdel" data-dt="${t.id}">🗑</span>
       </div>`;}).join('');
   });
@@ -2600,7 +2700,7 @@ function renderWeekly(){
   const dayHdr=wd.map(d=>`<div style="width:30px;text-align:center;font-size:9px;color:${d.isToday?'#a78bfa':'var(--muted)'};font-weight:${d.isToday?700:400}">${d.label}</div>`).join('');
   const rows=habits.map(h=>{
     const dots=wd.map(d=>{const done=!!logs[d.date]?.habits?.[h.id];return `<div style="width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;border:1px solid ${done?h.color:'var(--border)'};background:${done?h.color+'22':'rgba(255,255,255,.02)'};color:${done?h.color:'var(--muted)'};${d.isToday?'border-color:'+h.color+';':''}">${done?'✓':''}</div>`;}).join('');
-    return `<div style="display:flex;align-items:center;gap:5px;margin-bottom:5px"><div style="width:130px;font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">${h.name}</div>${dots}</div>`;}).join('');
+    return `<div style="display:flex;align-items:center;gap:5px;margin-bottom:5px"><div style="width:130px;font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">${escapeHtml(h.name)}</div>${dots}</div>`;}).join('');
   document.getElementById('h-grid').innerHTML=`<div style="display:flex;gap:5px;margin-bottom:4px;border-bottom:1px solid var(--border);padding-bottom:5px"><div style="width:130px;flex-shrink:0"></div>${dayHdr}</div>${rows}`;
 }
 
@@ -2708,8 +2808,8 @@ function renderMonthly(){
     const todayBds2=bdToday();
     const todayEvs2=events.filter(ev=>ev.date===td);
     let pills='';
-    todayBds2.forEach(b=>{ pills+=`<div class="dns-pill bday">🎂 ${b.name}'s Birthday!</div>`; });
-    todayEvs2.forEach(ev=>{ pills+=`<div class="dns-pill event">📌 ${ev.title}</div>`; });
+    todayBds2.forEach(b=>{ pills+=`<div class="dns-pill bday">🎂 ${escapeHtml(b.name)}'s Birthday!</div>`; });
+    todayEvs2.forEach(ev=>{ pills+=`<div class="dns-pill event">📌 ${escapeHtml(ev.title)}</div>`; });
     mStrip.innerHTML=pills;
   }
   const first=new Date(yr,mo,1).getDay(),dIn=new Date(yr,mo+1,0).getDate();
@@ -2806,8 +2906,8 @@ function renderYearly(){
     const todayBds3=bdToday();
     const todayEvs3=events.filter(ev=>ev.date===today());
     let pills='';
-    todayBds3.forEach(b=>{ pills+=`<div class="dns-pill bday">🎂 ${b.name}'s Birthday!</div>`; });
-    todayEvs3.forEach(ev=>{ pills+=`<div class="dns-pill event">📌 ${ev.title}</div>`; });
+    todayBds3.forEach(b=>{ pills+=`<div class="dns-pill bday">🎂 ${escapeHtml(b.name)}'s Birthday!</div>`; });
+    todayEvs3.forEach(ev=>{ pills+=`<div class="dns-pill event">📌 ${escapeHtml(ev.title)}</div>`; });
     yStrip.innerHTML=pills;
   }
   const mData=MONTHS.map((mn,mi)=>{
@@ -2830,7 +2930,7 @@ function renderYearly(){
 function renderHabits(){
   const td=today(),log=getLog(td);
   const top=habits.map(h=>({...h,sk:habitStreak(h.id)})).filter(h=>h.sk>0).sort((a,b)=>b.sk-a.sk).slice(0,8);
-  document.getElementById('s-chips').innerHTML=top.map(h=>`<div class="chip" style="background:${h.color}18;border:1px solid ${h.color}33;color:${h.color}">🔥 ${h.name}: ${h.sk}d</div>`).join('');
+  document.getElementById('s-chips').innerHTML=top.map(h=>`<div class="chip" style="background:${h.color}18;border:1px solid ${h.color}33;color:${h.color}">🔥 ${escapeHtml(h.name)}: ${h.sk}d</div>`).join('');
   const el=document.getElementById('all-habits');
   if(!habits.length){el.innerHTML='<div class="empty"><div class="ei">🌱</div>No habits yet.</div>';return;}
   const wd=weekData();
@@ -2841,8 +2941,8 @@ function renderHabits(){
       <div class="chk${done?' on':''}" data-th="${h.id}">${done?'✓':''}</div>
       <div class="tk-bar" style="background:${h.color}"></div>
       <div class="tk-info">
-        <div class="tk-name${done?' strike':''}">${h.name}${sk>1?`<span class="spill">🔥${sk}d</span>`:''}${priBadge(h.pri||'med')}</div>
-        <div class="tk-meta">${CATS[h.cat]||''}${h.cat}${h.desc?' · '+h.desc:''}</div>
+        <div class="tk-name${done?' strike':''}">${escapeHtml(h.name)}${sk>1?`<span class="spill">🔥${sk}d</span>`:''}${priBadge(h.pri||'med')}</div>
+        <div class="tk-meta">${CATS[h.cat]||''}${escapeHtml(h.cat)}${h.desc?' · '+escapeHtml(h.desc):''}</div>
         <div class="mbar" style="width:100px;margin-top:5px"><div class="mbar-f" style="width:${pct}%;background:${h.color}"></div></div>
       </div>
       <div class="tk-right">
@@ -2869,7 +2969,7 @@ function renderTasks(){
       const done=!!logs[t.date]?.tasks?.[t.id];
       return `<div class="pri-item">
         <div class="ptchk${done?' on-'+p:''}" data-tt="${t.id}" data-td="${t.date||td}">${done?'✓':''}</div>
-        <div><div class="pt-name${done?' strike':''}">${t.name}</div><div style="font-size:9px;color:var(--muted)">${t.date||td}</div></div>
+        <div><div class="pt-name${done?' strike':''}">${escapeHtml(t.name)}</div><div style="font-size:9px;color:var(--muted)">${t.date||td}</div></div>
         <span class="tdel" data-dt="${t.id}">🗑</span>
       </div>`;}).join('');
   });
@@ -2878,7 +2978,7 @@ function renderTasks(){
     const pc={high:'ph2',med:'pm',low:'pl'}[t.pri],pl={high:'High',med:'Med',low:'Low'}[t.pri];
     return `<div class="task-item">
       <div class="tchk${done?' on':''}" data-tt="${t.id}" data-td="${t.date||td}">${done?'✓':''}</div>
-      <div><div class="t-name${done?' strike':''}">${t.name}</div>${t.notes?`<div style="font-size:9px;color:var(--muted)">${t.notes}</div>`:''}<div style="font-size:9px;color:var(--muted)">${t.date||td}</div></div>
+      <div><div class="t-name${done?' strike':''}">${escapeHtml(t.name)}</div>${t.notes?`<div style="font-size:9px;color:var(--muted)">${escapeHtml(t.notes)}</div>`:''}<div style="font-size:9px;color:var(--muted)">${t.date||td}</div></div>
       <span class="t-pri ${pc}" style="margin-left:auto">${pl}</span>
       <span class="tdel" data-dt="${t.id}">🗑</span>
     </div>`;
@@ -2902,7 +3002,7 @@ function renderGoals(){
       return `<div class="tick-item${done?' done':''}" data-tg="${g.id}" data-gt="daily">
         <div class="chk${done?' on':''}" data-tg="${g.id}" data-gt="daily">${done?'✓':''}</div>
         <div class="tk-bar" style="background:${c}"></div>
-        <div class="tk-info"><div class="tk-name${done?' strike':''}">${g.name}${priBadge(g.pri||'med')}</div><div class="tk-meta">Tick daily · ${wDone}/7 this week</div></div>
+        <div class="tk-info"><div class="tk-name${done?' strike':''}">${escapeHtml(g.name)}${priBadge(g.pri||'med')}</div><div class="tk-meta">Tick daily · ${wDone}/7 this week</div></div>
         <div class="tk-right"><div class="tk-pct" style="color:${c}">${Math.round(wDone/7*100)}%</div><div class="mbar"><div class="mbar-f" style="width:${Math.round(wDone/7*100)}%;background:${c}"></div></div><button class="del-btn" data-dg="${g.id}">Del</button></div>
       </div>`;}).join('');};
   const rWeek=()=>{
@@ -2913,7 +3013,7 @@ function renderGoals(){
       return `<div class="tick-item${done?' done':''}" data-tg="${g.id}" data-gt="weekly">
         <div class="chk${done?' on':''}" data-tg="${g.id}" data-gt="weekly">${done?'✓':''}</div>
         <div class="tk-bar" style="background:${c}"></div>
-        <div class="tk-info"><div class="tk-name${done?' strike':''}">${g.name}${priBadge(g.pri||'med')}</div><div class="tk-meta">${done?'✅ Done this week':'⏳ Not yet this week'}</div></div>
+        <div class="tk-info"><div class="tk-name${done?' strike':''}">${escapeHtml(g.name)}${priBadge(g.pri||'med')}</div><div class="tk-meta">${done?'✅ Done this week':'⏳ Not yet this week'}</div></div>
         <div class="tk-right"><button class="del-btn" data-dg="${g.id}">Del</button></div>
       </div>`;}).join('');};
   const rNum=(type,elId)=>{
@@ -2921,7 +3021,7 @@ function renderGoals(){
     if(!ng.length){el.innerHTML=`<div class="empty"><div class="ei">🎯</div>No ${type} goals. Click "+ New Goal" → choose ${type}.</div>`;return;}
     el.innerHTML=ng.map((g,i)=>{
       const pct=Math.min(100,Math.round((g.current||0)/g.target*100)),c=g.color||GCOLS[i%GCOLS.length];
-      return `<div class="ng-item"><div class="ng-info"><div class="ng-name">${g.name}${priBadge(g.pri||'med')}</div><div class="ng-bar"><div class="ng-bf" style="width:${pct}%;background:${c}"></div></div><div class="ng-meta"><span><strong>${g.current||0}</strong> of <strong>${g.target}</strong> ${g.unit}</span><span style="color:${c};font-weight:700;font-size:13px">${pct}%</span></div></div><div class="ng-act"><button class="ng-btn" data-gi="${g.id}" data-gb="1">+1</button><button class="ng-btn" data-gi="${g.id}" data-gb="5">+5</button><button class="del-btn" data-dg="${g.id}" style="margin-left:4px">✕</button></div></div>`;}).join('');};
+      return `<div class="ng-item"><div class="ng-info"><div class="ng-name">${escapeHtml(g.name)}${priBadge(g.pri||'med')}</div><div class="ng-bar"><div class="ng-bf" style="width:${pct}%;background:${c}"></div></div><div class="ng-meta"><span><strong>${g.current||0}</strong> of <strong>${g.target}</strong> ${escapeHtml(g.unit)}</span><span style="color:${c};font-weight:700;font-size:13px">${pct}%</span></div></div><div class="ng-act"><button class="ng-btn" data-gi="${g.id}" data-gb="1">+1</button><button class="ng-btn" data-gi="${g.id}" data-gb="5">+5</button><button class="del-btn" data-dg="${g.id}" style="margin-left:4px">✕</button></div></div>`;}).join('');};
   rDail();rWeek();rNum('monthly','g-monthly');rNum('yearly','g-yearly');
 }
 
@@ -3085,7 +3185,7 @@ function showFloatNotif(id,icon,title,sub,cls,labelTxt){
   el.id='fn-'+id;
   el.style.animationDelay=delay;
   const lbl=labelTxt||({'fn-blue':'Event','fn-red':'Urgent','fn-orange':'Warning','fn-pink':'Birthday'}[cls||'fn-blue']||'Alert');
-  el.innerHTML=`<div class="fnotif-dot"></div><div class="fnotif-icon-wrap">${icon}</div><div class="fnotif-body"><div class="fnotif-label">${lbl}</div><div class="fnotif-title">${title}</div>${sub?`<div class="fnotif-sub">${sub}</div>`:''}</div><button class="fnotif-x" data-fn="${id}">✕</button>`;
+  el.innerHTML=`<div class="fnotif-dot"></div><div class="fnotif-icon-wrap">${icon}</div><div class="fnotif-body"><div class="fnotif-label">${escapeHtml(lbl)}</div><div class="fnotif-title">${escapeHtml(title)}</div>${sub?`<div class="fnotif-sub">${escapeHtml(sub)}</div>`:''}</div><button class="fnotif-x" data-fn="${id}">✕</button>`;
   stack.appendChild(el);
   setTimeout(()=>dismissFloatNotif(id),5000); // auto-dismiss after 5s
 }
@@ -3237,6 +3337,11 @@ document.addEventListener('click',function(e){
     const d=new Date();d.setDate(d.getDate()+(_ttView==='day'?_ttWeekOff:0));
     openTTModal(d.getDay());return;
   }
+  if(id==='tt-reset-btn'){resetTimetable();return;}
+  if(id==='tt-everyday-btn'){
+    document.querySelectorAll('#tt-days-row input[type=checkbox]').forEach(cb=>cb.checked=true);
+    return;
+  }
   const ttRow=t.closest('tr[data-ttid]');
   if(ttRow&&document.getElementById('view-timetable')?.classList.contains('on')){
     openTTModal(null,null,ttRow.dataset.ttid);return;
@@ -3283,12 +3388,11 @@ document.addEventListener('click',function(e){
   if(vbClr){_selVBColor=vbClr.dataset.c;document.querySelectorAll('#vb-clrs .clr').forEach(c=>c.classList.toggle('on',c.dataset.c===_selVBColor));return;}
   // BUG BUTTON
   // Finance buttons
-  // Login
-  if(id==='login-btn'){doLogin();return;}
   // Weather
   if(id==='w-allow'){_weatherPref='on';S.set('weatherPref','on');fetchWeather();return;}
   if(id==='w-deny'){_weatherPref='off';S.set('weatherPref','off');document.getElementById('weather-ask').style.display='none';return;}
   if(id==='w-refresh'){fetchWeather();return;}
+  if(id==='sb-weather-retry-btn'){_weatherPref=null;S.set('weatherPref',null);fetchWeather();return;}
   // Edit transaction
   const defEl=t.closest('[data-def]');
   if(defEl){e.stopPropagation();openEditFinance(defEl.dataset.def);return;}
@@ -3303,12 +3407,10 @@ document.addEventListener('click',function(e){
   const siOpt=t.closest('[data-si]');
   if(siOpt){profileData.sbIcon=siOpt.dataset.si;S.set('profile',profileData);applySbIcon();document.querySelectorAll('.si-opt').forEach(b=>b.classList.toggle('active',b.dataset.si===siOpt.dataset.si));toast('Icon updated! ✅','s');return;}
   if(id==='set-dname-save'){const v=document.getElementById('set-dname').value.trim();if(!v){toast('Enter a name','w');return;}profileData.displayName=v;S.set('profile',profileData);updateWelcome();toast('✅ Display name updated!','s');return;}
-  if(id==='set-uname-save'){const v=document.getElementById('set-uname').value.trim();if(!v){toast('Enter a username','w');return;}profileData.username=v;S.set('profile',profileData);toast('✅ Username updated!','s');return;}
-  if(id==='set-pass-save'){const p1=document.getElementById('set-pass1').value,p2=document.getElementById('set-pass2').value;if(!p1){toast('Enter a password','w');return;}if(p1!==p2){toast('Passwords do not match','w');return;}profileData.password=p1;S.set('profile',profileData);document.getElementById('set-pass1').value='';document.getElementById('set-pass2').value='';toast('✅ Password updated!','s');return;}
   if(id==='set-change-cur'){openCurrencyModal();return;}
   if(id==='set-ai-copy'){genAISummary();return;}
-  if(id==='set-logout'){sessionStorage.removeItem('lt4_session');_loggedIn=false;location.reload();return;}
-  if(id==='set-reset'){if(!confirm('Delete ALL data permanently? This cannot be undone.')){return;}['habits','tasks','goals','logs','birthdays','events','finance','customIncSrc','customExpCat','profile','currencyData','weatherPref','appName','appSub','theme'].forEach(k=>localStorage.removeItem('lt4_'+k));sessionStorage.removeItem('lt4_session');location.reload();return;}
+  if(id==='set-logout'){doLogout();return;}
+  if(id==='set-reset'){doResetAllData();return;}
   if(id==='bf-inc'||id==='bf-inc2'||id==='fw-inc-btn'){openFinanceModal('income');return;}
   if(id==='bf-exp'||id==='bf-exp2'||id==='fw-exp-btn'){openFinanceModal('expense');return;}
   if(id==='fm-save'){saveFinance();return;}
@@ -3427,7 +3529,7 @@ function renderBirthdays(){
     strip.innerHTML=up.map(b=>{
       const c=b.color||BCOL[b.cat]||'#e11d48';
       return `<div class="up-pill${b.isToday?' is-today':''}">
-        <div class="up-n" style="color:${c}">${b.name.split(' ')[0]}</div>
+        <div class="up-n" style="color:${c}">${escapeHtml(b.name.split(' ')[0])}</div>
         <div class="up-d" style="color:${b.isToday?'#f472b6':c}">${b.isToday?'🎂':b.daysUntil}</div>
         <div class="up-l">${b.isToday?'TODAY':'days'}</div>
       </div>`;
@@ -3456,13 +3558,13 @@ function renderBirthdays(){
       return `<div class="bday-card${isT?' is-today':''}">
         <div class="bday-av" style="background:${c}22;border:2px solid ${c}44">${BCAT[b.cat]||'🎂'}</div>
         <div class="bday-info">
-          <div class="bday-name">${b.name}${isT?'<span class="bday-tag" style="background:rgba(244,114,182,.15);color:#f472b6;margin-left:6px">🎂 TODAY</span>':''}${bdPriBadge(b.pri||'med')}</div>
+          <div class="bday-name">${escapeHtml(b.name)}${isT?'<span class="bday-tag" style="background:rgba(244,114,182,.15);color:#f472b6;margin-left:6px">🎂 TODAY</span>':''}${bdPriBadge(b.pri||'med')}</div>
           <div class="bday-meta">
             <span>${MONTHS[m-1]} ${b.day}${b.year?' · '+b.year:''}</span>
             ${age!==null?`<span style="color:${c}">Turns ${age+1} 🎂</span>`:''}
-            <span class="bday-tag" style="background:${c}18;color:${c}">${BCAT[b.cat]||'⭐'} ${b.cat}</span>
+            <span class="bday-tag" style="background:${c}18;color:${c}">${BCAT[b.cat]||'⭐'} ${escapeHtml(b.cat)}</span>
           </div>
-          ${b.wish?`<div style="font-size:10px;color:var(--muted);margin-top:3px;font-style:italic">"${b.wish}"</div>`:''}
+          ${b.wish?`<div style="font-size:10px;color:var(--muted);margin-top:3px;font-style:italic">"${escapeHtml(b.wish)}"</div>`:''}
         </div>
         <div style="text-align:right;flex-shrink:0">
           ${isT
@@ -3494,10 +3596,10 @@ function renderBirthdays(){
         return `<div class="bday-card${isToday?' is-today':''}">
           <div class="bday-av" style="background:${col}22;border:2px solid ${col}44;font-size:18px">${evType}</div>
           <div class="bday-info">
-            <div class="bday-name">${ev.title}${isToday?'<span class="bday-tag" style="background:rgba(59,130,246,.15);color:#60a5fa;margin-left:6px">📅 TODAY</span>':''}</div>
+            <div class="bday-name">${escapeHtml(ev.title)}${isToday?'<span class="bday-tag" style="background:rgba(59,130,246,.15);color:#60a5fa;margin-left:6px">📅 TODAY</span>':''}</div>
             <div class="bday-meta">
               <span>${dateStr}${ev.time?' · '+ev.time:''}</span>
-              ${ev.note?`<span style="color:var(--muted)">${ev.note}</span>`:''}
+              ${ev.note?`<span style="color:var(--muted)">${escapeHtml(ev.note)}</span>`:''}
             </div>
           </div>
           <div style="text-align:right;flex-shrink:0">
@@ -3541,7 +3643,7 @@ function renderBdayWidget(){
       dstrip.innerHTML=up30.map(b=>{
         const c=b.color||BCOL[b.cat]||'#e11d48';
         return `<div class="up-pill${b.isToday?' is-today':''}">
-          <div class="up-n" style="color:${c}">${b.name.split(' ')[0]}</div>
+          <div class="up-n" style="color:${c}">${escapeHtml(b.name.split(' ')[0])}</div>
           <div class="up-d" style="color:${b.isToday?'#f472b6':c}">${b.isToday?'🎂':b.daysUntil}</div>
           <div class="up-l">${b.isToday?'TODAY':'days'}</div>
         </div>`;
@@ -3767,8 +3869,8 @@ function openDayEvents(date){
       return `<div class="ev-item">
         <div class="ev-color-bar" style="background:${c}"></div>
         <div class="ev-info">
-          <div class="ev-title">${typeIcon} ${ev.title}</div>
-          <div class="ev-meta">${ev.time||'All day'}${ev.note?' · '+ev.note:''}</div>
+          <div class="ev-title">${typeIcon} ${escapeHtml(ev.title)}</div>
+          <div class="ev-meta">${ev.time||'All day'}${ev.note?' · '+escapeHtml(ev.note):''}</div>
         </div>
         <button class="ev-del" data-dev="${ev.id}">🗑</button>
       </div>`;
@@ -3826,7 +3928,7 @@ function renderFinance(){
       return `<div class="f-src-item">
         <div class="f-src-icon">${lbl.split(' ')[0]}</div>
         <div class="f-src-info">
-          <div class="f-src-name">${lbl.slice(lbl.indexOf(' ')+1)} <span class="f-src-cnt">(${cnt}×)</span></div>
+          <div class="f-src-name">${escapeHtml(lbl.slice(lbl.indexOf(' ')+1))} <span class="f-src-cnt">(${cnt}×)</span></div>
           <div class="f-src-bar-wrap"><div class="f-src-bar" style="width:${pct}%;background:${c}"></div></div>
         </div>
         <div class="f-src-amt" style="color:${c}">+${fmtMoney(incBySource[k])}</div>
@@ -3849,7 +3951,7 @@ function renderFinance(){
       return `<div class="f-src-item">
         <div class="f-src-icon">${lbl.split(' ')[0]}</div>
         <div class="f-src-info">
-          <div class="f-src-name">${lbl.slice(lbl.indexOf(' ')+1)} <span class="f-src-cnt">(${cnt}×)</span></div>
+          <div class="f-src-name">${escapeHtml(lbl.slice(lbl.indexOf(' ')+1))} <span class="f-src-cnt">(${cnt}×)</span></div>
           <div class="f-src-bar-wrap"><div class="f-src-bar" style="width:${pct}%;background:${c}"></div></div>
         </div>
         <div class="f-src-amt" style="color:${c}">−${fmtMoney(expByCat[k])}</div>
@@ -3894,7 +3996,7 @@ function renderFinance(){
     return `<div class="f-tx-item">
       <div class="f-tx-icon" style="background:${col}18">${icon}</div>
       <div class="f-tx-info">
-        <div class="f-tx-name">${name}${tx.note?' — '+tx.note:''}</div>
+        <div class="f-tx-name">${escapeHtml(name)}${tx.note?' — '+escapeHtml(tx.note):''}</div>
         <div class="f-tx-meta">${tx.date}${isInc?' · Income':' · Expense'}</div>
       </div>
       <div class="f-tx-amt" style="color:${col}">${isInc?'+':'−'}${currSym} ${fmtMoney(tx.amount)}</div>
@@ -3932,7 +4034,7 @@ function renderFinanceWidget(){
       const name=lbl.slice(lbl.indexOf(' ')+1);
       return `<div class="fw-tx-row">
         <div class="fw-tx-ico" style="background:${col}20">${icon}</div>
-        <div class="fw-tx-name">${name}${tx.note?' · '+tx.note:''}</div>
+        <div class="fw-tx-name">${escapeHtml(name)}${tx.note?' · '+escapeHtml(tx.note):''}</div>
         <div class="fw-tx-amt" style="color:${col}">${isInc?'+':'−'}${currSym} ${fmtMoney(tx.amount)}</div>
       </div>`;
     }).join('');
@@ -3951,7 +4053,7 @@ function _buildFinOpts(){
     <option value="trading">📈 Money Trading</option>
     <option value="amazon">🛒 Amazon / Noon</option>
     <option value="alibaba">🏭 Alibaba Business</option>`+
-    customIncSrc.map(s=>`<option value="${s.id}">🔹 ${s.label}</option>`).join('')+
+    customIncSrc.map(s=>`<option value="${s.id}">🔹 ${escapeHtml(s.label)}</option>`).join('')+
     `<option value="other_inc">➕ Other Income</option>`;
   catEl.innerHTML=
     `<option value="food">🍔 Food &amp; Dining</option>
@@ -3962,7 +4064,7 @@ function _buildFinOpts(){
     <option value="bills">📱 Bills &amp; Utilities</option>
     <option value="education">📚 Education</option>
     <option value="entertainment">🎮 Entertainment</option>`+
-    customExpCat.map(c=>`<option value="${c.id}">💰 ${c.label}</option>`).join('')+
+    customExpCat.map(c=>`<option value="${c.id}">💰 ${escapeHtml(c.label)}</option>`).join('')+
     `<option value="other_exp">💸 Other Expense</option>`;
 }
 function _finSrcLabel(k){if(FINC_SRC[k])return FINC_SRC[k];const s=customIncSrc.find(x=>x.id===k);return s?'🔹 '+s.label:'🔹 Custom';}
@@ -4074,6 +4176,7 @@ function saveFinance(){
 
 // ===== THEME SYSTEM =====
 const THEMES={
+  professional:{primary:'#2563eb',pl:'#93c5fd',pa:'37,99,235', bg:'#0b1120',card:'#111827',card2:'#1e293b',sb:'#0a0f1c',gs:'#3b82f6',ge:'#0ea5e9'},
   purple: {primary:'#7c3aed',pl:'#c4b5fd',pa:'139,92,246', bg:'#07061a',card:'#0e0c2a',card2:'#15133d',sb:'#060518',gs:'#8b5cf6',ge:'#6366f1'},
   ocean:  {primary:'#0284c7',pl:'#7dd3fc',pa:'2,132,199',  bg:'#020b18',card:'#041825',card2:'#072537',sb:'#030e1a',gs:'#0ea5e9',ge:'#22d3ee'},
   emerald:{primary:'#16a34a',pl:'#86efac',pa:'22,163,74',  bg:'#030c06',card:'#06180b',card2:'#0a2412',sb:'#040e07',gs:'#22c55e',ge:'#10b981'},
@@ -4083,9 +4186,9 @@ const THEMES={
   teal:   {primary:'#0d9488',pl:'#5eead4',pa:'20,184,166', bg:'#020e0d',card:'#051a19',card2:'#082725',sb:'#030c0b',gs:'#14b8a6',ge:'#2dd4bf'},
   neon:   {primary:'#9333ea',pl:'#e879f9',pa:'217,70,239', bg:'#07020f',card:'#0e041e',card2:'#16062b',sb:'#050112',gs:'#d946ef',ge:'#9333ea'},
 };
-const THEME_ORDER=['purple','ocean','emerald','sunset','rose','gold','teal','neon'];
-const THEME_NAMES={purple:'Violet Dream',ocean:'Deep Sea',emerald:'Forest Dark',sunset:'Volcano',rose:'Cherry Blossom',gold:'Gold Mine',teal:'Arctic Glow',neon:'Neon Nights'};
-let currentTheme=S.get('theme','purple');
+const THEME_ORDER=['professional','purple','ocean','emerald','sunset','rose','gold','teal','neon'];
+const THEME_NAMES={professional:'Professional Navy',purple:'Violet Dream',ocean:'Deep Sea',emerald:'Forest Dark',sunset:'Volcano',rose:'Cherry Blossom',gold:'Gold Mine',teal:'Arctic Glow',neon:'Neon Nights'};
+let currentTheme=S.get('theme','professional');
 let autoOn=S.get('autoTheme',false);
 let autoTimer=null;
 
@@ -4141,7 +4244,7 @@ if(autoOn){document.getElementById('th-auto').classList.add('on');autoTimer=setI
   const editBtn= document.getElementById('edit-name-btn');
 
   // Load saved name
-  const saved = S.get('appName','Life Tracker');
+  const saved = S.get('appName','RedBug Life Tracking');
   const savedSub = S.get('appSub','Personal Progress System');
   nameEl.textContent = saved;
   subEl.textContent  = savedSub;
@@ -4158,7 +4261,7 @@ if(autoOn){document.getElementById('th-auto').classList.add('on');autoTimer=setI
   }
   function commitEdit(){
     nameEl.contentEditable='false';
-    const val=nameEl.textContent.trim()||'Life Tracker';
+    const val=nameEl.textContent.trim()||'RedBug Life Tracking';
     nameEl.textContent=val;
     S.set('appName',val);
     document.title=val;
@@ -4169,7 +4272,7 @@ if(autoOn){document.getElementById('th-auto').classList.add('on');autoTimer=setI
   editBtn.addEventListener('click',startEdit);
   nameEl.addEventListener('keydown',e=>{
     if(e.key==='Enter'){e.preventDefault();nameEl.blur();}
-    if(e.key==='Escape'){nameEl.textContent=S.get('appName','Life Tracker');nameEl.blur();}
+    if(e.key==='Escape'){nameEl.textContent=S.get('appName','RedBug Life Tracking');nameEl.blur();}
   });
   nameEl.addEventListener('blur',commitEdit);
 })();
@@ -4208,7 +4311,7 @@ if(autoOn){document.getElementById('th-auto').classList.add('on');autoTimer=setI
     const el=document.getElementById('lt-hero-name');
     if(!el)return;
     // always read current saved name
-    const text=S.get('appName','Life Tracker');
+    const text=S.get('appName','RedBug Life Tracking');
     scramble(el,text,()=>{
       setTimeout(loop,6000); // pause 6s then scramble again
     });
@@ -4803,38 +4906,89 @@ const QUOTES=[
 "Log the win. Then go earn the next one."
 ];
 
-// ===== AUTH / LOGIN =====
+// ===== AUTH / LOGIN (Google Sign-In) =====
+// Set this to your real OAuth Client ID from Google Cloud Console → Credentials → OAuth Client ID (Web application).
+const GOOGLE_CLIENT_ID='531368275452-q9aiitvr8vk2sglpeve19t7lr3qvn9s2.apps.googleusercontent.com';
+
+_loggedIn=!!_syncToken;
+
 (function initAuth(){
   const screen=document.getElementById('login-screen');
   const appNameEl=document.getElementById('login-app-name');
-  if(appNameEl)appNameEl.textContent=S.get('appName','Life Tracker');
-  if(_loggedIn){screen.classList.add('hide');updateWelcome();initWeather();return;}
+  if(appNameEl)appNameEl.textContent=S.get('appName','RedBug Life Tracking');
+  if(_loggedIn){
+    screen.classList.add('hide');
+    updateWelcome();initWeather();
+    _pullSync();
+    return;
+  }
   screen.classList.remove('hide');
-  setTimeout(()=>document.getElementById('login-user').focus(),100);
-  // Enter key on login fields
-  ['login-user','login-pass'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el)el.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
-  });
+  if(!GOOGLE_CLIENT_ID||GOOGLE_CLIENT_ID.indexOf('YOUR_GOOGLE_CLIENT_ID')===0){
+    document.getElementById('login-config-warn').style.display='block';
+    return;
+  }
+  _waitForGoogleSignIn();
 })();
 
-function doLogin(){
-  const u=document.getElementById('login-user').value.trim();
-  const p=document.getElementById('login-pass').value;
+function _waitForGoogleSignIn(tries){
+  tries=tries||0;
+  if(window.google&&window.google.accounts&&window.google.accounts.id){
+    google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:handleGoogleCredential});
+    google.accounts.id.renderButton(document.getElementById('g-signin-btn'),{theme:'outline',size:'large',shape:'rectangular',text:'signin_with',logo_alignment:'left'});
+    return;
+  }
+  if(tries>50)return; // ~5s — give up quietly, button area just stays empty if GIS failed to load
+  setTimeout(()=>_waitForGoogleSignIn(tries+1),100);
+}
+
+async function handleGoogleCredential(response){
   const err=document.getElementById('login-err');
-  if(u===profileData.username&&p===profileData.password){
+  const syncing=document.getElementById('login-syncing');
+  err.style.display='none';
+  syncing.style.display='block';
+  try{
+    const r=await fetch('/api/auth-google.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id_token:response.credential})});
+    const d=await r.json();
+    if(!d||!d.ok)throw new Error((d&&d.error)||'login_failed');
+    _syncToken=d.session_token;
+    localStorage.setItem('lt4_sync_token',_syncToken);
     _loggedIn=true;
-    sessionStorage.setItem('lt4_session','1');
+    if(d.user&&d.user.displayName){profileData.displayName=d.user.displayName;S.set('profile',profileData);}
     document.getElementById('login-screen').classList.add('hide');
     updateWelcome();
     initWeather();
-    toast('👋 Welcome back, '+profileData.displayName+'!','s');
-  }else{
+    toast('👋 Welcome, '+(profileData.displayName||'')+'!','s');
+    await _pullSync();
+  }catch(e){
+    syncing.style.display='none';
     err.style.display='block';
-    document.getElementById('login-pass').value='';
-    document.getElementById('login-pass').focus();
-    setTimeout(()=>err.style.display='none',3000);
+    setTimeout(()=>err.style.display='none',4000);
   }
+}
+
+function _forceReLogin(){
+  _loggedIn=false;
+  _syncToken=null;
+  localStorage.removeItem('lt4_sync_token');
+  document.getElementById('login-screen').classList.remove('hide');
+}
+
+async function doLogout(){
+  if(_syncToken){
+    try{await fetch('/api/account.php',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_syncToken},body:JSON.stringify({action:'logout'})});}catch(e){}
+  }
+  localStorage.removeItem('lt4_sync_token');
+  localStorage.removeItem('lt4_sync_cursor');
+  location.reload();
+}
+
+async function doResetAllData(){
+  if(!confirm('Delete ALL data permanently? This cannot be undone.'))return;
+  if(_syncToken){
+    try{await fetch('/api/account.php',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_syncToken},body:JSON.stringify({action:'delete_all'})});}catch(e){}
+  }
+  Object.keys(localStorage).forEach(key=>{if(key.indexOf('lt4_')===0)localStorage.removeItem(key);});
+  location.reload();
 }
 
 // ===== WELCOME BANNER =====
@@ -4876,7 +5030,11 @@ let _weatherPref=S.get('weatherPref',null); // 'on','off', null=ask
 let _calWC=-1,_calTemp=0,_calCity='';
 function initWeather(){
   // Auto-fetch weather (sidebar only); no dashboard prompt needed
-  if(_weatherPref==='off')return;
+  if(_weatherPref==='off'){
+    const rb=document.getElementById('sb-weather-retry-btn');
+    if(rb)rb.style.display='flex';
+    return;
+  }
   fetchWeather();
 }
 async function fetchWeather(){
@@ -4898,6 +5056,8 @@ async function fetchWeather(){
     // Sidebar clock weather row
     const clkW=document.getElementById('sb-clk-weather');
     if(clkW){clkW.style.display='flex';document.getElementById('swc-icon').innerHTML=getSbWeatherIcon(wc);document.getElementById('swc-temp').textContent=Math.round(cw.temperature)+'°C';document.getElementById('swc-desc').textContent=wDesc;}
+    const rb0=document.getElementById('sb-weather-retry-btn');
+    if(rb0)rb0.style.display='none';
     // Reverse geocode city (best effort)
     try{
       const gr=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
@@ -4911,6 +5071,8 @@ async function fetchWeather(){
     if(document.getElementById('view-monthly')?.classList.contains('on'))renderMonthly();
   }catch(e){
     _weatherPref='off';S.set('weatherPref','off');
+    const rb=document.getElementById('sb-weather-retry-btn');
+    if(rb)rb.style.display='flex';
   }
 }
 
@@ -4939,9 +5101,7 @@ function applySectionNames(){
 function renderSettings(){
   // Profile fields
   const dn=document.getElementById('set-dname');
-  const un=document.getElementById('set-uname');
   if(dn)dn.value=profileData.displayName||'';
-  if(un)un.value=profileData.username||'';
   // Currency hint
   const ch=document.getElementById('set-cur-hint');
   if(ch&&currencyData)ch.textContent=currencyData.flag+' '+currencyData.name+' ('+currSym+')';
@@ -4950,13 +5110,13 @@ function renderSettings(){
   const inc=document.getElementById('set-inc-cats');
   if(inc){
     if(!customIncSrc.length)inc.innerHTML='<span style="font-size:11px;color:var(--muted)">No custom sources yet. Type a name below and click + Add.</span>';
-    else inc.innerHTML=customIncSrc.map(s=>`<div class="ccat-chip" style="border-color:${s.col}40;color:${s.col}">🔹 ${s.label}<button class="ccat-del" data-dcs="${s.id}">✕</button></div>`).join('');
+    else inc.innerHTML=customIncSrc.map(s=>`<div class="ccat-chip" style="border-color:${s.col}40;color:${s.col}">🔹 ${escapeHtml(s.label)}<button class="ccat-del" data-dcs="${s.id}">✕</button></div>`).join('');
   }
   // Custom expense categories
   const exp=document.getElementById('set-exp-cats');
   if(exp){
     if(!customExpCat.length)exp.innerHTML='<span style="font-size:11px;color:var(--muted)">No custom categories yet. Type a name below and click + Add.</span>';
-    else exp.innerHTML=customExpCat.map(c=>`<div class="ccat-chip" style="border-color:${c.col}40;color:${c.col}">💰 ${c.label}<button class="ccat-del" data-dce="${c.id}">✕</button></div>`).join('');
+    else exp.innerHTML=customExpCat.map(c=>`<div class="ccat-chip" style="border-color:${c.col}40;color:${c.col}">💰 ${escapeHtml(c.label)}<button class="ccat-del" data-dce="${c.id}">✕</button></div>`).join('');
   }
   // Sidebar icon picker — highlight active
   const curIcon=profileData.sbIcon||'initials';
@@ -4967,7 +5127,7 @@ function renderSettings(){
 }
 
 function genAISummary(){
-  const appN=S.get('appName','Life Tracker');
+  const appN=S.get('appName','RedBug Life Tracking');
   const txt=`# ${appN} — App Summary for AI Updates
 Generated: ${new Date().toLocaleString()}
 
@@ -5000,7 +5160,7 @@ _CUST_COLS — 10-color palette for custom categories
 10. 500+ motivational quotes ticker (sidebar)
 11. SVG ring charts, line charts, donut charts
 12. Priority badges (High/Med/Low) on habits, tasks, goals; Close/Friend/Regular on birthdays
-13. Login system (username+password in localStorage, session in sessionStorage)
+13. Google Sign-In, data synced cross-device via PHP/MySQL backend
 14. Welcome banner with greeting + date
 15. Weather widget (Open-Meteo API, geolocation)
 16. Settings page (profile, currency, custom category management, AI summary, reset)
@@ -5008,7 +5168,6 @@ _CUST_COLS — 10-color palette for custom categories
 
 ## USER PROFILE
 Display Name: ${profileData.displayName}
-Username: ${profileData.username}
 Currency: ${currencyData?currencyData.code+' ('+currSym+')':'Not set'}
 Custom Income Sources (${customIncSrc.length}): ${customIncSrc.map(s=>s.label).join(', ')||'none'}
 Custom Expense Categories (${customExpCat.length}): ${customExpCat.map(c=>c.label).join(', ')||'none'}
@@ -5176,7 +5335,7 @@ function renderTTDay(){
       hBlocks.forEach((b,bi)=>{
         const col=b.color||BLOCK_COLORS[bi%BLOCK_COLORS.length];
         const endStr=b.end?` – ${fmt12(Math.floor(b.end))}`:'';
-        html+=`<div class="tt-block-pill" data-ttid="${b.id}" style="background:${col}22;border-color:${col}55;color:${col}">${b.emoji||'📌'} ${b.title}<span style="font-size:9px;opacity:.7;margin-left:3px">${endStr}</span></div>`;
+        html+=`<div class="tt-block-pill" data-ttid="${b.id}" style="background:${col}22;border-color:${col}55;color:${col}">${b.emoji||'📌'} ${escapeHtml(b.title)}<span style="font-size:9px;opacity:.7;margin-left:3px">${endStr}</span></div>`;
       });
     }else{
       html+=`<span style="font-size:11px;color:var(--muted);opacity:.35">+ tap to add</span>`;
@@ -5227,7 +5386,7 @@ function renderTTWeek(){
         const col=b.color||BLOCK_COLORS[bi%BLOCK_COLORS.length];
         const startH=Math.floor(b.start);
         const timeLabel=startH<12?startH+'am':startH===12?'12pm':(startH-12)+'pm';
-        html+=`<div class="tt-wblock" data-ttid="${b.id}" style="background:${col}">${b.emoji||'📌'} ${b.title}<br><span style="opacity:.7;font-weight:400">${timeLabel}</span></div>`;
+        html+=`<div class="tt-wblock" data-ttid="${b.id}" style="background:${col}">${b.emoji||'📌'} ${escapeHtml(b.title)}<br><span style="opacity:.7;font-weight:400">${timeLabel}</span></div>`;
       });
     }
     html+='</div></div>';
@@ -5262,7 +5421,7 @@ function renderTTMonth(){
       <div class="tt-month-num">${d}</div>
       <div class="tt-month-dots">`;
     blocks.slice(0,6).forEach((b,bi)=>{
-      html+=`<div class="tt-month-dot" style="background:${b.color||BLOCK_COLORS[bi%BLOCK_COLORS.length]}" title="${b.emoji||''} ${b.title}"></div>`;
+      html+=`<div class="tt-month-dot" style="background:${b.color||BLOCK_COLORS[bi%BLOCK_COLORS.length]}" title="${escapeHtml(b.emoji||'')} ${escapeHtml(b.title)}"></div>`;
     });
     if(blocks.length>6)html+=`<div class="tt-month-dot" style="background:var(--muted)" title="${blocks.length-6} more"></div>`;
     html+='</div></div>';
@@ -5271,6 +5430,7 @@ function renderTTMonth(){
   wrap.innerHTML=html;
 }
 
+function ttGroupOf(b){return b.gid||b.id;}
 function openTTModal(day,h,id){
   _ttEditId=id||null;
   const m=document.getElementById('tt-modal');
@@ -5284,9 +5444,11 @@ function openTTModal(day,h,id){
   if(id){
     const b=timetable.find(x=>x.id===id);
     if(!b)return;
+    const gid=ttGroupOf(b);
+    const siblings=timetable.filter(x=>ttGroupOf(x)===gid);
     document.getElementById('tt-emoji').value=b.emoji||'📌';
     document.getElementById('tt-title').value=b.title||'';
-    setDayChks([b.day]);
+    setDayChks(siblings.map(s=>s.day));
     document.getElementById('tt-start').value=String(b.start).padStart(2,'0')+':00';
     document.getElementById('tt-end').value=String(b.end||b.start+1).padStart(2,'0')+':00';
     document.getElementById('tt-note').value=b.note||'';
@@ -5317,23 +5479,38 @@ function saveTTBlock(){
   const note=document.getElementById('tt-note').value.trim();
   const emoji=document.getElementById('tt-emoji').value.trim()||'📌';
   if(_ttEditId){
-    const idx=timetable.findIndex(b=>b.id===_ttEditId);
-    if(idx>=0)timetable[idx]={...timetable[idx],emoji,title,day:days[0],start,end,note,color:_selTTColor};
-  }else{
+    const editing=timetable.find(b=>b.id===_ttEditId);
+    const gid=editing?ttGroupOf(editing):'tt_'+Date.now();
+    timetable=timetable.filter(b=>ttGroupOf(b)!==gid);
     days.forEach((day,i)=>{
-      timetable.push({id:'tt_'+Date.now()+'_'+i,emoji,title,day,start,end,note,color:_selTTColor});
+      timetable.push({id:gid+'_'+day+'_'+i,gid,emoji,title,day,start,end,note,color:_selTTColor});
+    });
+  }else{
+    const gid='tt_'+Date.now();
+    days.forEach((day,i)=>{
+      timetable.push({id:gid+'_'+day+'_'+i,gid,emoji,title,day,start,end,note,color:_selTTColor});
     });
   }
   S.set('timetable',timetable);
   closeM('tt-modal');_ttEditId=null;
-  renderTimetable();toast(`Block saved for ${days.length} day${days.length>1?'s':''} ✅`,'s');
+  renderTimetable();toast(`Block saved for ${days.length} day${days.length>1?'s':''} — repeats every week ✅`,'s');
 }
 function deleteTTBlock(){
   if(!_ttEditId)return;
-  timetable=timetable.filter(b=>b.id!==_ttEditId);
+  const editing=timetable.find(b=>b.id===_ttEditId);
+  if(!editing)return;
+  const gid=ttGroupOf(editing);
+  timetable=timetable.filter(b=>ttGroupOf(b)!==gid);
   S.set('timetable',timetable);
   closeM('tt-modal');_ttEditId=null;
   renderTimetable();toast('Block removed','w');
+}
+function resetTimetable(){
+  if(!confirm('Clear the entire timetable and start fresh? This cannot be undone.'))return;
+  timetable=[];
+  S.set('timetable',timetable);
+  renderTimetable();
+  toast('🗑️ Timetable reset — add new blocks to rebuild','w');
 }
 
 // ===== VISION BOARD =====
@@ -5382,8 +5559,8 @@ function renderVision(){
     if(i===insertCenter) html+=centerCard;
     const catColor=VB_CAT_COLORS[v.category]||v.color||'#7c3aed';
     const catIcon=VB_CATS[v.category]||'🎯';
-    const bgStyle=v.imageUrl
-      ?`background-image:url('${v.imageUrl.replace(/'/g,"\\'")}');background-size:cover;background-position:center`
+    const bgStyle=v.imageUrl&&isSafeUrl(v.imageUrl)
+      ?`background-image:url('${escapeHtml(v.imageUrl)}');background-size:cover;background-position:center`
       :`background:${VB_BG[v.category]||`linear-gradient(135deg,${catColor}dd,${catColor}44)`}`;
     const sp=VB_SPANS[spanIdx%VB_SPANS.length];
     const cls=(sp[0]>1?'w2':'')+(sp[1]>1?' h2':'');
@@ -5391,9 +5568,9 @@ function renderVision(){
     html+=`<div class="vb-tile${cls?' '+cls:''}" data-vid="${v.id}">
       <div class="vb-tile-bg" style="${bgStyle}"></div>
       <div class="vb-tile-shade"></div>
-      ${!v.imageUrl?`<div class="vb-tile-emoji">${v.emoji||catIcon}</div>`:''}
-      ${v.quote&&!v.imageUrl?`<div class="vb-tile-sub">${v.quote.slice(0,30)}${v.quote.length>30?'…':''}</div>`:''}
-      <div class="vb-tile-label">${v.title}</div>
+      ${!v.imageUrl?`<div class="vb-tile-emoji">${escapeHtml(v.emoji||catIcon)}</div>`:''}
+      ${v.quote&&!v.imageUrl?`<div class="vb-tile-sub">${escapeHtml(v.quote.slice(0,30))}${v.quote.length>30?'…':''}</div>`:''}
+      <div class="vb-tile-label">${escapeHtml(v.title)}</div>
       ${v.done?'<div class="vb-tile-done-badge">✓</div>':''}
     </div>`;
   });
@@ -5477,6 +5654,7 @@ function saveVBItem(){
       try{localStorage.setItem('lt4_visionItems',JSON.stringify(visionItems));}catch(e2){}
     }
   }
+  _markDirty('visionItems');
   _vbFileData=null;
   closeM('vb-modal');_vbEditId=null;
   renderVision();
@@ -5618,6 +5796,27 @@ document.addEventListener('input',function(e){
 
 // Bug button — static (no walking)
 function initBugWalk(){}
+
+// ===== 3D TILT EFFECT (dashboard stat cards) =====
+(function initCardTilt(){
+  let activeCard=null;
+  document.addEventListener('mousemove',e=>{
+    const card=e.target.closest('.ds-card');
+    if(card!==activeCard){
+      if(activeCard)activeCard.style.transform='';
+      activeCard=card;
+    }
+    if(!card)return;
+    const r=card.getBoundingClientRect();
+    const px=(e.clientX-r.left)/r.width-0.5;
+    const py=(e.clientY-r.top)/r.height-0.5;
+    const rotY=px*14, rotX=-py*14;
+    card.style.transform=`perspective(900px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.03,1.03,1.03)`;
+  });
+  document.addEventListener('mouseleave',e=>{
+    if(activeCard){activeCard.style.transform='';activeCard=null;}
+  },true);
+})();
 
 // Dark / Light mode (persists setting, no button)
 (function(){
@@ -5789,7 +5988,7 @@ function nbSearch(q){
     }
   }
   if(!hits.length){drop.innerHTML='<div class="nb-sr-item" style="color:rgba(255,255,255,.4)">No results</div>';drop.classList.add('open');return;}
-  drop.innerHTML=hits.map(h=>`<div class="nb-sr-item" data-nbgoto="${h.p}"><div class="nb-sr-pg">Page ${h.p}</div><div class="nb-sr-prev">${h.prev}</div></div>`).join('');
+  drop.innerHTML=hits.map(h=>`<div class="nb-sr-item" data-nbgoto="${h.p}"><div class="nb-sr-pg">Page ${h.p}</div><div class="nb-sr-prev">${escapeHtml(h.prev)}</div></div>`).join('');
   drop.classList.add('open');
 }
 
@@ -5892,7 +6091,7 @@ function saveNotebook(){nbSaveCurrent();}
 // ===== LIBRARY — Books added from free links =====
 function libGetBooks(){return S.get('libBooks',[]);}
 function libSaveBooks(arr){
-  try{localStorage.setItem('lt4_libBooks',JSON.stringify(arr));return true;}
+  try{localStorage.setItem('lt4_libBooks',JSON.stringify(arr));_markDirty('libBooks');return true;}
   catch(e){toast('⚠️ Storage full — try a smaller PDF or use a link instead','w');return false;}
 }
 function libColorFor(i){return NB_COLORS[i%NB_COLORS.length];}
@@ -5923,7 +6122,7 @@ function renderLibShelf(){
       const i=r+j;
       const color=libColorFor(i);
       const h=132+((i*41+7)%50);
-      const title=(bk.title||'Untitled').replace(/</g,'&lt;');
+      const title=escapeHtml(bk.title||'Untitled');
       const label=(bk.fileData?'📄 ':'')+title;
       return `<div class="lib-spine-wrap">
         <div class="lib-spine-acts">
@@ -6026,9 +6225,11 @@ function libOpenBook(id){
   document.getElementById('lib-book-view').style.display='flex';
   document.getElementById('lib-book-topname').textContent=(bk.fileData?'📄 ':'📖 ')+bk.title;
   const src=bk.fileData||bk.url;
-  document.getElementById('lib-iframe').src=src;
+  const safeSrc=isSafeUrl(src)?src:'about:blank';
+  if(!isSafeUrl(src))toast('⚠️ This book has an unsafe link and was blocked','w');
+  document.getElementById('lib-iframe').src=safeSrc;
   const nt=document.getElementById('lib-open-newtab');
-  if(nt)nt.href=src;
+  if(nt)nt.href=safeSrc;
 }
 
 function libBackToShelf(){
@@ -6123,7 +6324,7 @@ function renderStickyNotes(){
       <div class="sn-tape"></div>
       <button class="sn-x" data-snid="${n.id}" title="Delete">✕</button>
       <button class="sn-next" data-snid="${n.id}" title="Add next note">＋</button>
-      <textarea class="sn-ta" data-snid="${n.id}" placeholder="Type here...">${n.text||''}</textarea>
+      <textarea class="sn-ta" data-snid="${n.id}" placeholder="Type here...">${escapeHtml(n.text||'')}</textarea>
       <div class="sn-c-strip">${strip}</div>
       <div class="sn-resize" data-snid="${n.id}"></div>
     </div>`;
@@ -6300,6 +6501,10 @@ libUpdateBadge();
 // Init drag zone after page ready
 initDragZone();
 initBugWalk();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{});});
+}
 </script>
 </body>
 </html>

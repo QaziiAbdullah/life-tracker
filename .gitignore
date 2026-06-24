@@ -1,0 +1,2 @@
+# Real credentials — never commit. Copy api/config.php.example to api/config.php and fill it in.
+api/config.php

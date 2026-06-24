@@ -1,0 +1,19 @@
+<?php
+// Copy this file to config.php and fill in your real Hostinger MySQL credentials and
+// Google OAuth Client ID before deploying. Created via hPanel → Databases → MySQL Databases.
+// config.php itself is gitignored — never commit real credentials.
+return [
+  'db_host' => 'localhost',
+  'db_name' => 'CHANGE_ME',
+  'db_user' => 'CHANGE_ME',
+  'db_pass' => 'CHANGE_ME',
+  // From Google Cloud Console → APIs & Services → Credentials → OAuth Client ID (Web application)
+  'google_client_id' => 'CHANGE_ME.apps.googleusercontent.com',
+  // How long a login session stays valid before the user must sign in again
+  'session_ttl_days' => 60,
+  // Only these Google accounts may sign in. Anyone else's login attempt is rejected (403),
+  // even with a perfectly valid Google token — this keeps the app private to just you (or
+  // whoever you list here) instead of anyone with a Google account being able to create an
+  // account in your database. Leave the array empty to allow any Google account (not recommended).
+  'allowed_emails' => ['you@example.com'],
+];

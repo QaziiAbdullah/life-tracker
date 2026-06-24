@@ -1,0 +1,5 @@
+# Defense in depth: even though PHP files execute rather than serve source on
+# virtually all shared hosting, explicitly block direct access to config.php.
+<Files "config.php">
+  Require all denied
+</Files>
