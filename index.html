@@ -6363,7 +6363,7 @@ function flushStickyNotesNow(){
 
 function snDragStart(e){
   const card=e.target.closest('.sn-card');
-  if(!card||e.target.closest('.sn-x')||e.target.closest('.sn-ta')||e.target.closest('.sn-c-dot')||e.target.closest('.sn-resize'))return;
+  if(!card||e.target.closest('.sn-x')||e.target.closest('.sn-ta')||e.target.closest('.sn-c-dot')||e.target.closest('.sn-resize')||e.target.closest('.sn-next'))return;
   const isT=e.type==='touchstart';
   const pt=isT?e.touches[0]:e;
   const rect=card.getBoundingClientRect();
@@ -6493,32 +6493,6 @@ function openNotepad(){
 
 updateNotesBadge();
 libUpdateBadge();
-
-// ---- NOTES WALL: direct listeners (belt-and-suspenders, bypass delegation) ----
-(function(){
-  // Add Note button
-  const addBtn=document.getElementById('np-add-btn');
-  if(addBtn)addBtn.addEventListener('click',function(e){e.stopPropagation();addStickyNote();});
-
-  // Close button
-  const closeBtn=document.getElementById('np-close-btn');
-  if(closeBtn)closeBtn.addEventListener('click',function(e){e.stopPropagation();flushStickyNotesNow();closeM('notepad-modal');});
-
-  // Color dots — use event delegation on the header row
-  const hdr=document.querySelector('.np-hd-r');
-  if(hdr)hdr.addEventListener('click',function(e){
-    e.stopPropagation();
-    const dot=e.target.closest('.np-cdot');
-    if(dot&&dot.dataset.nc){
-      _snColor=dot.dataset.nc;
-      document.querySelectorAll('.np-cdot').forEach(d=>d.classList.toggle('on',d.dataset.nc===_snColor));
-    }
-    const xBtn=e.target.closest('#np-close-btn');
-    if(xBtn){flushStickyNotesNow();closeM('notepad-modal');}
-    const addB=e.target.closest('#np-add-btn,.np-add-btn-wall');
-    if(addB)addStickyNote();
-  });
-})();
 
 // Init drag zone after page ready
 initDragZone();
