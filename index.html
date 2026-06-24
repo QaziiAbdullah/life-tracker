@@ -2355,6 +2355,16 @@ function _applyRemoteChanges(changedKeys){
 window.addEventListener('online',_flushSync);
 window.addEventListener('focus',_pullSync);
 setInterval(_pullSync,25000);
+
+// Safety net: a refresh/tab-close can land inside the few hundred ms an autosave debounce
+// is still waiting out. Flush whatever's open straight to storage before that happens.
+function _flushOpenEditors(){
+  if(document.getElementById('notepad-modal')?.classList.contains('open')&&typeof flushStickyNotesNow==='function')flushStickyNotesNow();
+  if(document.getElementById('notebook-modal')?.classList.contains('open')&&typeof saveNotebook==='function')saveNotebook();
+}
+window.addEventListener('pagehide',_flushOpenEditors);
+window.addEventListener('beforeunload',_flushOpenEditors);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')_flushOpenEditors();});
 let habits=S.get('habits',[]),tasks=S.get('tasks',[]),goals=S.get('goals',[]),logs=S.get('logs',{});
 let birthdays=S.get('birthdays',[]),events=S.get('events',[]);
 let finance=S.get('finance',[]);
@@ -3219,7 +3229,7 @@ document.addEventListener('click',function(e){
   if(t.id==='lib-shelf-back-btn'||t.closest('#lib-shelf-back-btn')){libCloseModal();return;}
   // --- STICKY NOTES ---
   if(t.closest('#sb-notepad-open')){openNotepad();return;}
-  if(t.id==='np-close-btn'||t.closest('#np-close-btn')){closeM('notepad-modal');return;}
+  if(t.id==='np-close-btn'||t.closest('#np-close-btn')){flushStickyNotesNow();closeM('notepad-modal');return;}
   if(t.id==='np-add-btn'||t.closest('.np-add-btn-wall')){addStickyNote();return;}
   const npDot=t.closest('.np-cdot');
   if(npDot&&npDot.dataset.nc){_snColor=npDot.dataset.nc;document.querySelectorAll('.np-cdot').forEach(d=>d.classList.toggle('on',d.dataset.nc===_snColor));return;}
@@ -6333,10 +6343,22 @@ function renderStickyNotes(){
   board.querySelectorAll('.sn-ta').forEach(ta=>{
     let tmr=null;
     ta.addEventListener('input',()=>{clearTimeout(tmr);tmr=setTimeout(()=>{const n=_stickyNotes.find(x=>x.id===ta.dataset.snid);if(n){n.text=ta.value;S.set('stickyNotes',_stickyNotes);}},400);});
+    ta.addEventListener('blur',()=>{const n=_stickyNotes.find(x=>x.id===ta.dataset.snid);if(n&&n.text!==ta.value){n.text=ta.value;S.set('stickyNotes',_stickyNotes);}});
     ta.addEventListener('mousedown',e=>e.stopPropagation());
     ta.addEventListener('touchstart',e=>e.stopPropagation(),{passive:true});
   });
   initNoteDrag();
+}
+
+// Reads whatever is currently typed into every open sticky-note textarea straight into
+// storage — used before closing the wall or unloading the page, so the 400ms autosave
+// debounce can never lose the last few keystrokes.
+function flushStickyNotesNow(){
+  document.querySelectorAll('.sn-ta').forEach(ta=>{
+    const n=_stickyNotes.find(x=>x.id===ta.dataset.snid);
+    if(n)n.text=ta.value;
+  });
+  S.set('stickyNotes',_stickyNotes);
 }
 
 function snDragStart(e){
@@ -6480,7 +6502,7 @@ libUpdateBadge();
 
   // Close button
   const closeBtn=document.getElementById('np-close-btn');
-  if(closeBtn)closeBtn.addEventListener('click',function(e){e.stopPropagation();closeM('notepad-modal');});
+  if(closeBtn)closeBtn.addEventListener('click',function(e){e.stopPropagation();flushStickyNotesNow();closeM('notepad-modal');});
 
   // Color dots — use event delegation on the header row
   const hdr=document.querySelector('.np-hd-r');
@@ -6492,7 +6514,7 @@ libUpdateBadge();
       document.querySelectorAll('.np-cdot').forEach(d=>d.classList.toggle('on',d.dataset.nc===_snColor));
     }
     const xBtn=e.target.closest('#np-close-btn');
-    if(xBtn)closeM('notepad-modal');
+    if(xBtn){flushStickyNotesNow();closeM('notepad-modal');}
     const addB=e.target.closest('#np-add-btn,.np-add-btn-wall');
     if(addB)addStickyNote();
   });
