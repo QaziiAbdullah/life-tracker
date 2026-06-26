@@ -2505,6 +2505,7 @@ const ALL_SYNC_KEYS=['habits','tasks','goals','logs','birthdays','events','finan
 // path can reference it) to avoid the TDZ ordering crash class documented elsewhere in this file.
 let aiPatterns=S.get('aiPatterns',[]);
 let zqAwaitResolve=null;
+let zqVoiceTurn=false; // only speak replies out loud when THIS turn was started by voice, not typing
 let _lastSyncedAt=null;
 function _setSyncStatus(text){const el=document.getElementById('sb-sync-status');if(el)el.textContent=text;}
 async function syncNowManual(){
@@ -7186,7 +7187,7 @@ function zqSpeak(text){
     window.speechSynthesis.speak(u);
   }catch(e){}
 }
-function zqSay(text){const c=document.getElementById('zq-chat');if(!c)return;const d=document.createElement('div');d.className='zq-msg bot';d.textContent=text;c.appendChild(d);zqScrollBottom();zqSpeak(text);}
+function zqSay(text){const c=document.getElementById('zq-chat');if(!c)return;const d=document.createElement('div');d.className='zq-msg bot';d.textContent=text;c.appendChild(d);zqScrollBottom();if(zqVoiceTurn)zqSpeak(text);}
 function zqSayUser(text){const c=document.getElementById('zq-chat');if(!c)return;const d=document.createElement('div');d.className='zq-msg user';d.textContent=text;c.appendChild(d);zqScrollBottom();}
 function zqAskChoice(question,pairs){
   zqSay(question);
@@ -7344,10 +7345,14 @@ function zqSubmit(){
   if(zqAwaitResolve){const fn=zqAwaitResolve;zqAwaitResolve=null;zqSayUser(text);fn(text);return;}
   zqHandle(text);
 }
-document.getElementById('zq-send')?.addEventListener('click',zqSubmit);
-document.getElementById('zq-input')?.addEventListener('keydown',e=>{if(e.key==='Enter')zqSubmit();});
+// Typed input never speaks replies out loud — voice replies are reserved for turns the user
+// actually started by voice (mic/Always Listen), per explicit feedback that auto-speaking every
+// typed reply felt unnatural/unwanted.
+document.getElementById('zq-send')?.addEventListener('click',()=>{zqVoiceTurn=false;zqSubmit();});
+document.getElementById('zq-input')?.addEventListener('keydown',e=>{if(e.key==='Enter'){zqVoiceTurn=false;zqSubmit();}});
 document.getElementById('zq-fab')?.addEventListener('click',()=>{
   openM('zq-modal');
+  zqVoiceTurn=false; // opened by a tap/click, not by voice — stay silent until the user actually speaks
   if(!document.getElementById('zq-chat').children.length){
     zqSay('Hi! Main Zulqey hoon 🧞 — apka offline assistant. Bas type/bol kar bata dein, jaise: "aaj food mein 20 riyal expense daal do".');
   }
@@ -7372,6 +7377,7 @@ if(ZQ_SR){
 
   zqRec.onresult=(e)=>{
     const transcript=e.results[e.results.length-1][0].transcript.trim();
+    zqVoiceTurn=true; // this turn was spoken, not typed — replies are allowed to speak back
     if(!zqWakeArmed){document.getElementById('zq-input').value=transcript;zqSubmit();return;}
     if(zqExpectingFollowUp){zqExpectingFollowUp=false;openM('zq-modal');zqHandle(transcript);return;}
     zqHandleWakeTranscript(transcript);
