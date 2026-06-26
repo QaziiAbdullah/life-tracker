@@ -1136,6 +1136,7 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
       <div class="th"    data-theme="gold"    style="--tc:#f59e0b" title="Gold Mine"></div>
       <div class="th"    data-theme="teal"    style="--tc:#2dd4bf" title="Arctic Glow"></div>
       <div class="th"    data-theme="neon"    style="--tc:#e879f9" title="Neon Nights"></div>
+      <div class="th"    data-theme="controltower" style="--tc:#22d3ee" title="Control Tower (Luxury Dashboard)"></div>
       <button class="th-auto" id="th-auto" title="Auto-cycle themes every 5 min">⟳</button>
     </div>
 
@@ -4471,9 +4472,10 @@ const THEMES={
   gold:   {primary:'#d97706',pl:'#fcd34d',pa:'217,119,6',  bg:'#0e0a01',card:'#1b1403',card2:'#261e05',sb:'#0b0801',gs:'#f59e0b',ge:'#eab308'},
   teal:   {primary:'#0d9488',pl:'#5eead4',pa:'20,184,166', bg:'#020e0d',card:'#051a19',card2:'#082725',sb:'#030c0b',gs:'#14b8a6',ge:'#2dd4bf'},
   neon:   {primary:'#9333ea',pl:'#e879f9',pa:'217,70,239', bg:'#07020f',card:'#0e041e',card2:'#16062b',sb:'#050112',gs:'#d946ef',ge:'#9333ea'},
+  controltower:{primary:'#22d3ee',pl:'#a5f3fc',pa:'34,211,238', bg:'#05070d',card:'#0a1020',card2:'#11192e',sb:'#03050a',gs:'#22d3ee',ge:'#a78bfa'},
 };
-const THEME_ORDER=['professional','purple','ocean','emerald','sunset','rose','gold','teal','neon'];
-const THEME_NAMES={professional:'Professional Navy',purple:'Violet Dream',ocean:'Deep Sea',emerald:'Forest Dark',sunset:'Volcano',rose:'Cherry Blossom',gold:'Gold Mine',teal:'Arctic Glow',neon:'Neon Nights'};
+const THEME_ORDER=['professional','purple','ocean','emerald','sunset','rose','gold','teal','neon','controltower'];
+const THEME_NAMES={professional:'Professional Navy',purple:'Violet Dream',ocean:'Deep Sea',emerald:'Forest Dark',sunset:'Volcano',rose:'Cherry Blossom',gold:'Gold Mine',teal:'Arctic Glow',neon:'Neon Nights',controltower:'Control Tower'};
 let currentTheme=S.get('theme','professional');
 let autoOn=S.get('autoTheme',false);
 let autoTimer=null;
