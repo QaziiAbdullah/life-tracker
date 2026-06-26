@@ -18,7 +18,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
 <style>
 :root{
-  --bg:#0b1120;--card:#111827;--card2:#1e293b;--sb:#0a0f1c;
+  --bg:#0b1120;--card:#111827;--card2:#1e293b;--sb:#0a0f1c;--pa:37,99,235;
   --primary:#2563eb;--pl:#93c5fd;--success:#10b981;--warn:#f59e0b;
   --danger:#ef4444;--info:#3b82f6;--text:#f1f5f9;--muted:#64748b;
   --border:rgba(255,255,255,.07);--hi:#ef4444;--me:#f59e0b;--lo:#10b981;
@@ -208,9 +208,11 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px 20px;min-height:100vh
 .btn-g{background:rgba(255,255,255,.05);color:var(--muted);border:1px solid var(--border)}.btn-g:hover{background:rgba(255,255,255,.09);color:var(--text)}
 .btn-sm{padding:4px 9px;font-size:11px}
 
-/* STAT CARDS */
+/* STAT CARDS — premium glass treatment: theme-tinted edge + ambient glow + sheen, derived
+   entirely from existing --pa/--card vars so every color theme & luxury swatch gets it free */
 .srow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
-.sc{background:var(--card);border-radius:16px;padding:16px 16px 14px;border:1px solid rgba(255,255,255,.08);position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.25),0 8px 24px rgba(0,0,0,.1)}
+.sc{background:linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,0) 45%),var(--card);border-radius:16px;padding:16px 16px 14px;border:1px solid rgba(var(--pa),.18);position:relative;overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 2px 8px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.18),0 0 0 1px rgba(var(--pa),.04),0 12px 36px -8px rgba(var(--pa),.16);transition:transform .25s ease,box-shadow .25s ease}
+.sc:hover{transform:translateY(-2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 2px 8px rgba(0,0,0,.3),0 14px 32px rgba(0,0,0,.22),0 0 0 1px rgba(var(--pa),.08),0 16px 44px -6px rgba(var(--pa),.26)}
 .sc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
 .sc.cp::before{background:linear-gradient(90deg,#7c3aed,#a78bfa)}
 .sc.cg::before{background:linear-gradient(90deg,#059669,#34d399)}
@@ -222,14 +224,14 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px 20px;min-height:100vh
 .sc-sub{font-size:10px;color:var(--muted);margin-top:5px}
 
 /* cards */
-.card{background:var(--card);border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,.08);margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.25),0 8px 24px rgba(0,0,0,.12)}
+.card{background:linear-gradient(160deg,rgba(255,255,255,.045),rgba(255,255,255,0) 45%),var(--card);border-radius:16px;padding:16px;border:1px solid rgba(var(--pa),.16);margin-bottom:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 2px 8px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.16),0 12px 36px -10px rgba(var(--pa),.14)}
 .card-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .card-t{font-size:11px;font-weight:700;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted)}
 
 /* ANALYTICS ROW */
 .an-row{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:16px}
-.an-chart{background:var(--card);border-radius:16px;padding:18px;border:1px solid rgba(255,255,255,.08);box-shadow:0 2px 8px rgba(0,0,0,.25),0 8px 24px rgba(0,0,0,.1)}
-.an-rings{background:var(--card);border-radius:16px;padding:18px;border:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.25),0 8px 24px rgba(0,0,0,.1)}
+.an-chart{background:linear-gradient(160deg,rgba(255,255,255,.045),rgba(255,255,255,0) 45%),var(--card);border-radius:16px;padding:18px;border:1px solid rgba(var(--pa),.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 2px 8px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.16),0 12px 36px -10px rgba(var(--pa),.14)}
+.an-rings{background:linear-gradient(160deg,rgba(255,255,255,.045),rgba(255,255,255,0) 45%),var(--card);border-radius:16px;padding:18px;border:1px solid rgba(var(--pa),.16);display:flex;flex-direction:column;gap:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 2px 8px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.16),0 12px 36px -10px rgba(var(--pa),.14)}
 .ring-item{display:flex;align-items:center;gap:10px}
 .ring-lbl{flex:1}
 .ring-name{font-size:12px;font-weight:600}
@@ -771,7 +773,7 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px 20px;min-height:100vh
 
 /* 3D MOTION EFFECTS */
 @keyframes floatCard{0%,100%{transform:translateY(0) rotateX(0deg)}50%{transform:translateY(-3px) rotateX(1deg)}}
-@keyframes glowPulse{0%,100%{box-shadow:0 0 0 rgba(var(--pa),0)}50%{box-shadow:0 0 20px rgba(var(--pa),.25),0 4px 24px rgba(var(--pa),.15)}}
+@keyframes glowPulse{0%,100%{box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 2px 8px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.18),0 0 0 rgba(var(--pa),0)}50%{box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 2px 8px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.18),0 0 20px rgba(var(--pa),.25),0 4px 24px rgba(var(--pa),.15)}}
 @keyframes iconBob{0%,100%{transform:scale(1) rotate(0deg)}25%{transform:scale(1.1) rotate(-3deg)}75%{transform:scale(1.05) rotate(2deg)}}
 @keyframes spinBadge{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .motion-card{animation:floatCard 5s ease-in-out infinite,glowPulse 5s ease-in-out infinite}
@@ -1789,6 +1791,7 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
     <div><div class="ph-t">💰 Finance Tracker</div><div class="ph-s">Earnings · Expenses · Analysis</div></div>
     <div class="ph-a">
       <button class="cur-change-btn" id="change-cur-btn">🌍 <span id="cur-display">SAR</span></button>
+      <button class="btn btn-g btn-sm" id="fin-update-btn" title="Pull the latest finance data from the server and refresh this view">🔄 Update</button>
       <button class="btn btn-g btn-sm" id="bf-exp">− Add Expense</button>
       <button class="btn btn-p" id="bf-inc">+ Add Income</button>
     </div>
@@ -2479,6 +2482,27 @@ async function syncNowManual(){
   _setSyncStatus('✓ Synced just now');
 }
 document.getElementById('sb-sync-now-btn')?.addEventListener('click',syncNowManual);
+// Manual "Update" button on the Finance page — push this device's finance-related edits,
+// pull whatever's newer on the server, then re-render regardless (the global Save & Sync
+// button only re-renders Finance when _pullSync sees a remote change newer than our own
+// just-pushed cursor, so a same-device edit can look "stuck" even though it already synced).
+async function finUpdateNow(){
+  const btn=document.getElementById('fin-update-btn');
+  if(btn){btn.disabled=true;btn.textContent='⏳ Updating...';}
+  try{
+    if(_syncToken){
+      _flushOpenEditors();
+      ['finance','customIncSrc','customExpCat','currencyData'].forEach(k=>_dirtyKeys.add(k));
+      clearTimeout(_syncFlushTimer);
+      await _flushSync();
+      await _pullSync();
+    }
+    renderFinance();
+    toast('Finance updated ✅','s');
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='🔄 Update';}
+  }
+}
 setInterval(()=>{
   if(_lastSyncedAt==null)return;
   const mins=Math.floor((Date.now()-_lastSyncedAt)/60000);
@@ -3605,6 +3629,8 @@ document.addEventListener('click',function(e){
   if(luxSw){applyLuxuryTheme(luxSw.dataset.lux);return;}
   // Smart Breakdown toggle on the Finance page
   if(id==='fin-smart-toggle'){_finSmartView=!_finSmartView;S.set('financeSmartView',_finSmartView);renderFinance();return;}
+  // Manual "Update" button on the Finance page — force a fresh push+pull then re-render this view
+  if(id==='fin-update-btn'){finUpdateNow();return;}
   // Click a category/source row in the Income/Expense breakdown to see its transactions
   const finBrk=t.closest('[data-finbrk-key]');
   if(finBrk){openFinDrill(finBrk.dataset.finbrkType,finBrk.dataset.finbrkKey);return;}
