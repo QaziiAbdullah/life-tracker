@@ -1781,11 +1781,23 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
   </div>
 
   <!-- Period tabs -->
-  <div style="display:flex;gap:6px;margin-bottom:14px">
+  <div style="display:flex;gap:6px;margin-bottom:14px;align-items:center;flex-wrap:wrap">
     <div class="fptab on" data-fp="month">📅 This Month</div>
     <div class="fptab" data-fp="today">🕐 Today</div>
     <div class="fptab" data-fp="year">📆 This Year</div>
     <div class="fptab" data-fp="all">🗂 All Time</div>
+    <button class="btn btn-g btn-sm" id="fin-smart-toggle" style="margin-left:auto">🧠 Smart Breakdown: <span id="fin-smart-state">On</span></button>
+  </div>
+
+  <!-- Smart Breakdown (auto-calculated, all-time — cash/bank split needs the "Paid With" field on each transaction; switch it off anytime to go back to the plain view above) -->
+  <div class="card" id="fin-smart-panel" style="display:none">
+    <div class="card-h"><div class="card-t">🧠 Smart Breakdown</div><div style="font-size:10px;color:var(--muted)">All time · auto-calculated</div></div>
+    <div class="srow" style="grid-template-columns:repeat(4,1fr)">
+      <div class="sc cg"><div class="sv" id="fs-cash" style="color:#10b981">0</div><div class="sl">Cash in Hand</div></div>
+      <div class="sc cp"><div class="sv" id="fs-bank">0</div><div class="sl">Bank Balance</div></div>
+      <div class="sc co"><div class="sv" id="fs-salary" style="color:#fbbf24">0</div><div class="sl">Total Salary Earned</div></div>
+      <div class="sc cr"><div class="sv" id="fs-biz" style="color:#f87171">0</div><div class="sl">Business Investment</div></div>
+    </div>
   </div>
 
   <!-- Stats row -->
@@ -1920,6 +1932,14 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
     </div>
     <!-- Date -->
     <div class="fg"><label>Date</label><input class="fi" type="date" id="fm-date"></div>
+    <!-- Payment method (used by the Smart Breakdown cash/bank totals) -->
+    <div class="fg">
+      <label>Paid With <span style="color:var(--muted);font-weight:400">(for the Smart Breakdown below)</span></label>
+      <div style="display:flex;gap:8px">
+        <button type="button" class="fmt-btn on" id="fm-pm-cash" data-pm="cash" style="flex:1">💵 Cash</button>
+        <button type="button" class="fmt-btn" id="fm-pm-bank" data-pm="bank" style="flex:1">🏦 Bank</button>
+      </div>
+    </div>
     <!-- Source (income) -->
     <div class="fg" id="fm-src-wrap">
       <label>Income Source</label>
@@ -1960,6 +1980,7 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
         <option value="bills">📱 Bills &amp; Utilities</option>
         <option value="education">📚 Education</option>
         <option value="entertainment">🎮 Entertainment</option>
+        <option value="business">🏢 Business Investment</option>
         <option value="other_exp">💸 Other Expense</option>
       </select>
     </div>
@@ -2450,6 +2471,8 @@ let _ttWeekOff=0,_ttView='day',_selTTColor='#7c3aed',_selVBColor='#7c3aed',_selV
 let _loggedIn=false; // set from _syncToken in initAuth()
 let _editFinId=null;
 let finPeriod='month',finType='income';
+let _selPM='cash';
+let _finSmartView=S.get('financeSmartView',true);
 let selC='#7c3aed',selEC='#3b82f6',monthOff=0,sumTab='daily',goalTab='daily';
 
 // ===== HELPERS =====
@@ -2497,9 +2520,9 @@ let _selCur=currencyData?currencyData.code:'SAR';
 const priBadge=p=>({high:'<span class="pri-badge pri-h">🔴 High</span>',med:'<span class="pri-badge pri-m">🟡 Med</span>',low:'<span class="pri-badge pri-l">🟢 Low</span>'}[p]||'');
 const bdPriBadge=p=>({high:'<span class="pri-badge pri-h">❤️ Close</span>',med:'<span class="pri-badge pri-m">⭐ Friend</span>',low:'<span class="pri-badge pri-l">📅 Regular</span>'}[p]||'');
 const FINC_SRC={salary:'💼 Salary',facebook:'📦 Facebook Marketplace',trading:'📈 Money Trading',amazon:'🛒 Amazon / Noon',alibaba:'🏭 Alibaba Business',other_inc:'➕ Other Income'};
-const FEXP_CAT={food:'🍔 Food',transport:'🚗 Transport',housing:'🏠 Housing',health:'💊 Health',shopping:'🛍️ Shopping',bills:'📱 Bills',education:'📚 Education',entertainment:'🎮 Entertainment',other_exp:'💸 Other'};
+const FEXP_CAT={food:'🍔 Food',transport:'🚗 Transport',housing:'🏠 Housing',health:'💊 Health',shopping:'🛍️ Shopping',bills:'📱 Bills',education:'📚 Education',entertainment:'🎮 Entertainment',business:'🏢 Business Investment',other_exp:'💸 Other'};
 const FSRC_COL={salary:'#10b981',facebook:'#3b82f6',trading:'#f59e0b',amazon:'#f97316',alibaba:'#e11d48',other_inc:'#7c3aed'};
-const FCAT_COL={food:'#ef4444',transport:'#f97316',housing:'#8b5cf6',health:'#10b981',shopping:'#f472b6',bills:'#06b6d4',education:'#3b82f6',entertainment:'#fbbf24',other_exp:'#64748b'};
+const FCAT_COL={food:'#ef4444',transport:'#f97316',housing:'#8b5cf6',health:'#10b981',shopping:'#f472b6',bills:'#06b6d4',education:'#3b82f6',entertainment:'#fbbf24',business:'#0ea5e9',other_exp:'#64748b'};
 const _CUST_COLS=['#06b6d4','#a855f7','#84cc16','#f43f5e','#0ea5e9','#fbbf24','#22c55e','#8b5cf6','#fb923c','#38bdf8'];
 const fmtMoney=n=>n>=1000000?(n/1000000).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'K':n.toLocaleString();
 
@@ -3513,6 +3536,11 @@ document.addEventListener('click',function(e){
   // Finance type toggle inside modal
   const fmt=t.closest('[data-fmt]');
   if(fmt){_finSwitchType(fmt.dataset.fmt);return;}
+  // Cash / Bank payment method toggle inside the finance modal
+  const fpm=t.closest('[data-pm]');
+  if(fpm){_selPM=fpm.dataset.pm;document.getElementById('fm-pm-cash').classList.toggle('on',_selPM==='cash');document.getElementById('fm-pm-bank').classList.toggle('on',_selPM==='bank');return;}
+  // Smart Breakdown toggle on the Finance page
+  if(id==='fin-smart-toggle'){_finSmartView=!_finSmartView;S.set('financeSmartView',_finSmartView);renderFinance();return;}
   // Finance period tabs
   const fp=t.closest('.fptab[data-fp]');
   if(fp){finPeriod=fp.dataset.fp;document.querySelectorAll('.fptab').forEach(el=>el.classList.toggle('on',el.dataset.fp===finPeriod));renderFinance();return;}
@@ -3998,7 +4026,27 @@ function finGetPeriod(){
   return ()=>true;
 }
 
+function renderFinanceSmartPanel(){
+  const panel=document.getElementById('fin-smart-panel');
+  const stateLbl=document.getElementById('fin-smart-state');
+  if(stateLbl)stateLbl.textContent=_finSmartView?'On':'Off';
+  if(panel)panel.style.display=_finSmartView?'':'none';
+  if(!_finSmartView)return;
+  let cash=0,bank=0,salary=0,biz=0;
+  finance.forEach(t=>{
+    const pm=t.paymentMethod||'bank'; // older transactions predate this field — assume bank
+    const signed=t.type==='income'?t.amount:-t.amount;
+    if(pm==='cash')cash+=signed;else bank+=signed;
+    if(t.type==='income'&&t.source==='salary')salary+=t.amount;
+    if(t.type==='expense'&&t.source==='business')biz+=t.amount;
+  });
+  document.getElementById('fs-cash').textContent=currSym+' '+fmtMoney(cash);
+  document.getElementById('fs-bank').textContent=currSym+' '+fmtMoney(bank);
+  document.getElementById('fs-salary').textContent=currSym+' '+fmtMoney(salary);
+  document.getElementById('fs-biz').textContent=currSym+' '+fmtMoney(biz);
+}
 function renderFinance(){
+  renderFinanceSmartPanel();
   const filter=finGetPeriod();
   const txs=finance.filter(filter);
   const inc=txs.filter(t=>t.type==='income');
@@ -4235,6 +4283,9 @@ function openFinanceModal(type){
   document.getElementById('fm-other-exp').value='';
   document.getElementById('fm-new-src-inp').value='';
   document.getElementById('fm-new-cat-inp').value='';
+  _selPM='cash';
+  document.getElementById('fm-pm-cash').classList.add('on');
+  document.getElementById('fm-pm-bank').classList.remove('on');
   _finSwitchType(finType);
   openM('fm');
   setTimeout(()=>document.getElementById('fm-amount').focus(),80);
@@ -4270,10 +4321,10 @@ function saveFinance(){
   const note=document.getElementById('fm-note').value.trim();
   if(_editFinId){
     const idx=finance.findIndex(f=>f.id===_editFinId);
-    if(idx>-1){finance[idx]={...finance[idx],date,source,amount:Math.round(amtRaw),note,...(otherLabel?{otherLabel}:{otherLabel:undefined})};}
+    if(idx>-1){finance[idx]={...finance[idx],date,source,amount:Math.round(amtRaw),note,paymentMethod:_selPM,...(otherLabel?{otherLabel}:{otherLabel:undefined})};}
     _editFinId=null;
   }else{
-    const tx={id:'f_'+Date.now(),date,type:finType,source,amount:Math.round(amtRaw),note};
+    const tx={id:'f_'+Date.now(),date,type:finType,source,amount:Math.round(amtRaw),note,paymentMethod:_selPM};
     if(otherLabel)tx.otherLabel=otherLabel;
     finance.push(tx);
   }
@@ -5323,6 +5374,9 @@ function openEditFinance(id){
     document.getElementById('fm-amount').value=tx.amount;
     document.getElementById('fm-date').value=tx.date;
     document.getElementById('fm-note').value=tx.note||'';
+    _selPM=tx.paymentMethod||'cash';
+    document.getElementById('fm-pm-cash').classList.toggle('on',_selPM==='cash');
+    document.getElementById('fm-pm-bank').classList.toggle('on',_selPM==='bank');
     _buildFinOpts();
     if(tx.type==='income'){
       document.getElementById('fm-src').value=tx.source;
