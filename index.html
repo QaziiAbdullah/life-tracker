@@ -1101,6 +1101,16 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
 .vb-cat-sel{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
 .vb-cat-pill{padding:3px 10px;border-radius:14px;font-size:10px;font-weight:700;border:1px solid var(--border);cursor:pointer;transition:all .15s;background:transparent;color:var(--muted)}
 .vb-cat-pill.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+/* ZULQEY AI ASSISTANT */
+#zq-fab{position:fixed;bottom:22px;right:22px;width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;font-size:24px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--primary),var(--ge));color:#fff;z-index:500;box-shadow:0 4px 16px rgba(0,0,0,.35),0 0 0 1px rgba(var(--pa),.3),0 0 24px rgba(var(--pa),.35);transition:transform .15s}
+#zq-fab:hover{transform:scale(1.08)}
+.zq-msg{max-width:82%;padding:8px 12px;border-radius:14px;font-size:12.5px;line-height:1.5;white-space:pre-wrap}
+.zq-msg.bot{align-self:flex-start;background:var(--card2);border:1px solid var(--border);border-bottom-left-radius:4px}
+.zq-msg.user{align-self:flex-end;background:linear-gradient(135deg,var(--primary),var(--ge));color:#fff;border-bottom-right-radius:4px}
+.zq-chip{padding:6px 12px;border-radius:14px;font-size:11.5px;font-weight:600;border:1px solid rgba(var(--pa),.4);background:rgba(var(--pa),.1);color:var(--pl);cursor:pointer;margin-bottom:8px;transition:all .15s}
+.zq-chip:hover{background:rgba(var(--pa),.22)}
+#zq-mic.listening{background:var(--danger);color:#fff;animation:glowPulse 1s ease-in-out infinite}
 </style>
 </head>
 <body>
@@ -1704,6 +1714,24 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
   </div>
 
 </main>
+
+<!-- ZULQEY AI ASSISTANT -->
+<button id="zq-fab" title="Zulqey — offline assistant">🧞</button>
+<div class="overlay" id="zq-modal">
+  <div class="modal" id="zq-box" style="width:430px;max-width:95vw;height:74vh;display:flex;flex-direction:column;padding:0;overflow:hidden">
+    <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:8px"><span style="font-size:20px">🧞</span><div><div style="font-weight:700;font-size:14px">Zulqey</div><div style="font-size:10px;color:var(--muted)">Offline assistant · Urdu + English</div></div></div>
+      <button class="th-auto" id="zq-close" style="width:26px;height:26px">✕</button>
+    </div>
+    <div id="zq-chat" style="flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:8px"></div>
+    <div id="zq-chips" style="padding:0 16px;display:flex;gap:6px;flex-wrap:wrap"></div>
+    <div style="padding:12px 16px 16px;display:flex;gap:8px;flex-shrink:0">
+      <button id="zq-mic" class="btn btn-g" style="padding:8px 11px" title="Speak (mic)">🎤</button>
+      <input id="zq-input" class="fi" style="flex:1" placeholder="Zulqey, aaj food mein 20 riyal expense daal do...">
+      <button id="zq-send" class="btn btn-p" style="padding:8px 14px">➤</button>
+    </div>
+  </div>
+</div>
 
 <!-- MODALS -->
 <div class="overlay" id="hm">
@@ -2452,6 +2480,7 @@ function _applyRemoteChanges(changedKeys){
     else if(k==='customIncSrc'){customIncSrc=S.get('customIncSrc',[]);if(document.getElementById('view-settings')?.classList.contains('on')&&typeof renderSettings==='function')renderSettings();if(document.getElementById('view-finance')?.classList.contains('on')&&typeof renderFinance==='function')renderFinance();}
     else if(k==='customExpCat'){customExpCat=S.get('customExpCat',[]);if(document.getElementById('view-settings')?.classList.contains('on')&&typeof renderSettings==='function')renderSettings();if(document.getElementById('view-finance')?.classList.contains('on')&&typeof renderFinance==='function')renderFinance();}
     else if(k==='dashOrder'){needsAll=true;}
+    else if(k==='aiPatterns'){aiPatterns=S.get('aiPatterns',[]);}
   });
   if(needsAll)renderAll(true);
   toast('🔄 Synced from another device','s');
@@ -2465,7 +2494,11 @@ setInterval(_pullSync,25000);
 setInterval(()=>{if(_syncToken)_flushSync();},5*60*1000);
 
 // ===== MANUAL "SAVE & SYNC" BUTTON =====
-const ALL_SYNC_KEYS=['habits','tasks','goals','logs','birthdays','events','finance','customIncSrc','customExpCat','profile','sectionNames','timetable','visionItems','stickyNotes','libBooks','currencyData','theme','autoTheme','wallBg','appName','appSub','dashOrder','weatherPref'];
+const ALL_SYNC_KEYS=['habits','tasks','goals','logs','birthdays','events','finance','customIncSrc','customExpCat','profile','sectionNames','timetable','visionItems','stickyNotes','libBooks','currencyData','theme','autoTheme','wallBg','appName','appSub','dashOrder','weatherPref','aiPatterns'];
+// Zulqey AI assistant's learned phrase->action mappings — declared here (early, before any code
+// path can reference it) to avoid the TDZ ordering crash class documented elsewhere in this file.
+let aiPatterns=S.get('aiPatterns',[]);
+let zqAwaitResolve=null;
 let _lastSyncedAt=null;
 function _setSyncStatus(text){const el=document.getElementById('sb-sync-status');if(el)el.textContent=text;}
 async function syncNowManual(){
@@ -7091,6 +7124,237 @@ libUpdateBadge();
 // Init drag zone after page ready
 initDragZone();
 initBugWalk();
+
+// ===================== ZULQEY AI ASSISTANT (offline, rule-based, self-learning) =====================
+// No external AI/LLM calls, no tokens, no internet required for the matching logic itself — purely
+// keyword/synonym rules over English + Roman Urdu. When a sentence can't be classified it asks the
+// user, then saves the resolved {shape -> intent+entity} mapping to aiPatterns (synced like every
+// other S-backed key) so the same phrasing is recognized immediately next time, without asking again.
+// Order matters: zqMatchAny returns the FIRST dict key with a hit, and generic words like "kar do"
+// (which just means "do it" in Urdu) appear in almost every sentence including completes/removes —
+// so complete/remove must be checked before the much more generic add keywords.
+const ZQ_INTENT_WORDS={
+  complete:['complete','done','mukamal','mukamal karo','pura karo','tick','mark done','ho gaya','khatam karo'],
+  remove:['remove','delete','hatao','hata do','mita do','mitao','nikal do'],
+  add:['add','daal do','dal do','daalo','dalo','daal','kar do','kardo','bana do','banado','create','insert','naya','new','rakh do','rakho','likh do','likho'],
+};
+const ZQ_ENTITY_WORDS={
+  expense:['expense','expence','kharcha','kharch','kharchy','spending'],
+  income:['income','amdani','kamai','salary','tankhwa'],
+  habit:['habit','adat','aadat'],
+  task:['task','kaam','kam','todo'],
+  goal:['goal','target','maqsad'],
+  birthday:['birthday','salgirah','bday'],
+};
+const ZQ_EXP_CAT_SYN={food:'food',khana:'food',kana:'food',transport:'transport',safar:'transport',gari:'transport',petrol:'transport',housing:'housing',ghar:'housing',rent:'housing',kiraya:'housing',health:'health',sehat:'health',dawai:'health',shopping:'shopping',khareedari:'shopping',bills:'bills',bill:'bills',education:'education',taleem:'education',school:'education',fees:'education',entertainment:'entertainment',tafreeh:'entertainment',business:'business'};
+const ZQ_INC_SRC_SYN={salary:'salary',tankhwa:'salary',facebook:'facebook',trading:'trading',amazon:'amazon',alibaba:'alibaba'};
+
+function zqNorm(s){return (' '+s.toLowerCase().replace(/[.,!?؟۔]/g,' ').replace(/\s+/g,' ').trim()+' ');}
+function zqMatchAny(text,dict){for(const k in dict){for(const w of dict[k]){if(text.includes(' '+w+' ')||text.includes(w))return k;}}return null;}
+function zqExtractAmount(text){const m=text.match(/(\d+(?:\.\d+)?)/);return m?parseFloat(m[1]):null;}
+function zqFindExpCat(text){for(const w in ZQ_EXP_CAT_SYN){if(text.includes(w))return ZQ_EXP_CAT_SYN[w];}for(const c of customExpCat){if(c.label&&text.includes(c.label.toLowerCase()))return c.id;}return null;}
+function zqFindIncSrc(text){for(const w in ZQ_INC_SRC_SYN){if(text.includes(w))return ZQ_INC_SRC_SYN[w];}for(const s of customIncSrc){if(s.label&&text.includes(s.label.toLowerCase()))return s.id;}return null;}
+function zqShape(text){
+  let t=text.replace(/\d+(?:\.\d+)?/g,' # ');
+  for(const w in ZQ_EXP_CAT_SYN)t=t.split(w).join(' <c> ');
+  for(const w in ZQ_INC_SRC_SYN)t=t.split(w).join(' <c> ');
+  return t.replace(/\s+/g,' ').trim();
+}
+function zqLearn(text,intent,entity){
+  const shape=zqShape(zqNorm(text));
+  if(!aiPatterns.find(p=>p.shape===shape)){
+    aiPatterns.push({shape,intent,entity});
+    S.set('aiPatterns',aiPatterns);
+  }
+}
+
+function zqScrollBottom(){const c=document.getElementById('zq-chat');if(c)c.scrollTop=c.scrollHeight;}
+function zqSay(text){const c=document.getElementById('zq-chat');if(!c)return;const d=document.createElement('div');d.className='zq-msg bot';d.textContent=text;c.appendChild(d);zqScrollBottom();}
+function zqSayUser(text){const c=document.getElementById('zq-chat');if(!c)return;const d=document.createElement('div');d.className='zq-msg user';d.textContent=text;c.appendChild(d);zqScrollBottom();}
+function zqAskChoice(question,pairs){
+  zqSay(question);
+  return new Promise(resolve=>{
+    const wrap=document.getElementById('zq-chips');wrap.innerHTML='';
+    pairs.forEach(([val,label])=>{
+      const b=document.createElement('button');b.className='zq-chip';b.textContent=label;
+      b.onclick=()=>{wrap.innerHTML='';zqSayUser(label);zqAwaitResolve=null;resolve(val);};
+      wrap.appendChild(b);
+    });
+    zqAwaitResolve=(txt)=>{
+      wrap.innerHTML='';
+      const norm=txt.toLowerCase();
+      const hit=pairs.find(([val,label])=>norm.includes(val)||norm.includes(label.toLowerCase().replace(/[^\w\s]/g,'').trim()));
+      zqAwaitResolve=null;
+      resolve(hit?hit[0]:pairs[0][0]);
+    };
+  });
+}
+function zqWaitForText(question){
+  if(question)zqSay(question);
+  return new Promise(resolve=>{ zqAwaitResolve=(txt)=>{zqAwaitResolve=null;resolve(txt);}; });
+}
+function zqStripKeywords(text,...dicts){
+  let t=' '+text+' ';
+  dicts.forEach(d=>{for(const k in d){for(const w of d[k]){t=t.split(' '+w+' ').join(' ');}}});
+  t=t.replace(/\d+(?:\.\d+)?/g,' ');
+  ['zulqey','zulqi','please','plz','riyal','rs','rupay','rupee','aaj','today','mein','me','ka','ki','ke','ko','se','par'].forEach(w=>{t=t.split(' '+w+' ').join(' ');});
+  return t.replace(/\s+/g,' ').trim();
+}
+
+async function zqAddExpense(rawText){
+  let amount=zqExtractAmount(rawText);
+  while(!amount){const reply=await zqWaitForText('Kitne riyal ka expense hai? (sirf number likhein, jaise 20)');amount=zqExtractAmount(reply);}
+  let cat=zqFindExpCat(rawText);
+  if(!cat)cat=await zqAskChoice('Kis category mein dalu?',[...Object.entries(FEXP_CAT),...customExpCat.map(c=>[c.id,'💰 '+c.label])]);
+  const tx={id:'f_'+Date.now(),date:today(),type:'expense',source:cat,amount:Math.round(amount),note:'',paymentMethod:'cash'};
+  finance.push(tx);S.set('finance',finance);renderAll(true);
+  zqSay(`✅ ${_finCatLabel(cat)} mein ${currSym} ${Math.round(amount)} ka expense add kar diya (${today()}).`);
+  zqLearn(rawText,'add','expense');
+}
+async function zqAddIncome(rawText){
+  let amount=zqExtractAmount(rawText);
+  while(!amount){const reply=await zqWaitForText('Kitni amount ki income hai?');amount=zqExtractAmount(reply);}
+  let src=zqFindIncSrc(rawText);
+  if(!src)src=await zqAskChoice('Kahan se income hui?',[...Object.entries(FINC_SRC),...customIncSrc.map(s=>[s.id,'🔹 '+s.label])]);
+  const tx={id:'f_'+Date.now(),date:today(),type:'income',source:src,amount:Math.round(amount),note:'',paymentMethod:'cash'};
+  finance.push(tx);S.set('finance',finance);renderAll(true);
+  zqSay(`✅ ${_finSrcLabel(src)} se ${currSym} ${Math.round(amount)} ki income add kar di (${today()}).`);
+  zqLearn(rawText,'add','income');
+}
+async function zqAddTask(rawText){
+  let name=zqStripKeywords(rawText,ZQ_INTENT_WORDS,ZQ_ENTITY_WORDS);
+  while(!name){name=await zqWaitForText('Task mein kya likhna hai?');}
+  tasks.push({id:'t_'+Date.now(),name,notes:'',pri:'med',cat:'personal',date:today()});
+  save();renderAll(true);
+  zqSay(`✅ Task add kar diya: "${name}"`);
+  zqLearn(rawText,'add','task');
+}
+async function zqAddHabit(rawText){
+  let name=zqStripKeywords(rawText,ZQ_INTENT_WORDS,ZQ_ENTITY_WORDS);
+  while(!name){name=await zqWaitForText('Habit ka naam kya hai?');}
+  habits.push({id:'h_'+Date.now(),name,desc:'',cat:'personal',pri:'med',color:'#8b5cf6'});
+  save();renderAll(true);
+  zqSay(`✅ Habit add kar diya: "${name}"`);
+  zqLearn(rawText,'add','habit');
+}
+async function zqAddGoal(rawText){
+  let name=zqStripKeywords(rawText,ZQ_INTENT_WORDS,ZQ_ENTITY_WORDS);
+  while(!name){name=await zqWaitForText('Goal ka naam kya hai?');}
+  goals.push({id:'g_'+Date.now(),name,type:'daily',pri:'med',color:'#8b5cf6'});
+  save();renderAll(true);
+  zqSay(`✅ Goal set kar diya: "${name}"`);
+  zqLearn(rawText,'add','goal');
+}
+async function zqAddBirthday(rawText){
+  let name=zqStripKeywords(rawText,ZQ_INTENT_WORDS,ZQ_ENTITY_WORDS).replace(/\b(birthday|salgirah|bday)\b/g,'').trim();
+  while(!name){name=await zqWaitForText('Kiska birthday hai? (naam likhein)');}
+  let dm=await zqWaitForText('Date kya hai? DD/MM format mein likhein, jaise 15/3');
+  let m=dm.match(/(\d{1,2})\D+(\d{1,2})/);
+  let day=m?parseInt(m[1]):null, month=m?parseInt(m[2]):null;
+  while(!day||day<1||day>31||!month||month<1||month>12){
+    dm=await zqWaitForText('Samajh nahi aya — DD/MM format mein dobara likhein, jaise 15/3');
+    m=dm.match(/(\d{1,2})\D+(\d{1,2})/);day=m?parseInt(m[1]):null;month=m?parseInt(m[2]):null;
+  }
+  birthdays.push({id:'b_'+Date.now(),name,month,day,year:null,cat:'friend',pri:'med',wish:'',color:'#8b5cf6'});
+  S.set('birthdays',birthdays);renderAll(true);
+  zqSay(`✅ ${name} ka birthday add kar diya (${day}/${month}).`);
+  zqLearn(rawText,'add','birthday');
+}
+async function zqCompleteTask(rawText){
+  const name=zqStripKeywords(rawText,ZQ_INTENT_WORDS,ZQ_ENTITY_WORDS).toLowerCase();
+  let match=name?tasks.find(t=>t.name.toLowerCase().includes(name)):null;
+  if(!match&&tasks.length){const val=await zqAskChoice('Konsa task complete karna hai?',tasks.slice(0,8).map(t=>[t.id,t.name]));match=tasks.find(t=>t.id===val);}
+  if(!match){zqSay('Koi matching task nahi mila.');return;}
+  toggleTask(match.id,today());
+  zqSay(`✅ "${match.name}" complete kar diya.`);
+  zqLearn(rawText,'complete','task');
+}
+async function zqCompleteHabit(rawText){
+  const name=zqStripKeywords(rawText,ZQ_INTENT_WORDS,ZQ_ENTITY_WORDS).toLowerCase();
+  let match=name?habits.find(h=>h.name.toLowerCase().includes(name)):null;
+  if(!match&&habits.length){const val=await zqAskChoice('Konsa habit complete karna hai?',habits.slice(0,8).map(h=>[h.id,h.name]));match=habits.find(h=>h.id===val);}
+  if(!match){zqSay('Koi matching habit nahi mila.');return;}
+  toggleHabit(match.id);
+  zqSay(`✅ "${match.name}" aaj ke liye done mark kar diya.`);
+  zqLearn(rawText,'complete','habit');
+}
+async function zqRemoveTask(rawText){
+  const name=zqStripKeywords(rawText,ZQ_INTENT_WORDS,ZQ_ENTITY_WORDS).toLowerCase();
+  let match=name?tasks.find(t=>t.name.toLowerCase().includes(name)):null;
+  if(!match&&tasks.length){const val=await zqAskChoice('Konsa task remove karna hai?',tasks.slice(0,8).map(t=>[t.id,t.name]));match=tasks.find(t=>t.id===val);}
+  if(!match){zqSay('Koi matching task nahi mila.');return;}
+  tasks=tasks.filter(t=>t.id!==match.id);save();renderAll(true);
+  zqSay(`🗑️ "${match.name}" remove kar diya.`);
+  zqLearn(rawText,'remove','task');
+}
+async function zqRemoveHabit(rawText){
+  const name=zqStripKeywords(rawText,ZQ_INTENT_WORDS,ZQ_ENTITY_WORDS).toLowerCase();
+  let match=name?habits.find(h=>h.name.toLowerCase().includes(name)):null;
+  if(!match&&habits.length){const val=await zqAskChoice('Konsa habit remove karna hai?',habits.slice(0,8).map(h=>[h.id,h.name]));match=habits.find(h=>h.id===val);}
+  if(!match){zqSay('Koi matching habit nahi mila.');return;}
+  habits=habits.filter(h=>h.id!==match.id);save();renderAll(true);
+  zqSay(`🗑️ "${match.name}" remove kar diya.`);
+  zqLearn(rawText,'remove','habit');
+}
+
+const ZQ_HANDLERS={
+  'expense:add':zqAddExpense,'income:add':zqAddIncome,
+  'task:add':zqAddTask,'task:complete':zqCompleteTask,'task:remove':zqRemoveTask,
+  'habit:add':zqAddHabit,'habit:complete':zqCompleteHabit,'habit:remove':zqRemoveHabit,
+  'goal:add':zqAddGoal,'birthday:add':zqAddBirthday,
+};
+
+async function zqHandle(raw){
+  zqSayUser(raw);
+  const norm=zqNorm(raw);
+  if(/^\s*(zulqey|zulqi)\s*[.,!]*\s*$/.test(norm.trim())){zqSay('Yes, what can I do for you? 😊');return;}
+  const cleaned=norm.replace(/^\s*(zulqey|zulqi)\b[,]?\s*/,'');
+  const shape=zqShape(cleaned);
+  const learned=aiPatterns.find(p=>p.shape===shape);
+  let intent=learned?learned.intent:zqMatchAny(cleaned,ZQ_INTENT_WORDS);
+  let entity=learned?learned.entity:zqMatchAny(cleaned,ZQ_ENTITY_WORDS);
+  if(!intent)intent=await zqAskChoice('Mujhe is sentence ka matlab nahi pata — kya karna hai? (Mujhe yahan se seekhne do)',[['add','➕ Add'],['complete','✅ Complete / Done'],['remove','🗑️ Remove']]);
+  if(!entity)entity=await zqAskChoice('Kis cheez mein?',[['expense','💸 Expense'],['income','💰 Income'],['task','✅ Task'],['habit','🔁 Habit'],['goal','🎯 Goal'],['birthday','🎂 Birthday']]);
+  const handler=ZQ_HANDLERS[entity+':'+intent];
+  if(!handler){zqSay('Sorry, ye combination abhi support nahi karta — filhal Add (sab features) aur Complete/Remove (Task, Habit) hi available hain.');return;}
+  await handler(cleaned);
+}
+
+function zqSubmit(){
+  const inp=document.getElementById('zq-input');
+  const text=inp.value.trim();if(!text)return;
+  inp.value='';
+  if(zqAwaitResolve){const fn=zqAwaitResolve;zqAwaitResolve=null;zqSayUser(text);fn(text);return;}
+  zqHandle(text);
+}
+document.getElementById('zq-send')?.addEventListener('click',zqSubmit);
+document.getElementById('zq-input')?.addEventListener('keydown',e=>{if(e.key==='Enter')zqSubmit();});
+document.getElementById('zq-fab')?.addEventListener('click',()=>{
+  openM('zq-modal');
+  if(!document.getElementById('zq-chat').children.length){
+    zqSay('Hi! Main Zulqey hoon 🧞 — apka offline assistant. Bas type/bol kar bata dein, jaise: "aaj food mein 20 riyal expense daal do".');
+  }
+  setTimeout(()=>document.getElementById('zq-input')?.focus(),100);
+});
+document.getElementById('zq-close')?.addEventListener('click',()=>closeM('zq-modal'));
+
+// Voice input via the browser's built-in speech recognition (push-to-talk, not always-on —
+// browsers don't allow background wake-word listening for privacy/battery reasons)
+const ZQ_SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(ZQ_SR){
+  const zqRec=new ZQ_SR();zqRec.lang='en-PK';zqRec.interimResults=false;zqRec.maxAlternatives=1;
+  let zqListening=false;
+  zqRec.onresult=(e)=>{const t=e.results[0][0].transcript;document.getElementById('zq-input').value=t;zqSubmit();};
+  zqRec.onend=()=>{zqListening=false;document.getElementById('zq-mic')?.classList.remove('listening');};
+  zqRec.onerror=()=>{zqListening=false;document.getElementById('zq-mic')?.classList.remove('listening');toast('Mic error — try typing instead','w');};
+  document.getElementById('zq-mic')?.addEventListener('click',()=>{
+    if(zqListening){zqRec.stop();return;}
+    try{zqRec.start();zqListening=true;document.getElementById('zq-mic').classList.add('listening');}catch(e){}
+  });
+}else{
+  const zqMicBtn=document.getElementById('zq-mic');
+  if(zqMicBtn){zqMicBtn.title='Voice not supported in this browser';zqMicBtn.style.opacity='.4';zqMicBtn.onclick=()=>toast('Voice input not supported in this browser — please type','w');}
+}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{});});
