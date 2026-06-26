@@ -15,6 +15,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="RedBug Life Tracking">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
 <style>
 :root{
   --bg:#0b1120;--card:#111827;--card2:#1e293b;--sb:#0a0f1c;
@@ -1343,7 +1344,7 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
         <input id="lib-f-title" type="text" placeholder="Book title..." class="lib-finp" autocomplete="off">
         <input id="lib-f-url" type="text" placeholder="Paste free book link (URL)..." class="lib-finp" autocomplete="off">
         <span class="lib-or-sep">or</span>
-        <label class="nb-tbtn lib-pdf-label" id="lib-f-pdf-label">📄 Upload PDF<input type="file" id="lib-f-pdf" accept="application/pdf" style="display:none"></label>
+        <label class="nb-tbtn lib-pdf-label" id="lib-f-pdf-label">📄 Upload PDF(s)<input type="file" id="lib-f-pdf" accept="application/pdf" multiple style="display:none"></label>
         <span id="lib-f-pdf-name" class="lib-pdf-name"></span>
         <button class="nb-tbtn" id="lib-f-save">💾 Save</button>
         <button class="nb-tbtn" id="lib-f-cancel">Cancel</button>
@@ -5155,6 +5156,9 @@ function initWeather(){
   }
   fetchWeather();
 }
+// Keep the sidebar weather "live" for long sessions instead of only ever showing
+// whatever was current at login time.
+setInterval(()=>{if(_weatherPref==='on')fetchWeather();},20*60*1000);
 async function fetchWeather(){
   // weather-card is hidden in dashboard; only sidebar clock updates
   try{
@@ -5842,6 +5846,24 @@ function checkNotifs(){
 }
 setInterval(checkNotifs,5*60*1000);
 
+// ===== TIMETABLE HOURLY POPUP =====
+// Pops up a 5-second notification (same float-notif used for events/goals) whenever the clock
+// crosses into an hour that has a scheduled timetable block — only while the app is open, since
+// there's no background push channel on shared hosting.
+function checkTimetableHour(){
+  const now=new Date();
+  const dayIdx=now.getDay(),hr=now.getHours();
+  timetable.filter(b=>b.day===dayIdx&&b.start===hr).forEach(b=>{
+    showFloatNotif('tt-'+b.id+'-'+hr,b.emoji||'📋',b.title,b.note||('Scheduled for '+hr+':00'),'fn-blue','Timetable');
+  });
+}
+function scheduleHourlyTTCheck(){
+  const now=new Date();
+  const nextHour=new Date(now.getFullYear(),now.getMonth(),now.getDate(),now.getHours()+1,0,2,0);
+  setTimeout(()=>{checkTimetableHour();scheduleHourlyTTCheck();},nextHour-now);
+}
+scheduleHourlyTTCheck();
+
 // Vision Board — file upload handler (compress to base64 via canvas)
 document.addEventListener('change',function(e){
   if(e.target.id!=='vb-file-inp')return;
@@ -5868,30 +5890,60 @@ document.addEventListener('change',function(e){
   reader.readAsDataURL(file);
 });
 
-// Library — PDF upload handler (read as base64 data URL)
+// Library — PDF upload handler (read as base64 data URL). Supports picking several PDFs at
+// once: with one file, it fills the normal add/edit form same as before; with several, each
+// becomes its own book immediately (title = filename) since asking for a title per file would
+// defeat the point of a multi-select.
 document.addEventListener('change',function(e){
   if(e.target.id!=='lib-f-pdf')return;
-  const file=e.target.files[0];
-  if(!file)return;
-  if(file.type!=='application/pdf'){toast('Please choose a PDF file','w');e.target.value='';return;}
+  const files=Array.from(e.target.files||[]);
+  if(!files.length)return;
+  const nameEl=document.getElementById('lib-f-pdf-name');
   const MAXB=4*1024*1024;
-  if(file.size>MAXB){toast('PDF too large (max 4MB) — browser storage is limited. Use a link instead for big books.','w');e.target.value='';return;}
-  const reader=new FileReader();
-  reader.onload=function(ev){
-    _libPdfData=ev.target.result;
-    const ui=document.getElementById('lib-f-url');
-    if(ui)ui.value='';
-    const nameEl=document.getElementById('lib-f-pdf-name');
-    if(nameEl)nameEl.textContent='📄 '+file.name;
-  };
-  reader.readAsDataURL(file);
+  const bad=files.find(f=>f.type!=='application/pdf');
+  if(bad){toast('Please choose PDF files only','w');e.target.value='';return;}
+  const tooBig=files.find(f=>f.size>MAXB);
+  if(tooBig){toast('"'+tooBig.name+'" is too large (max 4MB) — use a link instead for big books.','w');e.target.value='';return;}
+
+  if(files.length===1){
+    const file=files[0];
+    const reader=new FileReader();
+    reader.onload=async function(ev){
+      _libPdfData=ev.target.result;
+      _libPdfThumb=await pdfFirstPageThumbnail(_libPdfData);
+      const ui=document.getElementById('lib-f-url');
+      if(ui)ui.value='';
+      if(nameEl)nameEl.textContent='📄 '+file.name;
+    };
+    reader.readAsDataURL(file);
+    return;
+  }
+
+  if(nameEl)nameEl.textContent='⏳ Adding '+files.length+' books…';
+  const books=libGetBooks();
+  Promise.all(files.map(file=>new Promise(resolve=>{
+    const reader=new FileReader();
+    reader.onload=async function(ev){
+      const fileData=ev.target.result;
+      const coverImg=await pdfFirstPageThumbnail(fileData);
+      const title=file.name.replace(/\.pdf$/i,'');
+      books.push({id:'lb_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),title,fileData,url:'',coverImg});
+      resolve();
+    };
+    reader.readAsDataURL(file);
+  }))).then(()=>{
+    const ok=libSaveBooks(books);
+    if(nameEl)nameEl.textContent='';
+    e.target.value='';
+    if(ok){libHideForm();renderLibShelf();toast(files.length+' books added ✅','s');}
+  });
 });
 
 // Library — typing a URL clears any chosen PDF (mutually exclusive)
 document.addEventListener('input',function(e){
   if(e.target.id!=='lib-f-url')return;
   if(e.target.value.trim()&&_libPdfData){
-    _libPdfData=null;
+    _libPdfData=null;_libPdfThumb=null;
     const pdfInp=document.getElementById('lib-f-pdf');
     if(pdfInp)pdfInp.value='';
     const nameEl=document.getElementById('lib-f-pdf-name');
@@ -6087,6 +6139,37 @@ function nbLoadPage(){
   ta.focus();
 }
 
+// When a page's text grows taller than the visible writing area, push whatever overflows
+// (split on the nearest word boundary, not mid-word) onto the next page and jump there — so a
+// long entry keeps flowing forward instead of getting silently clipped at the bottom of the page.
+function nbCheckOverflow(){
+  const ta=document.getElementById('nb-ta');
+  if(!ta)return;
+  if(ta.scrollHeight<=ta.clientHeight+4)return;
+  const original=ta.value,text=original;
+  let lo=0,hi=text.length,fit=0;
+  while(lo<=hi){
+    const mid=(lo+hi)>>1;
+    ta.value=text.slice(0,mid);
+    if(ta.scrollHeight<=ta.clientHeight+4){fit=mid;lo=mid+1;}else{hi=mid-1;}
+  }
+  let cut=fit;
+  while(cut>0&&cut<text.length&&!/\s/.test(text[cut-1]))cut--;
+  ta.value=original;
+  if(cut<=0||cut>=text.length)return; // nothing sensible to move — leave the page as-is
+  const head=text.slice(0,cut).replace(/\s+$/,'');
+  const tail=text.slice(cut).replace(/^\s+/,'');
+  if(!tail)return;
+  ta.value=head;
+  nbSaveCurrent();
+  const nextPage=_nbPage+1;
+  if(nextPage>NB_PAGES)return;
+  const existing=nbGetPage(_nbBook,nextPage);
+  nbSetPage(_nbBook,nextPage,tail+(existing?'\n\n'+existing:''));
+  nbUpdateIndex(_nbBook,nextPage,true);
+  nbGoTo(nextPage);
+  setTimeout(()=>{const t2=document.getElementById('nb-ta');if(t2){t2.focus();t2.setSelectionRange(tail.length,tail.length);}},50);
+}
 function nbGoTo(p){
   nbSaveCurrent();
   _nbPage=Math.max(1,Math.min(NB_PAGES,Math.floor(p)||1));
@@ -6168,7 +6251,7 @@ function saveNotebook(){nbSaveCurrent();}
   });
   // Auto-save
   document.getElementById('nb-ta')?.addEventListener('input',function(){
-    clearTimeout(_nbSaveTimer);_nbSaveTimer=setTimeout(nbSaveCurrent,700);
+    clearTimeout(_nbSaveTimer);_nbSaveTimer=setTimeout(()=>{nbSaveCurrent();nbCheckOverflow();},700);
   });
   document.getElementById('nb-heading')?.addEventListener('input',function(){
     clearTimeout(_nbSaveTimer);_nbSaveTimer=setTimeout(nbSaveCurrent,700);
@@ -6216,7 +6299,33 @@ function libSaveBooks(arr){
   catch(e){toast('⚠️ Storage full — try a smaller PDF or use a link instead','w');return false;}
 }
 function libColorFor(i){return NB_COLORS[i%NB_COLORS.length];}
-let _libEditId=null,_libOpenId=null,_libPdfData=null;
+let _libEditId=null,_libOpenId=null,_libPdfData=null,_libPdfThumb=null;
+function _ensurePdfJsWorker(){
+  if(window.pdfjsLib&&!window.pdfjsLib.GlobalWorkerOptions.workerSrc){
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+}
+// Renders a PDF's first page to a small JPEG so the Library shelf can show the book's real
+// cover instead of a plain color spine. Returns null (falls back to the color spine) if pdf.js
+// hasn't loaded yet or the file can't be rendered — never blocks adding the book itself.
+async function pdfFirstPageThumbnail(dataUrl){
+  try{
+    if(!window.pdfjsLib)return null;
+    _ensurePdfJsWorker();
+    const bin=atob(dataUrl.split(',')[1]);
+    const bytes=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+    const pdf=await window.pdfjsLib.getDocument({data:bytes}).promise;
+    const page=await pdf.getPage(1);
+    const baseVp=page.getViewport({scale:1});
+    const scale=240/baseVp.width;
+    const vp=page.getViewport({scale});
+    const canvas=document.createElement('canvas');
+    canvas.width=vp.width;canvas.height=vp.height;
+    await page.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;
+    return canvas.toDataURL('image/jpeg',0.72);
+  }catch(e){return null;}
+}
 
 function libUpdateBadge(){
   const b=document.getElementById('sb-books-count-badge');
@@ -6244,13 +6353,15 @@ function renderLibShelf(){
       const color=libColorFor(i);
       const h=132+((i*41+7)%50);
       const title=escapeHtml(bk.title||'Untitled');
-      const label=(bk.fileData?'📄 ':'')+title;
+      const hasCover=bk.coverImg&&isSafeUrl(bk.coverImg);
+      const label=hasCover?'':(bk.fileData?'📄 ':'')+title;
+      const bgStyle=hasCover?`background-image:url('${escapeHtml(bk.coverImg)}');background-size:cover;background-position:top center`:`background:${color}`;
       return `<div class="lib-spine-wrap">
         <div class="lib-spine-acts">
           <span class="lib-act-ico" data-libedit="${bk.id}" title="Edit">✏</span>
           <span class="lib-act-ico del" data-libdel="${bk.id}" title="Delete">✕</span>
         </div>
-        <div class="nb-spine lib-spine" data-libopen="${bk.id}" style="background:${color};height:${h}px" title="Click to open ${title}">${label}</div>
+        <div class="nb-spine lib-spine" data-libopen="${bk.id}" style="${bgStyle};height:${h}px" title="Click to open ${title}">${label}</div>
       </div>`;
     }).join('')+'</div><div class="nb-shelf-plank"></div>';
   }
@@ -6266,7 +6377,7 @@ function libNormalizeUrl(u){
 
 function libShowForm(editId){
   _libEditId=editId||null;
-  _libPdfData=null;
+  _libPdfData=null;_libPdfThumb=null;
   const panel=document.getElementById('lib-form-panel');
   const ti=document.getElementById('lib-f-title');
   const ui=document.getElementById('lib-f-url');
@@ -6279,7 +6390,7 @@ function libShowForm(editId){
       ti.value=bk.title;
       if(bk.fileData){
         ui.value='';
-        _libPdfData=bk.fileData;
+        _libPdfData=bk.fileData;_libPdfThumb=bk.coverImg||null;
         if(pdfName)pdfName.textContent='📄 Existing PDF (choose a new file to replace)';
       }else{
         ui.value=bk.url||'';
@@ -6296,7 +6407,7 @@ function libShowForm(editId){
 
 function libHideForm(){
   _libEditId=null;
-  _libPdfData=null;
+  _libPdfData=null;_libPdfThumb=null;
   document.getElementById('lib-form-panel')?.classList.remove('open');
   const ti=document.getElementById('lib-f-title'),ui=document.getElementById('lib-f-url'),pdfInp=document.getElementById('lib-f-pdf'),pdfName=document.getElementById('lib-f-pdf-name');
   if(ti)ti.value='';
@@ -6311,7 +6422,7 @@ function libSaveForm(){
   if(!title){toast('Enter a book title','w');return;}
   let extra;
   if(_libPdfData){
-    extra={fileData:_libPdfData,url:''};
+    extra={fileData:_libPdfData,url:'',coverImg:_libPdfThumb||''};
   } else {
     const url=libNormalizeUrl(urlRaw);
     if(!url){toast('Paste a book link or upload a PDF','w');return;}
