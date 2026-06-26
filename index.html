@@ -7187,7 +7187,7 @@ function zqSpeak(text){
     window.speechSynthesis.speak(u);
   }catch(e){}
 }
-function zqSay(text){const c=document.getElementById('zq-chat');if(!c)return;const d=document.createElement('div');d.className='zq-msg bot';d.textContent=text;c.appendChild(d);zqScrollBottom();if(zqVoiceTurn)zqSpeak(text);}
+function zqSay(text){const c=document.getElementById('zq-chat');if(!c)return;const d=document.createElement('div');d.className='zq-msg bot';d.textContent=text;c.appendChild(d);zqScrollBottom();/* speaking replies out loud disabled per user request — listening/mic still works */}
 function zqSayUser(text){const c=document.getElementById('zq-chat');if(!c)return;const d=document.createElement('div');d.className='zq-msg user';d.textContent=text;c.appendChild(d);zqScrollBottom();}
 function zqAskChoice(question,pairs){
   zqSay(question);
