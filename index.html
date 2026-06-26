@@ -1111,6 +1111,9 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
 .zq-chip{padding:6px 12px;border-radius:14px;font-size:11.5px;font-weight:600;border:1px solid rgba(var(--pa),.4);background:rgba(var(--pa),.1);color:var(--pl);cursor:pointer;margin-bottom:8px;transition:all .15s}
 .zq-chip:hover{background:rgba(var(--pa),.22)}
 #zq-mic.listening{background:var(--danger);color:#fff;animation:glowPulse 1s ease-in-out infinite}
+#zq-mic.hide{display:none}
+@keyframes zqWakeRing{0%,100%{box-shadow:0 4px 16px rgba(0,0,0,.35),0 0 0 1px rgba(var(--pa),.3),0 0 24px rgba(var(--pa),.35)}50%{box-shadow:0 4px 16px rgba(0,0,0,.35),0 0 0 4px rgba(var(--pa),.5),0 0 36px rgba(var(--pa),.7)}}
+#zq-fab.zq-fab-listening{animation:zqWakeRing 1.8s ease-in-out infinite}
 </style>
 </head>
 <body>
@@ -1722,6 +1725,9 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
     <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
       <div style="display:flex;align-items:center;gap:8px"><span style="font-size:20px">🧞</span><div><div style="font-weight:700;font-size:14px">Zulqey</div><div style="font-size:10px;color:var(--muted)">Offline assistant · Urdu + English</div></div></div>
       <button class="th-auto" id="zq-close" style="width:26px;height:26px">✕</button>
+    </div>
+    <div style="padding:8px 16px 0;flex-shrink:0">
+      <button id="zq-wake-toggle" class="btn btn-g btn-sm" style="width:100%" title="Keep listening for 'Zulqey' while this tab is open">👂 Always Listen: Off</button>
     </div>
     <div id="zq-chat" style="flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:8px"></div>
     <div id="zq-chips" style="padding:0 16px;display:flex;gap:6px;flex-wrap:wrap"></div>
@@ -7338,22 +7344,88 @@ document.getElementById('zq-fab')?.addEventListener('click',()=>{
 });
 document.getElementById('zq-close')?.addEventListener('click',()=>closeM('zq-modal'));
 
-// Voice input via the browser's built-in speech recognition (push-to-talk, not always-on —
-// browsers don't allow background wake-word listening for privacy/battery reasons)
+// Voice input via the browser's built-in speech recognition. Two modes share one recognizer:
+// push-to-talk (tap mic, speak one command) and "Always Listen" wake-word mode (continuous —
+// stays armed for the word "zulqey" while this tab/PWA is open in the foreground). Browsers give
+// web pages no way to listen in the background once the tab is closed/backgrounded or the screen
+// locks — that's an OS-level capability only native assistants like Siri get — so this is the
+// closest offline equivalent: open-tab, no-tokens, always-on-while-visible.
+let zqAlwaysListen=S.get('zqAlwaysListen',false);
+let zqWakeArmed=false;
+let zqExpectingFollowUp=false;
+let zqRecActive=false;
 const ZQ_SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let zqRec=null;
 if(ZQ_SR){
-  const zqRec=new ZQ_SR();zqRec.lang='en-PK';zqRec.interimResults=false;zqRec.maxAlternatives=1;
-  let zqListening=false;
-  zqRec.onresult=(e)=>{const t=e.results[0][0].transcript;document.getElementById('zq-input').value=t;zqSubmit();};
-  zqRec.onend=()=>{zqListening=false;document.getElementById('zq-mic')?.classList.remove('listening');};
-  zqRec.onerror=()=>{zqListening=false;document.getElementById('zq-mic')?.classList.remove('listening');toast('Mic error — try typing instead','w');};
+  zqRec=new ZQ_SR();zqRec.lang='en-PK';zqRec.maxAlternatives=1;zqRec.interimResults=false;
+
+  zqRec.onresult=(e)=>{
+    const transcript=e.results[e.results.length-1][0].transcript.trim();
+    if(!zqWakeArmed){document.getElementById('zq-input').value=transcript;zqSubmit();return;}
+    if(zqExpectingFollowUp){zqExpectingFollowUp=false;openM('zq-modal');zqHandle(transcript);return;}
+    zqHandleWakeTranscript(transcript);
+  };
+  zqRec.onend=()=>{
+    zqRecActive=false;
+    document.getElementById('zq-mic')?.classList.remove('listening');
+    if(zqWakeArmed)setTimeout(zqTryStartRec,300); // browsers auto-stop continuous sessions periodically — restart to simulate always-on
+  };
+  zqRec.onerror=(e)=>{
+    zqRecActive=false;
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){
+      if(zqWakeArmed)zqSetAlwaysListen(false);
+      toast('🎙️ Mic permission blocked — enable it in browser settings to use voice','w');
+    }else if(zqWakeArmed){
+      setTimeout(zqTryStartRec,800);
+    }else{
+      document.getElementById('zq-mic')?.classList.remove('listening');
+      toast('Mic error — try typing instead','w');
+    }
+  };
+
   document.getElementById('zq-mic')?.addEventListener('click',()=>{
-    if(zqListening){zqRec.stop();return;}
-    try{zqRec.start();zqListening=true;document.getElementById('zq-mic').classList.add('listening');}catch(e){}
+    if(zqWakeArmed)return; // redundant while always-listening is on
+    if(zqRecActive){zqRec.stop();return;}
+    zqRec.continuous=false;
+    try{zqRec.start();zqRecActive=true;document.getElementById('zq-mic').classList.add('listening');}catch(e){}
   });
 }else{
   const zqMicBtn=document.getElementById('zq-mic');
   if(zqMicBtn){zqMicBtn.title='Voice not supported in this browser';zqMicBtn.style.opacity='.4';zqMicBtn.onclick=()=>toast('Voice input not supported in this browser — please type','w');}
+  const zqWakeBtn=document.getElementById('zq-wake-toggle');
+  if(zqWakeBtn){zqWakeBtn.disabled=true;zqWakeBtn.title='Voice not supported in this browser';}
+}
+
+function zqTryStartRec(){
+  if(!zqRec||zqRecActive||!zqWakeArmed)return;
+  zqRec.continuous=true;
+  try{zqRec.start();zqRecActive=true;}catch(e){/* already running or blocked — onerror/onend will retry */}
+}
+function zqHandleWakeTranscript(transcript){
+  const wakeMatch=transcript.toLowerCase().match(/\b(zulqey|zulqi|zulqay|julqi|julqey|zulqe)\b/);
+  if(!wakeMatch)return; // ambient speech that never mentioned the wake word — ignore
+  const after=transcript.slice(transcript.toLowerCase().indexOf(wakeMatch[0])+wakeMatch[0].length).replace(/^[\s,.\-]+/,'').trim();
+  openM('zq-modal');
+  if(!document.getElementById('zq-chat').children.length)zqSay('Hi! Main Zulqey hoon 🧞 — apka offline assistant. Bas type/bol kar bata dein, jaise: "aaj food mein 20 riyal expense daal do".');
+  if(after.length>2){zqHandle(after);}
+  else{zqSay('Yes, what can I do for you? 😊');zqExpectingFollowUp=true;}
+}
+function zqSetAlwaysListen(on){
+  zqAlwaysListen=on;S.set('zqAlwaysListen',on);
+  const btn=document.getElementById('zq-wake-toggle');
+  if(btn)btn.textContent=on?'👂 Always Listen: On':'👂 Always Listen: Off';
+  document.getElementById('zq-fab')?.classList.toggle('zq-fab-listening',on);
+  document.getElementById('zq-mic')?.classList.toggle('hide',on);
+  if(on){zqWakeArmed=true;if(zqRecActive&&zqRec){try{zqRec.stop();}catch(e){}}else{zqTryStartRec();}}
+  else{zqWakeArmed=false;zqExpectingFollowUp=false;if(zqRec&&zqRecActive){try{zqRec.stop();}catch(e){}}}
+}
+document.getElementById('zq-wake-toggle')?.addEventListener('click',()=>zqSetAlwaysListen(!zqAlwaysListen));
+if(zqAlwaysListen&&ZQ_SR){
+  const btn=document.getElementById('zq-wake-toggle');if(btn)btn.textContent='👂 Always Listen: On';
+  document.getElementById('zq-fab')?.classList.add('zq-fab-listening');
+  document.getElementById('zq-mic')?.classList.add('hide');
+  zqWakeArmed=true;
+  setTimeout(zqTryStartRec,1200); // small delay after load so it doesn't race other init code
 }
 
 if('serviceWorker' in navigator){
