@@ -2347,6 +2347,25 @@ function _applyRemoteChanges(changedKeys){
     else if(k==='stickyNotes'){if(typeof _stickyNotes!=='undefined')_stickyNotes=S.get('stickyNotes',[]);if(typeof renderStickyNotes==='function')renderStickyNotes();}
     else if(k==='libBooks'){if(document.getElementById('library-modal')?.classList.contains('open')&&typeof renderLibShelf==='function')renderLibShelf();}
     else if(k.indexOf('nb')===0){if(document.getElementById('notebook-modal')?.classList.contains('open')){if(typeof renderNbShelf==='function')renderNbShelf();if(typeof nbLoadPage==='function')nbLoadPage();}}
+    // The keys below used to only update localStorage on pull, never the in-memory variable —
+    // so a second device needed a full logout/login (i.e. a script reload) before the synced
+    // value actually showed up anywhere in the UI. Refresh each one's live variable here too.
+    else if(k==='profile'){profileData=S.get('profile',{displayName:'Admin'});if(typeof updateWelcome==='function')updateWelcome();if(document.getElementById('view-settings')?.classList.contains('on')&&typeof renderSettings==='function')renderSettings();}
+    else if(k==='sectionNames'){sectionNames=S.get('sectionNames',sectionNames);if(typeof applySectionNames==='function')applySectionNames();needsAll=true;}
+    else if(k==='timetable'){timetable=S.get('timetable',[]);if(document.getElementById('view-timetable')?.classList.contains('on')&&typeof renderTimetable==='function')renderTimetable();}
+    else if(k==='theme'){currentTheme=S.get('theme','professional');if(typeof applyTheme==='function')applyTheme(currentTheme,true,true);}
+    else if(k==='autoTheme'){autoOn=S.get('autoTheme',false);}
+    else if(k==='wallBg'){_wallBg=S.get('wallBg','#eee8dc');if(document.getElementById('notepad-modal')?.classList.contains('open')&&typeof applyWallBg==='function')applyWallBg(_wallBg);}
+    else if(k==='appName'||k==='appSub'){
+      const nameEl=document.getElementById('app-name'),subEl=document.getElementById('app-sub');
+      if(nameEl)nameEl.textContent=S.get('appName','RedBug Life Tracking');
+      if(subEl)subEl.textContent=S.get('appSub','Personal Progress System');
+    }
+    else if(k==='currencyData'){currencyData=S.get('currencyData',null);if(document.getElementById('view-finance')?.classList.contains('on')&&typeof renderFinance==='function')renderFinance();if(document.getElementById('view-settings')?.classList.contains('on')&&typeof renderSettings==='function')renderSettings();}
+    else if(k==='weatherPref'){_weatherPref=S.get('weatherPref',null);}
+    else if(k==='customIncSrc'){customIncSrc=S.get('customIncSrc',[]);if(document.getElementById('view-settings')?.classList.contains('on')&&typeof renderSettings==='function')renderSettings();if(document.getElementById('view-finance')?.classList.contains('on')&&typeof renderFinance==='function')renderFinance();}
+    else if(k==='customExpCat'){customExpCat=S.get('customExpCat',[]);if(document.getElementById('view-settings')?.classList.contains('on')&&typeof renderSettings==='function')renderSettings();if(document.getElementById('view-finance')?.classList.contains('on')&&typeof renderFinance==='function')renderFinance();}
+    else if(k==='dashOrder'){needsAll=true;}
   });
   if(needsAll)renderAll(true);
   toast('🔄 Synced from another device','s');
@@ -3478,6 +3497,11 @@ scheduleMidnight();
 
 // ===== SEED DATA =====
 function seed(){
+  // A synced account's real data comes from the server via _pullSync(). Seeding demo
+  // content here would mark habits/goals dirty before the first pull resolves, and since
+  // _pullSync() skips applying remote data for any key already marked dirty, the demo
+  // content would win the race and overwrite the user's real data on the server.
+  if(_syncToken)return;
   if(!habits.length){
     habits=[
       {id:'h1',name:'Morning Exercise',desc:'30 min workout',cat:'health',color:'#10b981'},
@@ -4202,7 +4226,7 @@ let currentTheme=S.get('theme','professional');
 let autoOn=S.get('autoTheme',false);
 let autoTimer=null;
 
-function applyTheme(name,silent){
+function applyTheme(name,silent,noSave){
   const t=THEMES[name]||THEMES.purple;
   const r=document.documentElement.style;
   r.setProperty('--primary',t.primary);r.setProperty('--pl',t.pl);r.setProperty('--pa',t.pa);
@@ -4216,7 +4240,7 @@ function applyTheme(name,silent){
   document.querySelectorAll('#rg stop:last-child').forEach(s=>s.setAttribute('stop-color',t.ge));
   // Active dot
   document.querySelectorAll('.th').forEach(d=>d.classList.toggle('on',d.dataset.theme===name));
-  currentTheme=name;S.set('theme',name);
+  currentTheme=name;if(!noSave)S.set('theme',name);
   if(!silent)toast('🎨 '+THEME_NAMES[name],'s');
 }
 
@@ -4920,6 +4944,15 @@ const QUOTES=[
 // Set this to your real OAuth Client ID from Google Cloud Console → Credentials → OAuth Client ID (Web application).
 const GOOGLE_CLIENT_ID='531368275452-q9aiitvr8vk2sglpeve19t7lr3qvn9s2.apps.googleusercontent.com';
 
+// initAuth() below calls initWeather() synchronously for an already-logged-in user (i.e. on
+// every page refresh) — so these have to exist *before* that point. They used to be declared
+// further down the file, which meant every refresh threw "_weatherPref before initialization"
+// the instant initWeather() ran, aborting the rest of the script's top-level execution for the
+// whole page — silently breaking everything declared after that point (Vision Board, Sticky
+// Notes, Library, Notebook init), not just weather.
+let _weatherPref=S.get('weatherPref',null); // 'on','off', null=ask
+let _calWC=-1,_calTemp=0,_calCity='';
+
 _loggedIn=!!_syncToken;
 
 (function initAuth(){
@@ -5036,8 +5069,6 @@ function applySbIcon(){
 }
 
 // ===== WEATHER =====
-let _weatherPref=S.get('weatherPref',null); // 'on','off', null=ask
-let _calWC=-1,_calTemp=0,_calCity='';
 function initWeather(){
   // Auto-fetch weather (sidebar only); no dashboard prompt needed
   if(_weatherPref==='off'){
