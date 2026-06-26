@@ -495,6 +495,13 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px 20px;min-height:100vh
 /* ICON GLOW */
 .sb-icon{animation:iconGlow 2.5s ease-in-out infinite;transition:background .4s ease}
 
+/* MANUAL SYNC */
+.sb-sync-row{display:flex;align-items:center;gap:8px;margin-top:8px}
+.sb-sync-btn{background:var(--primary);color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+.sb-sync-btn:hover{opacity:.88}
+.sb-sync-btn:disabled{opacity:.6;cursor:default}
+.sb-sync-status{font-size:10px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
 /* THEME BAR */
 .theme-bar{display:flex;align-items:center;gap:5px;margin-top:8px;padding:4px 0}
 .th{width:15px;height:15px;border-radius:50%;background:var(--tc,#888);cursor:pointer;
@@ -1095,6 +1102,11 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
         </div>
         <div class="sb-sub" id="app-sub">Personal Progress System</div>
       </div>
+    </div>
+    <!-- MANUAL SYNC -->
+    <div class="sb-sync-row" id="sb-sync-row" style="display:none">
+      <button class="sb-sync-btn" id="sb-sync-now-btn" title="Save &amp; sync everything to the server now">⬆ Save &amp; Sync</button>
+      <span class="sb-sync-status" id="sb-sync-status"></span>
     </div>
     <!-- THEME SELECTOR -->
     <div class="theme-bar">
@@ -1874,6 +1886,10 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
     </div>
     <div class="fg"><label>Notes <span style="color:var(--muted);font-weight:400">(optional)</span></label><input class="fi" id="em-note" placeholder="Details..."></div>
     <div class="fg"><label>Color</label><div class="clr-row" id="em-clrs"></div></div>
+    <div class="fg" style="display:flex;align-items:center;gap:8px;margin-bottom:0">
+      <input type="checkbox" id="em-repeat-yearly" style="width:16px;height:16px;cursor:pointer">
+      <label for="em-repeat-yearly" style="margin:0;cursor:pointer;font-weight:600;font-size:13px">🔁 Repeat every year (e.g. anniversary)</label>
+    </div>
     <div class="mbtn"><button class="btn btn-g" id="em-cancel">Cancel</button><button class="btn btn-p" id="em-save">Save Event 📅</button></div>
   </div>
 </div>
@@ -1993,6 +2009,12 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
         <div><div class="set-lbl">Display Name</div><div class="set-hint">Shown in welcome message</div></div>
         <input class="fi" id="set-dname" style="width:180px" placeholder="e.g. Abdullah">
         <button class="btn btn-p btn-sm" id="set-dname-save">Save</button>
+      </div>
+      <div class="set-row">
+        <div><div class="set-lbl">Recovery Phone Number</div><div class="set-hint">For your own records only — not used for login or real SMS verification</div></div>
+        <input class="fi" type="tel" id="set-phone" style="width:180px" placeholder="e.g. +966 5xxxxxxxx">
+        <button class="btn btn-p btn-sm" id="set-phone-save">Save</button>
+        <button class="btn btn-g btn-sm" id="set-phone-del" style="display:none">Delete</button>
       </div>
       <div class="set-row">
         <div><div class="set-lbl">Account</div><div class="set-hint">Signed in with Google — log in/out from there, no separate password</div></div>
@@ -2310,6 +2332,7 @@ async function _flushSync(){
     if(d&&d.ok){
       keys.forEach(k=>_dirtyKeys.delete(k));
       if(d.server_time){_syncCursor=d.server_time;localStorage.setItem('lt4_sync_cursor',String(_syncCursor));}
+      _lastSyncedAt=Date.now();_setSyncStatus('✓ Synced just now');
     }
   }catch(e){/* offline/server error — keys stay dirty, retried next debounce or online event */}
 }
@@ -2374,6 +2397,34 @@ function _applyRemoteChanges(changedKeys){
 window.addEventListener('online',_flushSync);
 window.addEventListener('focus',_pullSync);
 setInterval(_pullSync,25000);
+// Heartbeat: in addition to the 2.5s debounced push after every edit, retry any still-dirty
+// key every 5 minutes too — a safety net in case a push attempt failed earlier (e.g. offline).
+setInterval(()=>{if(_syncToken)_flushSync();},5*60*1000);
+
+// ===== MANUAL "SAVE & SYNC" BUTTON =====
+const ALL_SYNC_KEYS=['habits','tasks','goals','logs','birthdays','events','finance','customIncSrc','customExpCat','profile','sectionNames','timetable','visionItems','stickyNotes','libBooks','currencyData','theme','autoTheme','wallBg','appName','appSub','dashOrder','weatherPref'];
+let _lastSyncedAt=null;
+function _setSyncStatus(text){const el=document.getElementById('sb-sync-status');if(el)el.textContent=text;}
+async function syncNowManual(){
+  if(!_syncToken)return;
+  const btn=document.getElementById('sb-sync-now-btn');
+  if(btn){btn.disabled=true;btn.textContent='⏳ Syncing...';}
+  _setSyncStatus('Saving everything…');
+  _flushOpenEditors();
+  ALL_SYNC_KEYS.forEach(k=>_dirtyKeys.add(k));
+  clearTimeout(_syncFlushTimer);
+  await _flushSync();
+  await _pullSync();
+  if(btn){btn.disabled=false;btn.textContent='⬆ Save & Sync';}
+  _lastSyncedAt=Date.now();
+  _setSyncStatus('✓ Synced just now');
+}
+document.getElementById('sb-sync-now-btn')?.addEventListener('click',syncNowManual);
+setInterval(()=>{
+  if(_lastSyncedAt==null)return;
+  const mins=Math.floor((Date.now()-_lastSyncedAt)/60000);
+  _setSyncStatus(mins<1?'✓ Synced just now':'✓ Synced '+mins+'m ago');
+},30000);
 
 // Safety net: a refresh/tab-close can land inside the few hundred ms an autosave debounce
 // is still waiting out. Flush whatever's open straight to storage before that happens.
@@ -3436,6 +3487,8 @@ document.addEventListener('click',function(e){
   const siOpt=t.closest('[data-si]');
   if(siOpt){profileData.sbIcon=siOpt.dataset.si;S.set('profile',profileData);applySbIcon();document.querySelectorAll('.si-opt').forEach(b=>b.classList.toggle('active',b.dataset.si===siOpt.dataset.si));toast('Icon updated! ✅','s');return;}
   if(id==='set-dname-save'){const v=document.getElementById('set-dname').value.trim();if(!v){toast('Enter a name','w');return;}profileData.displayName=v;S.set('profile',profileData);updateWelcome();toast('✅ Display name updated!','s');return;}
+  if(id==='set-phone-save'){const v=document.getElementById('set-phone').value.trim();if(!v){toast('Enter a phone number','w');return;}profileData.recoveryPhone=v;S.set('profile',profileData);document.getElementById('set-phone-del').style.display='';toast('✅ Recovery number saved!','s');return;}
+  if(id==='set-phone-del'){delete profileData.recoveryPhone;S.set('profile',profileData);document.getElementById('set-phone').value='';document.getElementById('set-phone-del').style.display='none';toast('Recovery number removed','w');return;}
   if(id==='set-change-cur'){openCurrencyModal();return;}
   if(id==='set-ai-copy'){genAISummary();return;}
   if(id==='set-logout'){doLogout();return;}
@@ -3488,12 +3541,32 @@ function scheduleMidnight(){
     const prev=today();
     // Reload from storage (in case another tab updated)
     habits=S.get('habits',habits);tasks=S.get('tasks',tasks);goals=S.get('goals',goals);logs=S.get('logs',logs);birthdays=S.get('birthdays',birthdays);events=S.get('events',events);finance=S.get('finance',finance);
+    rollYearlyEvents();
     renderAll(true);tick();
     toast('🌅 New day started! '+prev+' data saved.','s');
     scheduleMidnight(); // schedule next midnight
   },ms);
 }
 scheduleMidnight();
+
+// A "repeat every year" event keeps its exact date string (everything else compares events by
+// exact date match), but once that date is in the past, bump it forward by a year — possibly
+// several years if the app wasn't opened for a while — so it's always sitting on its next
+// upcoming occurrence, the same way a birthday repeats without needing separate recurrence logic.
+function rollYearlyEvents(){
+  const td=today();
+  let changed=false;
+  events.forEach(ev=>{
+    if(!ev.repeatYearly)return;
+    while(ev.date<td){
+      const [y,m,d]=ev.date.split('-').map(Number);
+      ev.date=(y+1)+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+      changed=true;
+    }
+  });
+  if(changed)S.set('events',events);
+}
+rollYearlyEvents();
 
 // ===== SEED DATA =====
 function seed(){
@@ -3860,6 +3933,7 @@ function openEventModal(date){
   document.getElementById('em-time').value='';
   document.getElementById('em-note').value='';
   document.getElementById('em-type').value='personal';
+  document.getElementById('em-repeat-yearly').checked=false;
   selEC=EVCOLS[0];
   document.getElementById('em-clrs').innerHTML=EVCOLS.map(c=>`<div class="clr${c===selEC?' on':''}" style="background:${c}" data-ec="${c}"></div>`).join('');
   openM('em');
@@ -3878,7 +3952,8 @@ function saveEvent(){
     time:document.getElementById('em-time').value||'',
     type:document.getElementById('em-type').value,
     note:document.getElementById('em-note').value.trim(),
-    color:selEC
+    color:selEC,
+    repeatYearly:document.getElementById('em-repeat-yearly').checked
   });
   S.set('events',events);
   closeM('em');
@@ -3903,7 +3978,7 @@ function openDayEvents(date){
       return `<div class="ev-item">
         <div class="ev-color-bar" style="background:${c}"></div>
         <div class="ev-info">
-          <div class="ev-title">${typeIcon} ${escapeHtml(ev.title)}</div>
+          <div class="ev-title">${typeIcon} ${escapeHtml(ev.title)}${ev.repeatYearly?' <span title="Repeats every year">🔁</span>':''}</div>
           <div class="ev-meta">${ev.time||'All day'}${ev.note?' · '+escapeHtml(ev.note):''}</div>
         </div>
         <button class="ev-del" data-dev="${ev.id}">🗑</button>
@@ -4961,6 +5036,7 @@ _loggedIn=!!_syncToken;
   if(appNameEl)appNameEl.textContent=S.get('appName','RedBug Life Tracking');
   if(_loggedIn){
     screen.classList.add('hide');
+    const sr=document.getElementById('sb-sync-row');if(sr)sr.style.display='flex';
     updateWelcome();initWeather();
     _pullSync();
     return;
@@ -4998,6 +5074,7 @@ async function handleGoogleCredential(response){
     _loggedIn=true;
     if(d.user&&d.user.displayName){profileData.displayName=d.user.displayName;S.set('profile',profileData);}
     document.getElementById('login-screen').classList.add('hide');
+    const sr=document.getElementById('sb-sync-row');if(sr)sr.style.display='flex';
     updateWelcome();
     initWeather();
     toast('👋 Welcome, '+(profileData.displayName||'')+'!','s');
@@ -5143,6 +5220,9 @@ function renderSettings(){
   // Profile fields
   const dn=document.getElementById('set-dname');
   if(dn)dn.value=profileData.displayName||'';
+  const ph=document.getElementById('set-phone'),phDel=document.getElementById('set-phone-del');
+  if(ph)ph.value=profileData.recoveryPhone||'';
+  if(phDel)phDel.style.display=profileData.recoveryPhone?'':'none';
   // Currency hint
   const ch=document.getElementById('set-cur-hint');
   if(ch&&currencyData)ch.textContent=currencyData.flag+' '+currencyData.name+' ('+currSym+')';
