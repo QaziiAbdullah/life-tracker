@@ -73,6 +73,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 }
 .sb-edit-btn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:11px;opacity:0;transition:opacity .15s;padding:2px 4px;border-radius:4px;line-height:1}
 .sb-brand:hover .sb-edit-btn{opacity:.7}
+#app-font-btn{font-style:italic;font-weight:700}
+.app-font-sel{margin-top:4px;width:100%;font-size:11px;background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:3px 6px;font-family:inherit}
 .sb-edit-btn:hover{opacity:1!important;color:var(--pl)}
 
 /* MOTIVATIONAL TICKER */
@@ -503,6 +505,14 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px 20px;min-height:100vh
 .sb-sync-btn:disabled{opacity:.6;cursor:default}
 .sb-sync-status{font-size:10px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
+/* LUXURY THEME GALLERY (Settings) */
+.lux-cat-h{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px}
+.lux-cat-h:first-child{margin-top:0}
+.lux-swatch-row{display:flex;flex-wrap:wrap;gap:8px}
+.lux-swatch{width:30px;height:30px;border-radius:9px;cursor:pointer;border:2px solid transparent;transition:transform .15s;flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.lux-swatch:hover{transform:scale(1.15)}
+.lux-swatch.on{border-color:#fff;transform:scale(1.1);box-shadow:0 0 0 2px var(--card),0 0 10px rgba(255,255,255,.4)}
+
 /* THEME BAR */
 .theme-bar{display:flex;align-items:center;gap:5px;margin-top:8px;padding:4px 0}
 .th{width:15px;height:15px;border-radius:50%;background:var(--tc,#888);cursor:pointer;
@@ -774,6 +784,8 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px 20px;min-height:100vh
 .ccat-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px 4px 8px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--border);background:rgba(255,255,255,.04)}
 .ccat-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:10px;padding:0;line-height:1}
 .ccat-del:hover{color:var(--danger)}
+.ccat-edit{background:none;border:none;color:var(--muted);cursor:pointer;font-size:10px;padding:0;line-height:1}
+.ccat-edit:hover{color:var(--primary)}
 /* WELCOME BANNER RING */
 .wb-ring-wrap{position:relative;width:62px;height:62px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .wb-ring-pct{position:absolute;font-size:12px;font-weight:900;color:#fff;text-align:center;line-height:1}
@@ -1100,7 +1112,9 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
         <div class="sb-name-wrap">
           <div class="sb-title" id="app-name" contenteditable="false" spellcheck="false">RedBug Life Tracking</div>
           <button class="sb-edit-btn" id="edit-name-btn" title="Click to edit your name">✏</button>
+          <button class="sb-edit-btn" id="app-font-btn" title="Change the title's font">Aa</button>
         </div>
+        <select class="app-font-sel" id="app-font-sel" style="display:none" title="Pick a font"></select>
         <div class="sb-sub" id="app-sub">Personal Progress System</div>
       </div>
     </div>
@@ -1792,9 +1806,10 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
   <!-- Smart Breakdown (auto-calculated, all-time — cash/bank split needs the "Paid With" field on each transaction; switch it off anytime to go back to the plain view above) -->
   <div class="card" id="fin-smart-panel" style="display:none">
     <div class="card-h"><div class="card-t">🧠 Smart Breakdown</div><div style="font-size:10px;color:var(--muted)">All time · auto-calculated</div></div>
-    <div class="srow" style="grid-template-columns:repeat(4,1fr)">
+    <div class="srow" style="grid-template-columns:repeat(5,1fr)">
       <div class="sc cg"><div class="sv" id="fs-cash" style="color:#10b981">0</div><div class="sl">Cash in Hand</div></div>
       <div class="sc cp"><div class="sv" id="fs-bank">0</div><div class="sl">Bank Balance</div></div>
+      <div class="sc cb"><div class="sv" id="fs-invest" style="color:#60a5fa">0</div><div class="sl">Investment Balance</div></div>
       <div class="sc co"><div class="sv" id="fs-salary" style="color:#fbbf24">0</div><div class="sl">Total Salary Earned</div></div>
       <div class="sc cr"><div class="sv" id="fs-biz" style="color:#f87171">0</div><div class="sl">Business Investment</div></div>
     </div>
@@ -1938,6 +1953,7 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
       <div style="display:flex;gap:8px">
         <button type="button" class="fmt-btn on" id="fm-pm-cash" data-pm="cash" style="flex:1">💵 Cash</button>
         <button type="button" class="fmt-btn" id="fm-pm-bank" data-pm="bank" style="flex:1">🏦 Bank</button>
+        <button type="button" class="fmt-btn" id="fm-pm-investment" data-pm="investment" style="flex:1">📈 Investment</button>
       </div>
     </div>
     <!-- Source (income) -->
@@ -2066,6 +2082,14 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
         </div>
       </div>
     </div>
+    <!-- Luxury Theme Gallery -->
+    <div class="set-section">
+      <div class="set-sh">🎨 Luxury Theme Gallery</div>
+      <div class="set-row" style="display:block">
+        <div style="margin-bottom:4px"><div class="set-lbl">Pick any color below</div><div class="set-hint">A full theme (background, cards, sidebar, gradient) is generated from whichever swatch you click. The 9 quick dots in the sidebar still work too.</div></div>
+        <div id="lux-gallery" style="margin-top:10px"></div>
+      </div>
+    </div>
     <!-- Currency -->
     <div class="set-section">
       <div class="set-sh">💱 Currency</div>
@@ -2129,6 +2153,10 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
     <!-- Data -->
     <div class="set-section">
       <div class="set-sh">🗂 Data Management</div>
+      <div class="set-row">
+        <div><div class="set-lbl">Check for Updates</div><div class="set-hint">Get the latest app version right now, without closing the app</div></div>
+        <button class="btn btn-p btn-sm" id="set-check-update">🔄 Check for Updates</button>
+      </div>
       <div class="set-row">
         <div><div class="set-lbl">Logout</div><div class="set-hint">End your session (data is saved)</div></div>
         <button class="btn btn-g btn-sm" id="set-logout">Logout →</button>
@@ -3505,10 +3533,33 @@ document.addEventListener('click',function(e){
   if(id==='w-allow'){_weatherPref='on';S.set('weatherPref','on');fetchWeather();return;}
   if(id==='w-deny'){_weatherPref='off';S.set('weatherPref','off');document.getElementById('weather-ask').style.display='none';return;}
   if(id==='w-refresh'){fetchWeather();return;}
-  if(id==='sb-weather-retry-btn'){_weatherPref=null;S.set('weatherPref',null);fetchWeather();return;}
+  if(id==='sb-weather-retry-btn'){
+    // Browsers won't re-show the permission prompt once denied - retrying silently
+    // would just fail again, so tell the user where to fix it instead of looping forever.
+    if(t.dataset.wreason==='denied'){toast('Location blocked — enable it in your browser\'s site settings, then tap again','w');return;}
+    _weatherPref=null;S.set('weatherPref',null);fetchWeather();
+    return;
+  }
   // Edit transaction
   const defEl=t.closest('[data-def]');
   if(defEl){e.stopPropagation();openEditFinance(defEl.dataset.def);return;}
+  // Rename custom income source (settings) — id stays the same, so every past
+  // transaction referencing this id (via _finSrcLabel lookup) picks up the new label automatically
+  const ecs=t.closest('[data-ecs]');
+  if(ecs){
+    e.stopPropagation();
+    const src=customIncSrc.find(s=>s.id===ecs.dataset.ecs);
+    if(src){const nm=prompt('Rename income source to:',src.label);if(nm&&nm.trim()){src.label=nm.trim();S.set('customIncSrc',customIncSrc);toast('Renamed ✅','s');renderSettings();if(document.getElementById('view-finance')?.classList.contains('on'))renderFinance();}}
+    return;
+  }
+  // Rename custom expense category (settings) — same id-based lookup, applies everywhere it's used
+  const ece=t.closest('[data-ece]');
+  if(ece){
+    e.stopPropagation();
+    const cat=customExpCat.find(c=>c.id===ece.dataset.ece);
+    if(cat){const nm=prompt('Rename expense category to:',cat.label);if(nm&&nm.trim()){cat.label=nm.trim();S.set('customExpCat',customExpCat);toast('Renamed ✅','s');renderSettings();if(document.getElementById('view-finance')?.classList.contains('on'))renderFinance();}}
+    return;
+  }
   // Delete custom income source (settings)
   const dcs=t.closest('[data-dcs]');
   if(dcs){e.stopPropagation();customIncSrc=customIncSrc.filter(s=>s.id!==dcs.dataset.dcs);S.set('customIncSrc',customIncSrc);toast('Removed','w');renderSettings();return;}
@@ -3524,6 +3575,7 @@ document.addEventListener('click',function(e){
   if(id==='set-phone-del'){delete profileData.recoveryPhone;S.set('profile',profileData);document.getElementById('set-phone').value='';document.getElementById('set-phone-del').style.display='none';toast('Recovery number removed','w');return;}
   if(id==='set-change-cur'){openCurrencyModal();return;}
   if(id==='set-ai-copy'){genAISummary();return;}
+  if(id==='set-check-update'){checkForAppUpdate();return;}
   if(id==='set-logout'){doLogout();return;}
   if(id==='set-reset'){doResetAllData();return;}
   if(id==='bf-inc'||id==='bf-inc2'||id==='fw-inc-btn'){openFinanceModal('income');return;}
@@ -3547,7 +3599,10 @@ document.addEventListener('click',function(e){
   if(fmt){_finSwitchType(fmt.dataset.fmt);return;}
   // Cash / Bank payment method toggle inside the finance modal
   const fpm=t.closest('[data-pm]');
-  if(fpm){_selPM=fpm.dataset.pm;document.getElementById('fm-pm-cash').classList.toggle('on',_selPM==='cash');document.getElementById('fm-pm-bank').classList.toggle('on',_selPM==='bank');return;}
+  if(fpm){_selPM=fpm.dataset.pm;document.getElementById('fm-pm-cash').classList.toggle('on',_selPM==='cash');document.getElementById('fm-pm-bank').classList.toggle('on',_selPM==='bank');document.getElementById('fm-pm-investment').classList.toggle('on',_selPM==='investment');return;}
+  // Luxury theme swatch click
+  const luxSw=t.closest('.lux-swatch[data-lux]');
+  if(luxSw){applyLuxuryTheme(luxSw.dataset.lux);return;}
   // Smart Breakdown toggle on the Finance page
   if(id==='fin-smart-toggle'){_finSmartView=!_finSmartView;S.set('financeSmartView',_finSmartView);renderFinance();return;}
   // Click a category/source row in the Income/Expense breakdown to see its transactions
@@ -4045,16 +4100,17 @@ function renderFinanceSmartPanel(){
   if(stateLbl)stateLbl.textContent=_finSmartView?'On':'Off';
   if(panel)panel.style.display=_finSmartView?'':'none';
   if(!_finSmartView)return;
-  let cash=0,bank=0,salary=0,biz=0;
+  let cash=0,bank=0,invest=0,salary=0,biz=0;
   finance.forEach(t=>{
     const pm=t.paymentMethod||'bank'; // older transactions predate this field — assume bank
     const signed=t.type==='income'?t.amount:-t.amount;
-    if(pm==='cash')cash+=signed;else bank+=signed;
+    if(pm==='cash')cash+=signed;else if(pm==='investment')invest+=signed;else bank+=signed;
     if(t.type==='income'&&t.source==='salary')salary+=t.amount;
     if(t.type==='expense'&&t.source==='business')biz+=t.amount;
   });
   document.getElementById('fs-cash').textContent=currSym+' '+fmtMoney(cash);
   document.getElementById('fs-bank').textContent=currSym+' '+fmtMoney(bank);
+  document.getElementById('fs-invest').textContent=currSym+' '+fmtMoney(invest);
   document.getElementById('fs-salary').textContent=currSym+' '+fmtMoney(salary);
   document.getElementById('fs-biz').textContent=currSym+' '+fmtMoney(biz);
 }
@@ -4266,7 +4322,7 @@ function openFinDrill(type,key){
     list.innerHTML='<div class="f-empty">No transactions in this period.</div>';
   }else{
     list.innerHTML=txs.map(t=>{
-      const pmIcon=t.paymentMethod==='cash'?'💵':'🏦';
+      const pmIcon=t.paymentMethod==='cash'?'💵':t.paymentMethod==='investment'?'📈':'🏦';
       const sign=type==='income'?'+':'−';
       const color=type==='income'?'#10b981':'#f87171';
       return `<div class="ev-item">
@@ -4328,6 +4384,7 @@ function openFinanceModal(type){
   _selPM='cash';
   document.getElementById('fm-pm-cash').classList.add('on');
   document.getElementById('fm-pm-bank').classList.remove('on');
+  document.getElementById('fm-pm-investment').classList.remove('on');
   _finSwitchType(finType);
   openM('fm');
   setTimeout(()=>document.getElementById('fm-amount').focus(),80);
@@ -4395,7 +4452,134 @@ let currentTheme=S.get('theme','professional');
 let autoOn=S.get('autoTheme',false);
 let autoTimer=null;
 
+// ===== LUXURY THEME GALLERY =====
+// ~98 named accent colors grouped the way the user organized them. Each entry is just a single
+// hex — the rest of a usable theme (dark bg, sidebar, card surfaces, gradient) is derived from
+// it at apply-time via deriveLuxuryTheme(), the same way the 9 hand-picked THEMES above look
+// (dark, same-hue, low-saturation background behind a bright primary accent).
+const LUXURY_PALETTE={
+  '💛 Metallic & Liquid Gold':[
+    ['Classic Gold','#D4AF37'],['Champagne Gold','#E6D7B2'],['Liquid Gild','#C5A059'],['Antique Brass','#CD7F32'],
+    ['Florentine Gold','#B89742'],['Rose Gild','#B76E79'],['Platinum Ice','#E5E4E2'],['Sterling Silver','#C0C0C0'],
+    ['White Gold','#F3EFE0'],['Burnt Bronze','#8C6239'],['Obsidian Gold','#2B2519'],['Palazzo Ochre','#C39B4B'],
+    ['Sovereign Gold','#D1A153'],['Sunlit Brass','#E2C994']
+  ],
+  '💎 Deep Jewels & Royals':[
+    ['Imperial Jade','#005A36'],['Midnight Sapphire','#0F1E36'],['Royal Amethyst','#4D245A'],['Merlot Crimson','#58111A'],
+    ['Emerald Luxe','#046340'],['Rich Burgundy','#4A0E17'],['Teal Sovereign','#004B49'],['Majestic Plum','#3B1C32'],
+    ['Deep Tourmaline','#003333'],['Garnet Reserve','#611624'],['Velvet Currant','#421219'],['Regal Navy','#1A2536'],
+    ['Byzantine Purple','#6F2DA8'],['Elysian Blue','#1C3B57']
+  ],
+  '🏛️ Minimalist Neutrals & Monochromes':[
+    ['True Obsidian','#111111'],['Noir Charcoal','#1F2022'],['Alabaster White','#FAFAFA'],['Ivory Cream','#FFFDF6'],
+    ['Parchment Silk','#F4F1EA'],['Smoked Onyx','#232324'],['Bone China','#EAE6DF'],['Cashmere Grey','#D4D1CB'],
+    ['Ethereal White','#F9F9FB'],['Vellum Beige','#DDD5C7'],['Graphite Velvet','#2D3134'],['Flint Grey','#5A5D64'],
+    ['Shadowed Suede','#3C3B3A'],['Chalkstone','#F0EFEA']
+  ],
+  '🪵 Earthy Textures':[
+    ['Tuscan Terra','#A0522D'],['Umber Suede','#6B523E'],['Warm Truffle','#4B3C31'],['Raw Sepia','#705335'],
+    ['Sienna Dusk','#8B5A2B'],['Saddle Leather','#965A38'],['Cognac Reserve','#8F4A24'],['Smoked Espresso','#2D221E'],
+    ['Desert Quartz','#D2B48C'],['Burlwood','#A67A5B'],['Driftwood Grey','#7A7265'],['Rich Ochre','#C78B33'],
+    ['Hickory Bark','#4F3824'],['Ancient Olive','#556B2F']
+  ],
+  '🌸 Soft Pastels & Silks':[
+    ['Dusty Rose','#CCA7A5'],['Muted Sage','#9FAF90'],['Blush Pearl','#F3E1DC'],['Cloud Blue','#D9E2EC'],
+    ['Petal Satin','#FCEBE6'],['Smoky Lavender','#A39BB4'],['Pistachio Cream','#D2E7D6'],['Gilded Sand','#E8DCC4'],
+    ['Linen Ecru','#F5EFEB'],['Mist Grey','#BCC6CC'],['Lilac Haze','#BFA9BE'],['Chiffon Pink','#F8E2E2'],
+    ['Celadon Silk','#B8CBB5'],['Warm Alabaster','#FDF9F3']
+  ],
+  '🍁 Warm Spices & Autumn Luxe':[
+    ['Saffron Spice','#C9822B'],['Paprika Dust','#913821'],['Burnt Terracotta','#B6533D'],['Toasted Pecan','#A07855'],
+    ['Amber Resin','#D9903A'],['Cinnamon Bark','#7B3F00'],['Ginger Root','#C4A482'],['Nutmeg Satin','#866043'],
+    ['Spiced Cider','#B36734'],['Cardamom Pod','#8A8672'],['Roasted Cacao','#3D2314'],['Honeyed Almond','#E3C195'],
+    ['Toffee Crunch','#A77F54'],['Sweet Molasses','#362219']
+  ],
+  '🌲 Deep Woods & Forest':[
+    ['Verdant Spruce','#1E3F20'],['Muted Moss','#4A5D4E'],['Rich Mahogany','#401A13'],['Smoked Walnut','#3A2E2B'],
+    ['Forest Pine','#1B3622'],['Dark Cedar','#32221A'],['Eucalyptus Shadow','#3B4B42'],['Ancient Oak','#483C32'],
+    ['Juniper Berry','#283D3B'],['Teakwood Oil','#473325'],['Peat Moss','#2E3122'],['Charred Pine','#212520'],
+    ['Weathered Iron','#343837'],['Highland Heather','#4D3B4D']
+  ]
+};
+const LUXURY_NAMES={};
+Object.values(LUXURY_PALETTE).forEach(list=>list.forEach(([name,hex])=>{LUXURY_NAMES['lux_'+name.toLowerCase().replace(/[^a-z0-9]+/g,'')]=name;}));
+
+function _hexToRgb(hex){const n=parseInt(hex.slice(1),16);return[n>>16&255,n>>8&255,n&255];}
+function _rgbToHsl(r,g,b){
+  r/=255;g/=255;b/=255;
+  const max=Math.max(r,g,b),min=Math.min(r,g,b);
+  let h=0,s=0;const l=(max+min)/2;
+  if(max!==min){
+    const d=max-min;
+    s=l>.5?d/(2-max-min):d/(max+min);
+    if(max===r)h=((g-b)/d+(g<b?6:0));
+    else if(max===g)h=(b-r)/d+2;
+    else h=(r-g)/d+4;
+    h/=6;
+  }
+  return[h*360,s*100,l*100];
+}
+function _hslToHex(h,s,l){
+  h/=360;s/=100;l/=100;
+  let r,g,b;
+  if(s===0){r=g=b=l;}
+  else{
+    const hue2rgb=(p,q,t)=>{if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;};
+    const q=l<.5?l*(1+s):l+s-l*s,p=2*l-q;
+    r=hue2rgb(p,q,h+1/3);g=hue2rgb(p,q,h);b=hue2rgb(p,q,h-1/3);
+  }
+  const toHex=v=>Math.round(v*255).toString(16).padStart(2,'0');
+  return'#'+toHex(r)+toHex(g)+toHex(b);
+}
+function deriveLuxuryTheme(hex){
+  const[r,g,b]=_hexToRgb(hex);
+  const[h,s]=_rgbToHsl(r,g,b);
+  const sat=Math.max(s,35); // keep enough saturation even for near-grey/neutral picks
+  return{
+    primary:hex,
+    pl:_hslToHex(h,Math.min(sat,55),78),
+    pa:r+','+g+','+b,
+    bg:_hslToHex(h,Math.min(sat,40),5),
+    card:_hslToHex(h,Math.min(sat,35),9),
+    card2:_hslToHex(h,Math.min(sat,32),14),
+    sb:_hslToHex(h,Math.min(sat,40),4),
+    gs:hex,
+    ge:_hslToHex((h+25)%360,Math.min(sat,60),58)
+  };
+}
+function applyLuxuryTheme(key,silent,noSave){
+  const all=[].concat(...Object.values(LUXURY_PALETTE));
+  const entry=all.find(([name])=>'lux_'+name.toLowerCase().replace(/[^a-z0-9]+/g,'')===key);
+  if(!entry)return;
+  const t=deriveLuxuryTheme(entry[1]);
+  const r=document.documentElement.style;
+  r.setProperty('--primary',t.primary);r.setProperty('--pl',t.pl);r.setProperty('--pa',t.pa);
+  r.setProperty('--bg',t.bg);r.setProperty('--card',t.card);r.setProperty('--card2',t.card2);
+  r.setProperty('--sb',t.sb);r.setProperty('--gs',t.gs);r.setProperty('--ge',t.ge);
+  const ic=document.getElementById('sb-icon-txt');
+  if(ic)ic.style.background=`linear-gradient(135deg,${t.primary},${t.ge})`;
+  document.querySelectorAll('#rg stop:first-child').forEach(s=>s.setAttribute('stop-color',t.pl));
+  document.querySelectorAll('#rg stop:last-child').forEach(s=>s.setAttribute('stop-color',t.ge));
+  document.querySelectorAll('.th').forEach(d=>d.classList.remove('on'));
+  document.querySelectorAll('.lux-swatch').forEach(d=>d.classList.toggle('on',d.dataset.lux===key));
+  currentTheme=key;if(!noSave)S.set('theme',key);
+  if(!silent)toast('🎨 '+entry[0],'s');
+}
+function renderLuxuryGallery(){
+  const wrap=document.getElementById('lux-gallery');
+  if(!wrap||wrap.children.length)return; // build once
+  wrap.innerHTML=Object.entries(LUXURY_PALETTE).map(([cat,list])=>`
+    <div class="lux-cat-h">${cat}</div>
+    <div class="lux-swatch-row">
+      ${list.map(([name,hex])=>{
+        const key='lux_'+name.toLowerCase().replace(/[^a-z0-9]+/g,'');
+        return `<div class="lux-swatch${currentTheme===key?' on':''}" data-lux="${key}" style="background:${hex}" title="${escapeHtml(name)}"></div>`;
+      }).join('')}
+    </div>`).join('');
+}
+
 function applyTheme(name,silent,noSave){
+  if(LUXURY_NAMES[name]){applyLuxuryTheme(name,silent,noSave);return;}
   const t=THEMES[name]||THEMES.purple;
   const r=document.documentElement.style;
   r.setProperty('--primary',t.primary);r.setProperty('--pl',t.pl);r.setProperty('--pa',t.pa);
@@ -4440,11 +4624,29 @@ applyTheme(currentTheme,true);
 if(autoOn){document.getElementById('th-auto').classList.add('on');autoTimer=setInterval(nextAutoTheme,5*60*1000);}
 
 // ===== EDITABLE NAME =====
+// Local copy of the font list (same fonts as the Notebook's font picker) — kept local rather
+// than reusing NB_BOOK_FONTS, since that's declared much further down the file and this IIFE
+// runs synchronously at load time, before that declaration line would have executed yet.
+const APP_TITLE_FONTS=[
+  {name:'Default (Gothic)',css:''},
+  {name:'Georgia',css:'Georgia,serif'},
+  {name:'Palatino',css:'"Palatino Linotype",Palatino,serif'},
+  {name:'Times New Roman',css:'"Times New Roman",Times,serif'},
+  {name:'Book Antiqua',css:'"Book Antiqua","Palatino Linotype",serif'},
+  {name:'Garamond',css:'Garamond,"Times New Roman",serif'},
+  {name:'Verdana',css:'Verdana,Geneva,sans-serif'},
+  {name:'Arial',css:'Arial,Helvetica,sans-serif'},
+  {name:'Trebuchet MS',css:'"Trebuchet MS","Helvetica Neue",sans-serif'},
+  {name:'Courier New',css:'"Courier New",Courier,monospace'},
+  {name:'Comic Sans MS',css:'"Comic Sans MS",cursive'},
+];
 (function(){
   const nameEl = document.getElementById('app-name');
   const subEl  = document.getElementById('app-sub');
   const iconEl = document.getElementById('sb-icon-txt');
   const editBtn= document.getElementById('edit-name-btn');
+  const fontBtn= document.getElementById('app-font-btn');
+  const fontSel= document.getElementById('app-font-sel');
 
   // Load saved name
   const saved = S.get('appName','RedBug Life Tracking');
@@ -4455,6 +4657,24 @@ if(autoOn){document.getElementById('th-auto').classList.add('on');autoTimer=setI
   applySbIcon();
   const heroEl=document.getElementById('lt-hero-name');
   if(heroEl)heroEl.textContent=saved;
+
+  function applyTitleFont(idx){
+    const css=APP_TITLE_FONTS[idx]?.css||'';
+    nameEl.style.fontFamily=css||'';
+    if(heroEl)heroEl.style.fontFamily=css||'';
+  }
+  const savedFontIdx=parseInt(S.get('appFont','0'))||0;
+  applyTitleFont(savedFontIdx);
+  if(fontSel){
+    fontSel.innerHTML=APP_TITLE_FONTS.map((f,i)=>`<option value="${i}">${f.name}</option>`).join('');
+    fontSel.value=savedFontIdx;
+    fontSel.addEventListener('change',function(){
+      const idx=parseInt(this.value)||0;
+      S.set('appFont',idx);
+      applyTitleFont(idx);
+    });
+  }
+  if(fontBtn&&fontSel)fontBtn.addEventListener('click',()=>{fontSel.style.display=fontSel.style.display==='none'?'block':'none';});
 
   function startEdit(){
     nameEl.contentEditable='true';
@@ -5187,6 +5407,23 @@ function _forceReLogin(){
   document.getElementById('login-screen').classList.remove('hide');
 }
 
+async function checkForAppUpdate(){
+  if(!('serviceWorker' in navigator)){toast('Updates not supported in this browser','w');return;}
+  toast('🔄 Checking for updates...','s');
+  try{
+    const reg=await navigator.serviceWorker.getRegistration();
+    if(!reg){toast('No update service registered yet — reload the app once first','w');return;}
+    await reg.update();
+    // sw.js's install handler calls self.skipWaiting() unconditionally, so a newly-found
+    // version activates immediately and the existing controllerchange listener reloads the
+    // page on its own — this timeout only fires the "already latest" message when nothing changed.
+    setTimeout(()=>{
+      if(!reg.installing&&!reg.waiting)toast("✅ You're already on the latest version",'s');
+    },1500);
+  }catch(e){
+    toast('Update check failed — check your connection','w');
+  }
+}
 async function doLogout(){
   if(_syncToken){
     try{await fetch('/api/account.php',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_syncToken},body:JSON.stringify({action:'logout'})});}catch(e){}
@@ -5287,7 +5524,16 @@ async function fetchWeather(){
   }catch(e){
     _weatherPref='off';S.set('weatherPref','off');
     const rb=document.getElementById('sb-weather-retry-btn');
-    if(rb)rb.style.display='flex';
+    if(rb){
+      rb.style.display='flex';
+      // Geolocation errors have a .code (1=permission denied, 2=unavailable, 3=timeout) -
+      // fetch/JSON errors from the weather API itself don't. Tell the user which kind of
+      // problem it is instead of just "tap to retry" every time, since #1 needs them to change
+      // a browser/OS setting before retrying will ever help.
+      if(e&&e.code===1){rb.textContent='📍 Location blocked — tap for help';rb.dataset.wreason='denied';}
+      else if(e&&(e.code===2||e.code===3)){rb.textContent='📍 Location unavailable — tap to retry';rb.dataset.wreason='unavailable';}
+      else{rb.textContent='📍 Tap to show weather';rb.dataset.wreason='';}
+    }
   }
 }
 
@@ -5314,6 +5560,7 @@ function applySectionNames(){
 
 // ===== SETTINGS =====
 function renderSettings(){
+  renderLuxuryGallery();
   // Profile fields
   const dn=document.getElementById('set-dname');
   if(dn)dn.value=profileData.displayName||'';
@@ -5328,13 +5575,13 @@ function renderSettings(){
   const inc=document.getElementById('set-inc-cats');
   if(inc){
     if(!customIncSrc.length)inc.innerHTML='<span style="font-size:11px;color:var(--muted)">No custom sources yet. Type a name below and click + Add.</span>';
-    else inc.innerHTML=customIncSrc.map(s=>`<div class="ccat-chip" style="border-color:${s.col}40;color:${s.col}">🔹 ${escapeHtml(s.label)}<button class="ccat-del" data-dcs="${s.id}">✕</button></div>`).join('');
+    else inc.innerHTML=customIncSrc.map(s=>`<div class="ccat-chip" style="border-color:${s.col}40;color:${s.col}">🔹 ${escapeHtml(s.label)}<button class="ccat-edit" data-ecs="${s.id}">✏</button><button class="ccat-del" data-dcs="${s.id}">✕</button></div>`).join('');
   }
   // Custom expense categories
   const exp=document.getElementById('set-exp-cats');
   if(exp){
     if(!customExpCat.length)exp.innerHTML='<span style="font-size:11px;color:var(--muted)">No custom categories yet. Type a name below and click + Add.</span>';
-    else exp.innerHTML=customExpCat.map(c=>`<div class="ccat-chip" style="border-color:${c.col}40;color:${c.col}">💰 ${escapeHtml(c.label)}<button class="ccat-del" data-dce="${c.id}">✕</button></div>`).join('');
+    else exp.innerHTML=customExpCat.map(c=>`<div class="ccat-chip" style="border-color:${c.col}40;color:${c.col}">💰 ${escapeHtml(c.label)}<button class="ccat-edit" data-ece="${c.id}">✏</button><button class="ccat-del" data-dce="${c.id}">✕</button></div>`).join('');
   }
   // Sidebar icon picker — highlight active
   const curIcon=profileData.sbIcon||'initials';
@@ -5419,6 +5666,7 @@ function openEditFinance(id){
     _selPM=tx.paymentMethod||'cash';
     document.getElementById('fm-pm-cash').classList.toggle('on',_selPM==='cash');
     document.getElementById('fm-pm-bank').classList.toggle('on',_selPM==='bank');
+    document.getElementById('fm-pm-investment').classList.toggle('on',_selPM==='investment');
     _buildFinOpts();
     if(tx.type==='income'){
       document.getElementById('fm-src').value=tx.source;
