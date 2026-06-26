@@ -7175,7 +7175,18 @@ function zqLearn(text,intent,entity){
 }
 
 function zqScrollBottom(){const c=document.getElementById('zq-chat');if(c)c.scrollTop=c.scrollHeight;}
-function zqSay(text){const c=document.getElementById('zq-chat');if(!c)return;const d=document.createElement('div');d.className='zq-msg bot';d.textContent=text;c.appendChild(d);zqScrollBottom();}
+function zqSpeak(text){
+  if(!('speechSynthesis' in window))return;
+  try{
+    const clean=text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}]/gu,'').replace(/\s+/g,' ').trim();
+    if(!clean)return;
+    window.speechSynthesis.cancel(); // don't let replies queue up/overlap
+    const u=new SpeechSynthesisUtterance(clean);
+    u.lang='en-US';u.rate=1;u.pitch=1;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+function zqSay(text){const c=document.getElementById('zq-chat');if(!c)return;const d=document.createElement('div');d.className='zq-msg bot';d.textContent=text;c.appendChild(d);zqScrollBottom();zqSpeak(text);}
 function zqSayUser(text){const c=document.getElementById('zq-chat');if(!c)return;const d=document.createElement('div');d.className='zq-msg user';d.textContent=text;c.appendChild(d);zqScrollBottom();}
 function zqAskChoice(question,pairs){
   zqSay(question);
