@@ -2009,6 +2009,15 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
   </div>
 </div>
 
+<!-- FINANCE CATEGORY DRILL-DOWN -->
+<div class="overlay" id="fin-drill">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-t" id="fin-drill-title">📂 Category</div>
+    <div id="fin-drill-list" style="max-height:380px;overflow-y:auto;margin-bottom:12px"></div>
+    <div class="mbtn"><button class="btn btn-g" id="fin-drill-close" style="width:100%;justify-content:center">Close</button></div>
+  </div>
+</div>
+
 <!-- CURRENCY SETUP MODAL -->
 <div class="overlay" id="cur-modal">
   <div class="modal" style="max-width:520px">
@@ -3541,6 +3550,10 @@ document.addEventListener('click',function(e){
   if(fpm){_selPM=fpm.dataset.pm;document.getElementById('fm-pm-cash').classList.toggle('on',_selPM==='cash');document.getElementById('fm-pm-bank').classList.toggle('on',_selPM==='bank');return;}
   // Smart Breakdown toggle on the Finance page
   if(id==='fin-smart-toggle'){_finSmartView=!_finSmartView;S.set('financeSmartView',_finSmartView);renderFinance();return;}
+  // Click a category/source row in the Income/Expense breakdown to see its transactions
+  const finBrk=t.closest('[data-finbrk-key]');
+  if(finBrk){openFinDrill(finBrk.dataset.finbrkType,finBrk.dataset.finbrkKey);return;}
+  if(id==='fin-drill-close'){closeM('fin-drill');return;}
   // Finance period tabs
   const fp=t.closest('.fptab[data-fp]');
   if(fp){finPeriod=fp.dataset.fp;document.querySelectorAll('.fptab').forEach(el=>el.classList.toggle('on',el.dataset.fp===finPeriod));renderFinance();return;}
@@ -4083,7 +4096,7 @@ function renderFinance(){
       const lbl=_finSrcLabel(k);const c=_finSrcCol(k);
       const pct=Math.round(incBySource[k]/maxInc*100);
       const cnt=inc.filter(t=>t.source===k).length;
-      return `<div class="f-src-item">
+      return `<div class="f-src-item" data-finbrk-type="income" data-finbrk-key="${k}" style="cursor:pointer">
         <div class="f-src-icon">${lbl.split(' ')[0]}</div>
         <div class="f-src-info">
           <div class="f-src-name">${escapeHtml(lbl.slice(lbl.indexOf(' ')+1))} <span class="f-src-cnt">(${cnt}×)</span></div>
@@ -4106,7 +4119,7 @@ function renderFinance(){
       const lbl=_finCatLabel(k);const c=_finCatCol(k);
       const pct=Math.round(expByCat[k]/maxExp*100);
       const cnt=exp.filter(t=>t.source===k).length;
-      return `<div class="f-src-item">
+      return `<div class="f-src-item" data-finbrk-type="expense" data-finbrk-key="${k}" style="cursor:pointer">
         <div class="f-src-icon">${lbl.split(' ')[0]}</div>
         <div class="f-src-info">
           <div class="f-src-name">${escapeHtml(lbl.slice(lbl.indexOf(' ')+1))} <span class="f-src-cnt">(${cnt}×)</span></div>
@@ -4239,6 +4252,35 @@ function _finLabel(tx){
   }
 }
 function _finCol(tx){return tx.type==='income'?_finSrcCol(tx.source):_finCatCol(tx.source);}
+
+// Clicking a row in "Income by Source" / "Expenses by Category" opens this — same period
+// filter as the breakdown itself, so the list matches whatever total/count was shown.
+function openFinDrill(type,key){
+  const filter=finGetPeriod();
+  const txs=finance.filter(t=>filter(t)&&t.type===type&&t.source===key).sort((a,b)=>b.date.localeCompare(a.date));
+  const lbl=type==='income'?_finSrcLabel(key):_finCatLabel(key);
+  const total=txs.reduce((s,t)=>s+t.amount,0);
+  document.getElementById('fin-drill-title').textContent=lbl+' — '+currSym+' '+fmtMoney(total);
+  const list=document.getElementById('fin-drill-list');
+  if(!txs.length){
+    list.innerHTML='<div class="f-empty">No transactions in this period.</div>';
+  }else{
+    list.innerHTML=txs.map(t=>{
+      const pmIcon=t.paymentMethod==='cash'?'💵':'🏦';
+      const sign=type==='income'?'+':'−';
+      const color=type==='income'?'#10b981':'#f87171';
+      return `<div class="ev-item">
+        <div class="ev-color-bar" style="background:${color}"></div>
+        <div class="ev-info">
+          <div class="ev-title">${pmIcon} ${escapeHtml(t.otherLabel||lbl.slice(lbl.indexOf(' ')+1))}</div>
+          <div class="ev-meta">${t.date}${t.note?' · '+escapeHtml(t.note):''}</div>
+        </div>
+        <div style="font-weight:700;color:${color};white-space:nowrap">${sign}${fmtMoney(t.amount)}</div>
+      </div>`;
+    }).join('');
+  }
+  openM('fin-drill');
+}
 function _saveCustomSrc(){
   const lbl=document.getElementById('fm-new-src-inp').value.trim();
   if(!lbl){toast('Enter a name','w');return;}
