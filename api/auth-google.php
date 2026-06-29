@@ -5,7 +5,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
   json_response(['ok' => false, 'error' => 'method_not_allowed'], 405);
 }
 
+header('X-Debug-Stage: 1-before-db');
 $pdo = db();
+header('X-Debug-Stage: 2-after-db');
 $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
 
 // Rate limit: max 10 login attempts per IP per 5 minutes. Each attempt costs an outbound
@@ -22,12 +24,14 @@ try {
 } catch (Throwable $e) {
   error_log('login_attempts rate-limit check failed (non-fatal): ' . $e->getMessage());
 }
+header('X-Debug-Stage: 3-after-ratelimit');
 
 $body = json_body();
 $idToken = $body['id_token'] ?? '';
 if (!$idToken) {
   json_response(['ok' => false, 'error' => 'missing_id_token'], 400);
 }
+header('X-Debug-Stage: 4-before-curl');
 
 // Verify the Google ID token via Google's tokeninfo endpoint.
 // (No Composer/JWKS library needed — fine for shared hosting; cost is bounded to login frequency.)
@@ -38,6 +42,8 @@ curl_setopt($ch, CURLOPT_TIMEOUT, 8);
 $resp = curl_exec($ch);
 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 curl_close($ch);
+header('X-Debug-Stage: 5-after-curl');
+header('X-Debug-Curl-Code: ' . $httpCode);
 
 if ($resp === false || $httpCode !== 200) {
   json_response(['ok' => false, 'error' => 'invalid_token'], 401);
@@ -45,6 +51,7 @@ if ($resp === false || $httpCode !== 200) {
 
 $claims = json_decode($resp, true);
 $cfg = config();
+header('X-Debug-Stage: 6-after-config');
 
 if (!is_array($claims) || empty($claims['sub']) || empty($claims['aud'])) {
   json_response(['ok' => false, 'error' => 'invalid_token'], 401);
