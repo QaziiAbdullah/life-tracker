@@ -10,12 +10,18 @@ $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
 
 // Rate limit: max 10 login attempts per IP per 5 minutes. Each attempt costs an outbound
 // call to Google, so this is abuse/cost protection, not just brute-force protection.
-$stmt = $pdo->prepare('SELECT COUNT(*) AS c FROM login_attempts WHERE ip = ? AND attempted_at > (NOW() - INTERVAL 5 MINUTE)');
-$stmt->execute([$ip]);
-if ((int) $stmt->fetch()['c'] >= 10) {
-  json_response(['ok' => false, 'error' => 'too_many_attempts'], 429);
+// Wrapped in try/catch: this is a secondary defense, not core functionality — a DB hiccup
+// here (e.g. table missing after a schema update) must never block real sign-ins.
+try {
+  $stmt = $pdo->prepare('SELECT COUNT(*) AS c FROM login_attempts WHERE ip = ? AND attempted_at > (NOW() - INTERVAL 5 MINUTE)');
+  $stmt->execute([$ip]);
+  if ((int) $stmt->fetch()['c'] >= 10) {
+    json_response(['ok' => false, 'error' => 'too_many_attempts'], 429);
+  }
+  $pdo->prepare('INSERT INTO login_attempts (ip) VALUES (?)')->execute([$ip]);
+} catch (Throwable $e) {
+  error_log('login_attempts rate-limit check failed (non-fatal): ' . $e->getMessage());
 }
-$pdo->prepare('INSERT INTO login_attempts (ip) VALUES (?)')->execute([$ip]);
 
 $body = json_body();
 $idToken = $body['id_token'] ?? '';
