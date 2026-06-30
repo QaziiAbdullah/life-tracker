@@ -612,6 +612,7 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px 20px;min-height:100vh
 .fmt-btn{flex:1;padding:9px;border-radius:9px;border:2px solid var(--border);cursor:pointer;font-size:12px;font-weight:700;transition:all .15s;background:transparent;color:var(--muted)}
 .fmt-btn.on.inc{background:rgba(16,185,129,.15);border-color:#10b981;color:#10b981}
 .fmt-btn.on.exp{background:rgba(248,113,113,.12);border-color:#f87171;color:#f87171}
+.fmt-btn.on.loan{background:rgba(251,191,36,.12);border-color:#fbbf24;color:#fbbf24}
 .fin-add-link{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--pl);cursor:pointer;padding:5px 0 2px;opacity:.8;user-select:none;font-weight:600}
 .fin-add-link:hover{opacity:1;text-decoration:underline}
 .fin-add-form{background:var(--card2);border-radius:9px;padding:10px;border:1px solid var(--border);margin-top:4px}
@@ -1829,6 +1830,7 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
       <button class="btn btn-g btn-sm" id="fin-update-btn" title="Pull the latest finance data from the server and refresh this view">🔄 Update</button>
       <button class="btn btn-g btn-sm" id="bf-exp">− Add Expense</button>
       <button class="btn btn-p" id="bf-inc">+ Add Income</button>
+      <button class="btn btn-g btn-sm" id="bf-loan" style="border-color:#fbbf24;color:#fbbf24">🏦 Loan</button>
     </div>
   </div>
 
@@ -1859,6 +1861,15 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
     <div class="sc cr"><div class="sv" id="f-expense" style="color:#f87171">0</div><div class="sl">Total Expenses</div><div class="sc-sub" id="f-exp-sub">0 transactions</div></div>
     <div class="sc cp"><div class="sv" id="f-net">0</div><div class="sl">Net Balance</div><div class="sc-sub" id="f-net-sub">income − expenses</div></div>
     <div class="sc co"><div class="sv" id="f-save" style="color:#fbbf24">0%</div><div class="sl">Savings Rate</div><div class="sc-sub" id="f-save-sub">of income saved</div></div>
+  </div>
+
+  <!-- Loan panel -->
+  <div class="card" id="f-loan-panel" style="display:none;margin-bottom:14px">
+    <div class="card-h">
+      <div class="card-t">🏦 Loans</div>
+      <div style="font-size:10px;color:var(--muted)" id="f-loan-summary"></div>
+    </div>
+    <div id="f-loan-list"></div>
   </div>
 
   <!-- Income & Expense breakdown -->
@@ -1977,6 +1988,7 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
     <div style="display:flex;gap:8px;margin-bottom:14px">
       <button class="fmt-btn inc on" id="fmt-inc" data-fmt="income">+ Income</button>
       <button class="fmt-btn exp" id="fmt-exp" data-fmt="expense">− Expense</button>
+      <button class="fmt-btn loan" id="fmt-loan" data-fmt="loan">🏦 Loan</button>
     </div>
     <!-- Amount -->
     <div class="fg">
@@ -2053,6 +2065,17 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
           <button class="btn btn-g btn-sm" id="fm-new-cat-cancel" style="font-size:11px">✕</button>
         </div>
       </div>
+    </div>
+    <!-- Loan fields -->
+    <div id="fm-loan-wrap" style="display:none">
+      <div class="fg"><label>Loan Direction</label>
+        <div style="display:flex;gap:8px">
+          <button type="button" class="fmt-btn loan on" id="fm-ld-given" data-ld="given" style="flex:1">📤 I Gave</button>
+          <button type="button" class="fmt-btn loan" id="fm-ld-taken" data-ld="taken" style="flex:1">📥 I Took</button>
+        </div>
+      </div>
+      <div class="fg"><label>Person / Party Name</label><input class="fi" id="fm-loan-person" placeholder="Who gave or received this loan?"></div>
+      <div class="fg"><label>Due / Return Date <span style="color:var(--muted);font-weight:400">(optional)</span></label><input class="fi" type="date" id="fm-loan-due"></div>
     </div>
     <!-- Note -->
     <div class="fg"><label>Note <span style="color:var(--muted);font-weight:400">(optional)</span></label><input class="fi" id="fm-note" placeholder="e.g. January salary, grocery shopping..."></div>
@@ -2572,6 +2595,7 @@ let visionItems=S.get('visionItems',[]);
 let _ttWeekOff=0,_ttView='day',_selTTColor='#7c3aed',_selVBColor='#7c3aed',_selVBCat='career',_vbEditId=null,_ttEditId=null,_vbFileData=null;
 let _loggedIn=false; // set from _syncToken in initAuth()
 let _editFinId=null;
+let _selLD='given';
 let finPeriod='month',finType='income';
 let _selPM='cash';
 let _finSmartView=S.get('financeSmartView',true);
@@ -3645,6 +3669,12 @@ document.addEventListener('click',function(e){
   if(id==='set-reset'){doResetAllData();return;}
   if(id==='bf-inc'||id==='bf-inc2'||id==='fw-inc-btn'){openFinanceModal('income');return;}
   if(id==='bf-exp'||id==='bf-exp2'||id==='fw-exp-btn'){openFinanceModal('expense');return;}
+  if(id==='bf-loan'){openFinanceModal('loan');return;}
+  const ldEl=t.closest('[data-ld]');
+  if(ldEl){_selLD=ldEl.dataset.ld;document.querySelectorAll('[data-ld]').forEach(b=>b.classList.toggle('on',b.dataset.ld===_selLD));return;}
+  if(t.dataset.loanReturn){const idx=finance.findIndex(f=>f.id===t.dataset.loanReturn);if(idx>-1){finance[idx].returned=!finance[idx].returned;S.set('finance',finance);renderFinance();}return;}
+  const lrEl=t.closest('[data-loan-return]');if(lrEl){const idx=finance.findIndex(f=>f.id===lrEl.dataset.loanReturn);if(idx>-1){finance[idx].returned=!finance[idx].returned;S.set('finance',finance);renderFinance();}return;}
+
   if(id==='fm-save'){saveFinance();return;}
   if(id==='fm-cancel'){_editFinId=null;document.getElementById('fm-title').textContent='💰 Add Transaction';closeM('fm');return;}
   if(id==='fm-toggle-src'){const f=document.getElementById('fm-new-src-form');f.style.display=f.style.display==='none'?'':'none';if(f.style.display!=='none')document.getElementById('fm-new-src-inp').focus();return;}
@@ -4184,7 +4214,9 @@ function renderFinanceSmartPanel(){
 function renderFinance(){
   renderFinanceSmartPanel();
   const filter=finGetPeriod();
-  const txs=finance.filter(filter);
+  const allTxs=finance.filter(filter);
+  const loans=finance.filter(t=>t.type==='loan_given'||t.type==='loan_taken');
+  const txs=allTxs.filter(t=>t.type!=='loan_given'&&t.type!=='loan_taken');
   const inc=txs.filter(t=>t.type==='income');
   const exp=txs.filter(t=>t.type==='expense');
   const totalInc=inc.reduce((s,t)=>s+t.amount,0);
@@ -4274,6 +4306,40 @@ function renderFinance(){
         </div>
       </div>`;
     }).join('')+'</div>';}
+
+  // Loan panel
+  const loanPanel=document.getElementById('f-loan-panel');
+  const loanList=document.getElementById('f-loan-list');
+  const loanSummary=document.getElementById('f-loan-summary');
+  if(loans.length){
+    loanPanel.style.display='';
+    const given=loans.filter(l=>l.type==='loan_given');
+    const taken=loans.filter(l=>l.type==='loan_taken');
+    const outGiven=given.filter(l=>!l.returned).reduce((s,l)=>s+l.amount,0);
+    const outTaken=taken.filter(l=>!l.returned).reduce((s,l)=>s+l.amount,0);
+    loanSummary.textContent=`📤 Receivable: ${currSym} ${fmtMoney(outGiven)}  ·  📥 Payable: ${currSym} ${fmtMoney(outTaken)}`;
+    const sorted=[...loans].sort((a,b)=>b.date.localeCompare(a.date));
+    loanList.innerHTML=sorted.map(l=>{
+      const isGiven=l.type==='loan_given';
+      const col=isGiven?'#34d399':'#f87171';
+      const icon=isGiven?'📤':'📥';
+      const dir=isGiven?'Gave to':'Took from';
+      const due=l.dueDate?` · Due: ${l.dueDate}`:'';
+      return `<div class="f-tx-item" style="${l.returned?'opacity:.5':''}">
+        <div class="f-tx-icon" style="background:${col}18">${icon}</div>
+        <div class="f-tx-info">
+          <div class="f-tx-name">${escapeHtml(dir)}: <b>${escapeHtml(l.person||'—')}</b>${l.note?' — '+escapeHtml(l.note):''}</div>
+          <div class="f-tx-meta">${l.date}${due} · ${l.returned?'<span style="color:#34d399">✅ Returned</span>':'<span style="color:#fbbf24">⏳ Pending</span>'}</div>
+        </div>
+        <div class="f-tx-amt" style="color:${col}">${isGiven?'+':'−'}${currSym} ${fmtMoney(l.amount)}</div>
+        <button class="f-tx-del" data-loan-return="${l.id}" title="${l.returned?'Mark pending':'Mark returned'}" style="color:${l.returned?'var(--muted)':'#34d399'}">${l.returned?'↩️':'✅'}</button>
+        <button class="f-tx-del" data-def="${l.id}" title="Edit">✏️</button>
+        <button class="f-tx-del" data-df="${l.id}" title="Delete">🗑</button>
+      </div>`;
+    }).join('');
+  }else{
+    loanPanel.style.display='none';
+  }
 
   // Transactions list
   const listEl=document.getElementById('f-tx-list');
@@ -4449,9 +4515,12 @@ function openFinanceModal(type){
   document.getElementById('fm-new-src-inp').value='';
   document.getElementById('fm-new-cat-inp').value='';
   _selPM='cash';
+  _selLD='given';
   document.getElementById('fm-pm-cash').classList.add('on');
   document.getElementById('fm-pm-bank').classList.remove('on');
   document.getElementById('fm-pm-investment').classList.remove('on');
+  document.getElementById('fm-loan-person').value='';
+  document.getElementById('fm-loan-due').value='';
   _finSwitchType(finType);
   openM('fm');
   setTimeout(()=>document.getElementById('fm-amount').focus(),80);
@@ -4461,14 +4530,21 @@ function _finSwitchType(type){
   finType=type;
   document.getElementById('fmt-inc').classList.toggle('on',type==='income');
   document.getElementById('fmt-exp').classList.toggle('on',type==='expense');
+  document.getElementById('fmt-loan').classList.toggle('on',type==='loan');
   document.getElementById('fm-src-wrap').style.display=type==='income'?'':'none';
   document.getElementById('fm-add-src-wrap').style.display=type==='income'?'':'none';
   document.getElementById('fm-cat-wrap').style.display=type==='expense'?'':'none';
   document.getElementById('fm-add-cat-wrap').style.display=type==='expense'?'':'none';
+  document.getElementById('fm-loan-wrap').style.display=type==='loan'?'':'none';
   document.getElementById('fm-other-inc-wrap').style.display='none';
   document.getElementById('fm-other-exp-wrap').style.display='none';
   document.getElementById('fm-new-src-form').style.display='none';
   document.getElementById('fm-new-cat-form').style.display='none';
+  if(type==='loan'){
+    _selLD=_selLD||'given';
+    document.getElementById('fm-ld-given').classList.toggle('on',_selLD==='given');
+    document.getElementById('fm-ld-taken').classList.toggle('on',_selLD==='taken');
+  }
 }
 
 function saveFinance(){
@@ -4476,6 +4552,28 @@ function saveFinance(){
   if(!amtRaw||amtRaw<=0){toast('Enter a valid amount','w');return;}
   const date=document.getElementById('fm-date').value;
   if(!date){toast('Pick a date','w');return;}
+  const note=document.getElementById('fm-note').value.trim();
+
+  if(finType==='loan'){
+    const person=document.getElementById('fm-loan-person').value.trim();
+    if(!person){toast('Enter person / party name','w');return;}
+    const dueDate=document.getElementById('fm-loan-due').value||'';
+    const loanType=_selLD==='given'?'loan_given':'loan_taken';
+    if(_editFinId){
+      const idx=finance.findIndex(f=>f.id===_editFinId);
+      if(idx>-1)finance[idx]={...finance[idx],date,amount:Math.round(amtRaw),note,person,dueDate,type:loanType};
+      _editFinId=null;
+    }else{
+      finance.push({id:'f_'+Date.now(),date,type:loanType,amount:Math.round(amtRaw),note,person,dueDate,returned:false});
+    }
+    S.set('finance',finance);
+    closeM('fm');
+    document.getElementById('fm-title').textContent='💰 Add Transaction';
+    toast('🏦 Loan saved!','s');
+    renderFinance();
+    return;
+  }
+
   const source=finType==='income'
     ?document.getElementById('fm-src').value
     :document.getElementById('fm-cat').value;
@@ -4484,7 +4582,6 @@ function saveFinance(){
     :source==='other_exp'
     ?document.getElementById('fm-other-exp').value.trim()
     :'';
-  const note=document.getElementById('fm-note').value.trim();
   if(_editFinId){
     const idx=finance.findIndex(f=>f.id===_editFinId);
     if(idx>-1){finance[idx]={...finance[idx],date,source,amount:Math.round(amtRaw),note,paymentMethod:_selPM,...(otherLabel?{otherLabel}:{otherLabel:undefined})};}
@@ -5726,7 +5823,7 @@ function openEditFinance(id){
   const tx=finance.find(f=>f.id===id);
   if(!tx)return;
   _editFinId=id;
-  openFinanceModal(tx.type);
+  openFinanceModal(tx.type==='loan_given'||tx.type==='loan_taken'?'loan':tx.type);
   setTimeout(()=>{
     document.getElementById('fm-amount').value=tx.amount;
     document.getElementById('fm-date').value=tx.date;
@@ -5736,7 +5833,12 @@ function openEditFinance(id){
     document.getElementById('fm-pm-bank').classList.toggle('on',_selPM==='bank');
     document.getElementById('fm-pm-investment').classList.toggle('on',_selPM==='investment');
     _buildFinOpts();
-    if(tx.type==='income'){
+    if(tx.type==='loan_given'||tx.type==='loan_taken'){
+      _selLD=tx.type==='loan_given'?'given':'taken';
+      _finSwitchType('loan');
+      document.getElementById('fm-loan-person').value=tx.person||'';
+      document.getElementById('fm-loan-due').value=tx.dueDate||'';
+    }else if(tx.type==='income'){
       document.getElementById('fm-src').value=tx.source;
       if(tx.source==='other_inc'){
         document.getElementById('fm-other-inc-wrap').style.display='';
