@@ -613,6 +613,7 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px 20px;min-height:100vh
 .fmt-btn.on.inc{background:rgba(16,185,129,.15);border-color:#10b981;color:#10b981}
 .fmt-btn.on.exp{background:rgba(248,113,113,.12);border-color:#f87171;color:#f87171}
 .fmt-btn.on.loan{background:rgba(251,191,36,.12);border-color:#fbbf24;color:#fbbf24}
+.fmt-btn.on.transfer{background:rgba(139,92,246,.12);border-color:#8b5cf6;color:#8b5cf6}
 .fin-add-link{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--pl);cursor:pointer;padding:5px 0 2px;opacity:.8;user-select:none;font-weight:600}
 .fin-add-link:hover{opacity:1;text-decoration:underline}
 .fin-add-form{background:var(--card2);border-radius:9px;padding:10px;border:1px solid var(--border);margin-top:4px}
@@ -1831,6 +1832,7 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
       <button class="btn btn-g btn-sm" id="bf-exp">− Add Expense</button>
       <button class="btn btn-p" id="bf-inc">+ Add Income</button>
       <button class="btn btn-g btn-sm" id="bf-loan" style="border-color:#fbbf24;color:#fbbf24">🏦 Loan</button>
+      <button class="btn btn-g btn-sm" id="bf-transfer" style="border-color:#8b5cf6;color:#8b5cf6">💸 Transfer</button>
     </div>
   </div>
 
@@ -1989,6 +1991,7 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
       <button class="fmt-btn inc on" id="fmt-inc" data-fmt="income">+ Income</button>
       <button class="fmt-btn exp" id="fmt-exp" data-fmt="expense">− Expense</button>
       <button class="fmt-btn loan" id="fmt-loan" data-fmt="loan">🏦 Loan</button>
+      <button class="fmt-btn transfer" id="fmt-transfer" data-fmt="transfer">💸 Transfer</button>
     </div>
     <!-- Amount -->
     <div class="fg">
@@ -2064,6 +2067,25 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
           <button class="btn btn-p btn-sm" id="fm-new-cat-save" style="flex:1;justify-content:center;font-size:11px">✓ Add Category</button>
           <button class="btn btn-g btn-sm" id="fm-new-cat-cancel" style="font-size:11px">✕</button>
         </div>
+      </div>
+    </div>
+    <!-- Transfer fields -->
+    <div id="fm-transfer-wrap" style="display:none">
+      <div class="fg">
+        <label>From Account</label>
+        <select class="fi" id="fm-tr-from">
+          <option value="bank">🏦 Bank</option>
+          <option value="cash">💵 Cash</option>
+          <option value="investment">📈 Investment</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>To Account</label>
+        <select class="fi" id="fm-tr-to">
+          <option value="cash">💵 Cash</option>
+          <option value="bank">🏦 Bank</option>
+          <option value="investment">📈 Investment</option>
+        </select>
       </div>
     </div>
     <!-- Loan fields -->
@@ -3670,6 +3692,7 @@ document.addEventListener('click',function(e){
   if(id==='bf-inc'||id==='bf-inc2'||id==='fw-inc-btn'){openFinanceModal('income');return;}
   if(id==='bf-exp'||id==='bf-exp2'||id==='fw-exp-btn'){openFinanceModal('expense');return;}
   if(id==='bf-loan'){openFinanceModal('loan');return;}
+  if(id==='bf-transfer'){openFinanceModal('transfer');return;}
   const ldEl=t.closest('[data-ld]');
   if(ldEl){_selLD=ldEl.dataset.ld;document.querySelectorAll('[data-ld]').forEach(b=>b.classList.toggle('on',b.dataset.ld===_selLD));return;}
   if(t.dataset.loanReturn){const idx=finance.findIndex(f=>f.id===t.dataset.loanReturn);if(idx>-1){finance[idx].returned=!finance[idx].returned;S.set('finance',finance);renderFinance();}return;}
@@ -4199,7 +4222,16 @@ function renderFinanceSmartPanel(){
   if(!_finSmartView)return;
   let cash=0,bank=0,invest=0,salary=0,biz=0;
   finance.forEach(t=>{
-    const pm=t.paymentMethod||'bank'; // older transactions predate this field — assume bank
+    if(t.type==='transfer'){
+      // Deduct from source account, add to destination account
+      const acc={'cash':0,'bank':0,'investment':0};
+      if(t.transferFrom in acc)acc[t.transferFrom]-=t.amount;
+      if(t.transferTo in acc)acc[t.transferTo]+=t.amount;
+      cash+=acc.cash;bank+=acc.bank;invest+=acc.investment;
+      return;
+    }
+    if(t.type==='loan_given'||t.type==='loan_taken')return;
+    const pm=t.paymentMethod||'bank';
     const signed=t.type==='income'?t.amount:-t.amount;
     if(pm==='cash')cash+=signed;else if(pm==='investment')invest+=signed;else bank+=signed;
     if(t.type==='income'&&t.source==='salary')salary+=t.amount;
@@ -4216,7 +4248,8 @@ function renderFinance(){
   const filter=finGetPeriod();
   const allTxs=finance.filter(filter);
   const loans=finance.filter(t=>t.type==='loan_given'||t.type==='loan_taken');
-  const txs=allTxs.filter(t=>t.type!=='loan_given'&&t.type!=='loan_taken');
+  const transfers=finance.filter(t=>t.type==='transfer');
+  const txs=allTxs.filter(t=>t.type!=='loan_given'&&t.type!=='loan_taken'&&t.type!=='transfer');
   const inc=txs.filter(t=>t.type==='income');
   const exp=txs.filter(t=>t.type==='expense');
   const totalInc=inc.reduce((s,t)=>s+t.amount,0);
@@ -4344,10 +4377,26 @@ function renderFinance(){
   // Transactions list
   const listEl=document.getElementById('f-tx-list');
   const countEl=document.getElementById('f-tx-count');
-  const sorted=[...txs].sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
-  if(countEl)countEl.textContent=txs.length+' total';
-  if(!sorted.length){listEl.innerHTML='<div class="f-empty">No transactions yet.<br>Click "+ Add Income" or "− Add Expense" to start.</div>';return;}
-  listEl.innerHTML=sorted.map(tx=>{
+  const icons4acc={'cash':'💵','bank':'🏦','investment':'📈'};
+  const allVisible=[...txs,...transfers.filter(filter)].sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
+  if(countEl)countEl.textContent=allVisible.length+' total';
+  if(!allVisible.length){listEl.innerHTML='<div class="f-empty">No transactions yet.<br>Click "+ Add Income" or "− Add Expense" to start.</div>';return;}
+  listEl.innerHTML=allVisible.map(tx=>{
+    if(tx.type==='transfer'){
+      const fi=icons4acc[tx.transferFrom]||'📤';
+      const ti=icons4acc[tx.transferTo]||'📥';
+      const fn=tx.transferFrom||'?';const tn=tx.transferTo||'?';
+      return `<div class="f-tx-item">
+        <div class="f-tx-icon" style="background:#8b5cf618">💸</div>
+        <div class="f-tx-info">
+          <div class="f-tx-name">${fi} ${fn.charAt(0).toUpperCase()+fn.slice(1)} → ${ti} ${tn.charAt(0).toUpperCase()+tn.slice(1)}${tx.note?' — '+escapeHtml(tx.note):''}</div>
+          <div class="f-tx-meta">${tx.date} · Transfer</div>
+        </div>
+        <div class="f-tx-amt" style="color:#8b5cf6">${currSym} ${fmtMoney(tx.amount)}</div>
+        <button class="f-tx-del" data-def="${tx.id}" title="Edit" style="color:var(--muted)">✏️</button>
+        <button class="f-tx-del" data-df="${tx.id}" title="Delete">🗑</button>
+      </div>`;
+    }
     const isInc=tx.type==='income';
     const col=_finCol(tx);
     const lbl=_finLabel(tx);
@@ -4531,11 +4580,16 @@ function _finSwitchType(type){
   document.getElementById('fmt-inc').classList.toggle('on',type==='income');
   document.getElementById('fmt-exp').classList.toggle('on',type==='expense');
   document.getElementById('fmt-loan').classList.toggle('on',type==='loan');
+  document.getElementById('fmt-transfer').classList.toggle('on',type==='transfer');
   document.getElementById('fm-src-wrap').style.display=type==='income'?'':'none';
   document.getElementById('fm-add-src-wrap').style.display=type==='income'?'':'none';
   document.getElementById('fm-cat-wrap').style.display=type==='expense'?'':'none';
   document.getElementById('fm-add-cat-wrap').style.display=type==='expense'?'':'none';
   document.getElementById('fm-loan-wrap').style.display=type==='loan'?'':'none';
+  document.getElementById('fm-transfer-wrap').style.display=type==='transfer'?'':'none';
+  // Hide payment method row for transfer (it uses its own from/to)
+  const pmRow=document.getElementById('fm-pm-cash')?.closest('.fg');
+  if(pmRow)pmRow.style.display=type==='transfer'?'none':'';
   document.getElementById('fm-other-inc-wrap').style.display='none';
   document.getElementById('fm-other-exp-wrap').style.display='none';
   document.getElementById('fm-new-src-form').style.display='none';
@@ -4553,6 +4607,27 @@ function saveFinance(){
   const date=document.getElementById('fm-date').value;
   if(!date){toast('Pick a date','w');return;}
   const note=document.getElementById('fm-note').value.trim();
+
+  if(finType==='transfer'){
+    const from=document.getElementById('fm-tr-from').value;
+    const to=document.getElementById('fm-tr-to').value;
+    if(from===to){toast('From and To accounts must be different','w');return;}
+    if(_editFinId){
+      const idx=finance.findIndex(f=>f.id===_editFinId);
+      if(idx>-1)finance[idx]={...finance[idx],date,amount:Math.round(amtRaw),note,transferFrom:from,transferTo:to};
+      _editFinId=null;
+    }else{
+      finance.push({id:'f_'+Date.now(),date,type:'transfer',amount:Math.round(amtRaw),note,transferFrom:from,transferTo:to});
+    }
+    S.set('finance',finance);
+    closeM('fm');
+    document.getElementById('fm-title').textContent='💰 Add Transaction';
+    const icons={'cash':'💵','bank':'🏦','investment':'📈'};
+    toast(`💸 Transfer: ${icons[from]||from} → ${icons[to]||to} saved!`,'s');
+    renderFinanceSmartPanel();
+    renderFinance();
+    return;
+  }
 
   if(finType==='loan'){
     const person=document.getElementById('fm-loan-person').value.trim();
@@ -5823,7 +5898,8 @@ function openEditFinance(id){
   const tx=finance.find(f=>f.id===id);
   if(!tx)return;
   _editFinId=id;
-  openFinanceModal(tx.type==='loan_given'||tx.type==='loan_taken'?'loan':tx.type);
+  const editType=tx.type==='loan_given'||tx.type==='loan_taken'?'loan':tx.type==='transfer'?'transfer':tx.type;
+  openFinanceModal(editType);
   setTimeout(()=>{
     document.getElementById('fm-amount').value=tx.amount;
     document.getElementById('fm-date').value=tx.date;
@@ -5833,7 +5909,11 @@ function openEditFinance(id){
     document.getElementById('fm-pm-bank').classList.toggle('on',_selPM==='bank');
     document.getElementById('fm-pm-investment').classList.toggle('on',_selPM==='investment');
     _buildFinOpts();
-    if(tx.type==='loan_given'||tx.type==='loan_taken'){
+    if(tx.type==='transfer'){
+      _finSwitchType('transfer');
+      document.getElementById('fm-tr-from').value=tx.transferFrom||'bank';
+      document.getElementById('fm-tr-to').value=tx.transferTo||'cash';
+    } else if(tx.type==='loan_given'||tx.type==='loan_taken'){
       _selLD=tx.type==='loan_given'?'given':'taken';
       _finSwitchType('loan');
       document.getElementById('fm-loan-person').value=tx.person||'';
