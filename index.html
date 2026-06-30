@@ -514,6 +514,19 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px 20px;min-height:100vh
 .lux-swatch{width:30px;height:30px;border-radius:9px;cursor:pointer;border:2px solid transparent;transition:transform .15s;flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
 .lux-swatch:hover{transform:scale(1.15)}
 .lux-swatch.on{border-color:#fff;transform:scale(1.1);box-shadow:0 0 0 2px var(--card),0 0 10px rgba(255,255,255,.4)}
+/* Template Gallery Cards */
+.tt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+@media(max-width:600px){.tt-grid{grid-template-columns:repeat(2,1fr)}}
+.tt-card{border-radius:14px;border:2px solid var(--border);cursor:pointer;overflow:hidden;transition:all .2s;background:var(--card2)}
+.tt-card:hover{border-color:rgba(var(--pa),.5);transform:translateY(-2px);box-shadow:0 6px 24px rgba(var(--pa),.15)}
+.tt-card.on{border-color:var(--primary);box-shadow:0 0 0 2px var(--primary),0 6px 24px rgba(var(--pa),.3)}
+.tt-preview{height:64px;width:100%;position:relative;overflow:hidden}
+.tt-preview-bar{position:absolute;inset:0}
+.tt-preview-dot{position:absolute;width:28px;height:28px;border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);backdrop-filter:blur(4px);border:2px solid rgba(255,255,255,.3)}
+.tt-info{padding:9px 10px 10px}
+.tt-name{font-size:11px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tt-sub{font-size:9px;color:var(--muted);margin-top:2px}
+.tt-active-badge{display:inline-block;font-size:8px;font-weight:700;background:var(--primary);color:#fff;border-radius:6px;padding:1px 5px;margin-left:4px;vertical-align:middle}
 
 /* THEME BAR */
 .theme-bar{display:flex;align-items:center;gap:5px;margin-top:8px;padding:4px 0}
@@ -1825,7 +1838,17 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
 <!-- FINANCE VIEW -->
 <div class="view" id="view-finance">
   <div class="ph">
-    <div><div class="ph-t">💰 Finance Tracker</div><div class="ph-s">Earnings · Expenses · Analysis</div></div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+        <rect width="40" height="40" rx="12" fill="rgba(var(--pa),.15)"/>
+        <rect x="1" y="1" width="38" height="38" rx="11" stroke="rgba(var(--pa),.4)" stroke-width="1.5"/>
+        <circle cx="20" cy="20" r="10" stroke="rgba(var(--pa),.6)" stroke-width="1.5"/>
+        <path d="M20 13v1.5M20 25.5V27M16.5 16.5C16.5 15.1 18.1 14 20 14s3.5 1.1 3.5 2.5c0 1.4-1.5 2.5-3.5 2.5s-3.5 1.1-3.5 2.5c0 1.4 1.6 2.5 3.5 2.5s3.5-1.1 3.5-2.5" stroke="var(--primary)" stroke-width="1.8" stroke-linecap="round"/>
+        <circle cx="31" cy="10" r="4" fill="rgba(var(--pa),.2)" stroke="rgba(var(--pa),.5)" stroke-width="1"/>
+        <text x="31" y="13.5" text-anchor="middle" font-size="6" fill="var(--primary)" font-weight="700">$</text>
+      </svg>
+      <div><div class="ph-t">Finance Tracker</div><div class="ph-s">Earnings · Expenses · Analysis</div></div>
+    </div>
     <div class="ph-a">
       <button class="cur-change-btn" id="change-cur-btn">🌍 <span id="cur-display">SAR</span></button>
       <button class="btn btn-g btn-sm" id="fin-update-btn" title="Pull the latest finance data from the server and refresh this view">🔄 Update</button>
@@ -2165,12 +2188,12 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
         </div>
       </div>
     </div>
-    <!-- Luxury Theme Gallery -->
+    <!-- Template Gallery -->
     <div class="set-section">
-      <div class="set-sh">🎨 Luxury Theme Gallery</div>
+      <div class="set-sh">🖼️ Interface Templates</div>
       <div class="set-row" style="display:block">
-        <div style="margin-bottom:4px"><div class="set-lbl">Pick any color below</div><div class="set-hint">A full theme (background, cards, sidebar, gradient) is generated from whichever swatch you click. The 9 quick dots in the sidebar still work too.</div></div>
-        <div id="lux-gallery" style="margin-top:10px"></div>
+        <div class="set-hint">Click any template to instantly transform the entire interface. Inspired by world-class finance & business designs.</div>
+        <div class="tt-grid" id="tt-gallery"></div>
       </div>
     </div>
     <!-- Currency -->
@@ -3718,7 +3741,10 @@ document.addEventListener('click',function(e){
   // Cash / Bank payment method toggle inside the finance modal
   const fpm=t.closest('[data-pm]');
   if(fpm){_selPM=fpm.dataset.pm;document.getElementById('fm-pm-cash').classList.toggle('on',_selPM==='cash');document.getElementById('fm-pm-bank').classList.toggle('on',_selPM==='bank');document.getElementById('fm-pm-investment').classList.toggle('on',_selPM==='investment');return;}
-  // Luxury theme swatch click
+  // Template gallery card click
+  const ttCard=t.closest('.tt-card[data-tt]');
+  if(ttCard){applyTheme(ttCard.dataset.tt);renderTemplateGallery();return;}
+  // Luxury theme swatch click (legacy)
   const luxSw=t.closest('.lux-swatch[data-lux]');
   if(luxSw){applyLuxuryTheme(luxSw.dataset.lux);return;}
   // Smart Breakdown toggle on the Finance page
@@ -4685,9 +4711,25 @@ const THEMES={
   teal:   {primary:'#0d9488',pl:'#5eead4',pa:'20,184,166', bg:'#020e0d',card:'#051a19',card2:'#082725',sb:'#030c0b',gs:'#14b8a6',ge:'#2dd4bf'},
   neon:   {primary:'#9333ea',pl:'#e879f9',pa:'217,70,239', bg:'#07020f',card:'#0e041e',card2:'#16062b',sb:'#050112',gs:'#d946ef',ge:'#9333ea'},
   controltower:{primary:'#22d3ee',pl:'#a5f3fc',pa:'34,211,238', bg:'#05070d',card:'#0a1020',card2:'#11192e',sb:'#03050a',gs:'#22d3ee',ge:'#a78bfa'},
+  // Template Gallery themes — inspired by reference designs
+  stripe_fintech:{primary:'#ff6b6b',pl:'#fca5a5',pa:'255,107,107', bg:'#0d0408',card:'#1a0810',card2:'#240d18',sb:'#0a0306',gs:'#ff6b6b',ge:'#ffbe0b'},
+  banking_pro:   {primary:'#10b981',pl:'#6ee7b7',pa:'16,185,129',  bg:'#020b06',card:'#041610',card2:'#071f15',sb:'#010804',gs:'#10b981',ge:'#06b6d4'},
+  biz_district:  {primary:'#06b6d4',pl:'#67e8f9',pa:'6,182,212',   bg:'#020408',card:'#040c14',card2:'#07111e',sb:'#010306',gs:'#22d3ee',ge:'#6366f1'},
+  analytics_dash:{primary:'#8b5cf6',pl:'#c4b5fd',pa:'139,92,246',  bg:'#04020d',card:'#0b0820',card2:'#12102e',sb:'#020110',gs:'#8b5cf6',ge:'#ec4899'},
+  wealth_gold:   {primary:'#f59e0b',pl:'#fde68a',pa:'245,158,11',  bg:'#0a0600',card:'#160d00',card2:'#1f1400',sb:'#080400',gs:'#f59e0b',ge:'#ef4444'},
+  midnight_fin:  {primary:'#3b82f6',pl:'#93c5fd',pa:'59,130,246',  bg:'#01040c',card:'#030d1e',card2:'#05152e',sb:'#010309',gs:'#3b82f6',ge:'#8b5cf6'},
 };
-const THEME_ORDER=['professional','purple','ocean','emerald','sunset','rose','gold','teal','neon','controltower'];
-const THEME_NAMES={professional:'Professional Navy',purple:'Violet Dream',ocean:'Deep Sea',emerald:'Forest Dark',sunset:'Volcano',rose:'Cherry Blossom',gold:'Gold Mine',teal:'Arctic Glow',neon:'Neon Nights',controltower:'Control Tower'};
+const THEME_ORDER=['professional','purple','ocean','emerald','sunset','rose','gold','teal','neon','controltower','stripe_fintech','banking_pro','biz_district','analytics_dash','wealth_gold','midnight_fin'];
+const THEME_NAMES={professional:'Professional Navy',purple:'Violet Dream',ocean:'Deep Sea',emerald:'Forest Dark',sunset:'Volcano',rose:'Cherry Blossom',gold:'Gold Mine',teal:'Arctic Glow',neon:'Neon Nights',controltower:'Control Tower',stripe_fintech:'Stripe Fintech',banking_pro:'Banking Pro',biz_district:'Business District',analytics_dash:'Analytics Dashboard',wealth_gold:'Wealth Manager',midnight_fin:'Midnight Finance'};
+// Template metadata for gallery cards
+const TEMPLATE_META={
+  stripe_fintech: {icon:'💳',sub:'Vibrant · Coral to Gold',gs:'#ff6b6b',ge:'#ffbe0b'},
+  banking_pro:    {icon:'🏦',sub:'Pro · Emerald to Cyan',gs:'#10b981',ge:'#06b6d4'},
+  biz_district:   {icon:'🌃',sub:'Tech · Cyan to Indigo',gs:'#06b6d4',ge:'#6366f1'},
+  analytics_dash: {icon:'📊',sub:'Analytics · Purple to Pink',gs:'#8b5cf6',ge:'#ec4899'},
+  wealth_gold:    {icon:'💰',sub:'Luxury · Gold to Red',gs:'#f59e0b',ge:'#ef4444'},
+  midnight_fin:   {icon:'🌙',sub:'Classic · Blue to Violet',gs:'#3b82f6',ge:'#8b5cf6'},
+};
 let currentTheme=S.get('theme','professional');
 let autoOn=S.get('autoTheme',false);
 let autoTimer=null;
@@ -4806,16 +4848,25 @@ function applyLuxuryTheme(key,silent,noSave){
   if(!silent)toast('🎨 '+entry[0],'s');
 }
 function renderLuxuryGallery(){
-  const wrap=document.getElementById('lux-gallery');
-  if(!wrap||wrap.children.length)return; // build once
-  wrap.innerHTML=Object.entries(LUXURY_PALETTE).map(([cat,list])=>`
-    <div class="lux-cat-h">${cat}</div>
-    <div class="lux-swatch-row">
-      ${list.map(([name,hex])=>{
-        const key='lux_'+name.toLowerCase().replace(/[^a-z0-9]+/g,'');
-        return `<div class="lux-swatch${currentTheme===key?' on':''}" data-lux="${key}" style="background:${hex}" title="${escapeHtml(name)}"></div>`;
-      }).join('')}
-    </div>`).join('');
+  // kept for compatibility — no longer rendered in Settings
+}
+
+function renderTemplateGallery(){
+  const wrap=document.getElementById('tt-gallery');
+  if(!wrap)return;
+  wrap.innerHTML=Object.entries(TEMPLATE_META).map(([key,m])=>{
+    const isOn=currentTheme===key;
+    return `<div class="tt-card${isOn?' on':''}" data-tt="${key}">
+      <div class="tt-preview">
+        <div class="tt-preview-bar" style="background:linear-gradient(135deg,${m.gs} 0%,${m.ge} 100%)"></div>
+        <div class="tt-preview-dot" style="background:rgba(0,0,0,.35)">${m.icon}</div>
+      </div>
+      <div class="tt-info">
+        <div class="tt-name">${THEME_NAMES[key]}${isOn?'<span class="tt-active-badge">ACTIVE</span>':''}</div>
+        <div class="tt-sub">${m.sub}</div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function applyTheme(name,silent,noSave){
@@ -5800,7 +5851,7 @@ function applySectionNames(){
 
 // ===== SETTINGS =====
 function renderSettings(){
-  renderLuxuryGallery();
+  renderTemplateGallery();
   // Profile fields
   const dn=document.getElementById('set-dname');
   if(dn)dn.value=profileData.displayName||'';
