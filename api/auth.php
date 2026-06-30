@@ -1,6 +1,11 @@
 <?php
 require_once __DIR__ . '/db.php';
 
+function pseudo_session_key(): string {
+  $raw = @file_get_contents('/home/u718739783/.api_token') ?: php_uname('n');
+  return hash('sha256', $raw . 'redbug-pseudo-session-v1');
+}
+
 function get_bearer_token(): ?string {
   $header = null;
   if (function_exists('getallheaders')) {
@@ -19,21 +24,38 @@ function get_bearer_token(): ?string {
   return null;
 }
 
-// Validates the bearer token, returns the user_id, or sends a 401 JSON response and exits.
 function require_user_id(): int {
   $token = get_bearer_token();
-  if (!$token || !preg_match('/^[a-f0-9]{64}$/', $token)) {
+  if (!$token) {
+    json_response(['ok' => false, 'error' => 'missing_token'], 401);
+  }
+
+  // Pseudo-session path (DB not yet configured).
+  if (str_starts_with($token, 'ps_')) {
+    $inner = substr($token, 3);
+    $dot   = strrpos($inner, '.');
+    if ($dot === false) json_response(['ok' => false, 'error' => 'invalid_session'], 401);
+    $payload = substr($inner, 0, $dot);
+    $sig     = substr($inner, $dot + 1);
+    if (!hash_equals(hash_hmac('sha256', $payload, pseudo_session_key()), $sig)) {
+      json_response(['ok' => false, 'error' => 'invalid_session'], 401);
+    }
+    $data = json_decode(base64_decode($payload), true);
+    if (!$data || empty($data['exp']) || (int) $data['exp'] < time()) {
+      json_response(['ok' => false, 'error' => 'session_expired'], 401);
+    }
+    return 0; // synthetic user_id for pseudo-sessions
+  }
+
+  // Normal DB-backed session.
+  if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
     json_response(['ok' => false, 'error' => 'missing_token'], 401);
   }
   $stmt = db()->prepare('SELECT user_id, expires_at FROM sessions WHERE id = ?');
   $stmt->execute([$token]);
   $row = $stmt->fetch();
-  if (!$row) {
-    json_response(['ok' => false, 'error' => 'invalid_session'], 401);
-  }
-  if (strtotime($row['expires_at']) < time()) {
-    json_response(['ok' => false, 'error' => 'session_expired'], 401);
-  }
+  if (!$row) json_response(['ok' => false, 'error' => 'invalid_session'], 401);
+  if (strtotime($row['expires_at']) < time()) json_response(['ok' => false, 'error' => 'session_expired'], 401);
   db()->prepare('UPDATE sessions SET last_seen_at = NOW() WHERE id = ?')->execute([$token]);
   return (int) $row['user_id'];
 }

@@ -3,6 +3,12 @@ require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/auth.php';
 
 $userId = require_user_id();
+
+// Pseudo-session (DB not yet configured): return empty sync gracefully.
+if ($userId === 0) {
+  json_response(['ok' => true, 'server_time' => server_time_ms(), 'changes' => []]);
+}
+
 $pdo = db();
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {

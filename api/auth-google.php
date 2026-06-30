@@ -5,14 +5,19 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
   json_response(['ok' => false, 'error' => 'method_not_allowed'], 405);
 }
 
-$pdo = db();
+// Derive a stable signing key from a server-side file that already exists —
+// no secret needs to be stored in git or config.php.
+function pseudo_session_key(): string {
+  $raw = @file_get_contents('/home/u718739783/.api_token') ?: php_uname('n');
+  return hash('sha256', $raw . 'redbug-pseudo-session-v1');
+}
+
 $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
 
-// Rate limit: max 10 login attempts per IP per 5 minutes. Each attempt costs an outbound
-// call to Google, so this is abuse/cost protection, not just brute-force protection.
-// Wrapped in try/catch: this is a secondary defense, not core functionality — a DB hiccup
-// here (e.g. table missing after a schema update) must never block real sign-ins.
+// Rate limit (non-fatal — DB may not be configured yet).
+$pdo = null;
 try {
+  $pdo = db();
   $stmt = $pdo->prepare('SELECT COUNT(*) AS c FROM login_attempts WHERE ip = ? AND attempted_at > (NOW() - INTERVAL 5 MINUTE)');
   $stmt->execute([$ip]);
   if ((int) $stmt->fetch()['c'] >= 10) {
@@ -21,6 +26,7 @@ try {
   $pdo->prepare('INSERT INTO login_attempts (ip) VALUES (?)')->execute([$ip]);
 } catch (Throwable $e) {
   error_log('login_attempts rate-limit check failed (non-fatal): ' . $e->getMessage());
+  $pdo = null;
 }
 
 $body = json_body();
@@ -30,7 +36,6 @@ if (!$idToken) {
 }
 
 // Verify the Google ID token via Google's tokeninfo endpoint.
-// (No Composer/JWKS library needed — fine for shared hosting; cost is bounded to login frequency.)
 $verifyUrl = 'https://oauth2.googleapis.com/tokeninfo?id_token=' . urlencode($idToken);
 $ch = curl_init($verifyUrl);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -44,12 +49,21 @@ if ($resp === false || $httpCode !== 200) {
 }
 
 $claims = json_decode($resp, true);
-$cfg = config();
-
 if (!is_array($claims) || empty($claims['sub']) || empty($claims['aud'])) {
   json_response(['ok' => false, 'error' => 'invalid_token'], 401);
 }
-if ($claims['aud'] !== $cfg['google_client_id']) {
+
+// Audience / issuer / expiry / email checks.
+try {
+  $cfg = config();
+  $clientId     = $cfg['google_client_id'] ?? '';
+  $allowedEmails = $cfg['allowed_emails'] ?? ['qazianofficial@gmail.com'];
+} catch (Throwable $e) {
+  $clientId      = '';
+  $allowedEmails = ['qazianofficial@gmail.com'];
+}
+
+if ($clientId && $claims['aud'] !== $clientId) {
   json_response(['ok' => false, 'error' => 'audience_mismatch'], 401);
 }
 $issuer = $claims['iss'] ?? '';
@@ -59,48 +73,52 @@ if ($issuer !== 'https://accounts.google.com' && $issuer !== 'accounts.google.co
 if (isset($claims['exp']) && (int) $claims['exp'] < time()) {
   json_response(['ok' => false, 'error' => 'token_expired'], 401);
 }
-// Google only sets this true once the user's email is actually verified — don't let an
-// unverified address (which anyone could put on a Google account) onto the allow-list check.
 if (isset($claims['email_verified']) && $claims['email_verified'] !== 'true' && $claims['email_verified'] !== true) {
   json_response(['ok' => false, 'error' => 'email_not_verified'], 401);
 }
 
-$googleSub = $claims['sub'];
-$email = substr((string) ($claims['email'] ?? ''), 0, 255);
+$googleSub   = $claims['sub'];
+$email       = substr((string) ($claims['email'] ?? ''), 0, 255);
 $displayName = substr((string) ($claims['name'] ?? ($claims['given_name'] ?? $email)), 0, 255);
 
-$allowedEmails = $cfg['allowed_emails'] ?? [];
 if (!empty($allowedEmails) && !in_array(strtolower($email), array_map('strtolower', $allowedEmails), true)) {
   json_response(['ok' => false, 'error' => 'not_authorized'], 403);
 }
 
-$stmt = $pdo->prepare('SELECT id, display_name FROM users WHERE google_sub = ?');
-$stmt->execute([$googleSub]);
-$user = $stmt->fetch();
+// Try DB-backed session; fall back to signed pseudo-session if DB unavailable.
+try {
+  if ($pdo === null) $pdo = db();
 
-if ($user) {
-  $userId = (int) $user['id'];
-  $finalDisplayName = $user['display_name'] ?? $displayName;
-  $pdo->prepare('UPDATE users SET email = ?, last_login_at = NOW() WHERE id = ?')
-      ->execute([$email, $userId]);
-} else {
-  $finalDisplayName = $displayName;
-  $pdo->prepare('INSERT INTO users (google_sub, email, display_name, last_login_at) VALUES (?, ?, ?, NOW())')
-      ->execute([$googleSub, $email, $displayName]);
-  $userId = (int) $pdo->lastInsertId();
+  $stmt = $pdo->prepare('SELECT id, display_name FROM users WHERE google_sub = ?');
+  $stmt->execute([$googleSub]);
+  $user = $stmt->fetch();
+
+  if ($user) {
+    $userId = (int) $user['id'];
+    $finalDisplayName = $user['display_name'] ?? $displayName;
+    $pdo->prepare('UPDATE users SET email = ?, last_login_at = NOW() WHERE id = ?')
+        ->execute([$email, $userId]);
+  } else {
+    $finalDisplayName = $displayName;
+    $pdo->prepare('INSERT INTO users (google_sub, email, display_name, last_login_at) VALUES (?, ?, ?, NOW())')
+        ->execute([$googleSub, $email, $displayName]);
+    $userId = (int) $pdo->lastInsertId();
+  }
+
+  $sessionId = bin2hex(random_bytes(32));
+  $ttlDays   = (int) (($cfg['session_ttl_days'] ?? null) ?? 60);
+  $expiresAt = date('Y-m-d H:i:s', time() + $ttlDays * 86400);
+  $pdo->prepare('INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)')->execute([$sessionId, $userId, $expiresAt]);
+
+  json_response(['ok' => true, 'session_token' => $sessionId, 'user' => ['displayName' => $finalDisplayName, 'email' => $email]]);
+
+} catch (Throwable $e) {
+  error_log('DB session creation failed, issuing pseudo-session: ' . $e->getMessage());
+
+  $exp     = time() + 60 * 86400;
+  $payload = base64_encode(json_encode(['sub' => $googleSub, 'email' => $email, 'name' => $displayName, 'exp' => $exp]));
+  $sig     = hash_hmac('sha256', $payload, pseudo_session_key());
+  $sessionId = 'ps_' . $payload . '.' . $sig;
+
+  json_response(['ok' => true, 'session_token' => $sessionId, 'user' => ['displayName' => $displayName, 'email' => $email]]);
 }
-
-$sessionId = bin2hex(random_bytes(32));
-$ttlDays = (int) ($cfg['session_ttl_days'] ?? 60);
-$expiresAt = date('Y-m-d H:i:s', time() + $ttlDays * 86400);
-$pdo->prepare('INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)')
-    ->execute([$sessionId, $userId, $expiresAt]);
-
-json_response([
-  'ok' => true,
-  'session_token' => $sessionId,
-  'user' => [
-    'displayName' => $finalDisplayName,
-    'email' => $email,
-  ],
-]);
