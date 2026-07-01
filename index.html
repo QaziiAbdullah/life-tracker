@@ -527,6 +527,15 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px 20px;min-height:100vh
 .tt-name{font-size:11px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tt-sub{font-size:9px;color:var(--muted);margin-top:2px}
 .tt-active-badge{display:inline-block;font-size:8px;font-weight:700;background:var(--primary);color:#fff;border-radius:6px;padding:1px 5px;margin-left:4px;vertical-align:middle}
+/* Backup & Restore */
+.bk-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:var(--card2);border:1px solid var(--border)}
+.bk-item-info{flex:1;min-width:0}
+.bk-item-date{font-size:11px;font-weight:700;color:var(--text)}
+.bk-item-size{font-size:9px;color:var(--muted);margin-top:1px}
+.bk-item-actions{display:flex;gap:6px;flex-shrink:0}
+.bk-btn{border:none;background:transparent;cursor:pointer;font-size:14px;padding:4px 6px;border-radius:6px;transition:background .15s}
+.bk-btn:hover{background:rgba(var(--pa),.15)}
+.bk-empty{font-size:11px;color:var(--muted);text-align:center;padding:14px}
 
 /* THEME BAR */
 .theme-bar{display:flex;align-items:center;gap:5px;margin-top:8px;padding:4px 0}
@@ -2188,6 +2197,18 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
         </div>
       </div>
     </div>
+    <!-- Backup & Restore -->
+    <div class="set-section">
+      <div class="set-sh">🗄️ Backup &amp; Restore</div>
+      <div class="set-row" style="display:block">
+        <div style="margin-bottom:10px"><div class="set-lbl">Like WhatsApp backups — snapshot everything (habits, tasks, goals, finance, notebooks, vision board, photos) into one file saved to your account.</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+          <button class="btn btn-p btn-sm" id="bk-create-btn">📦 Backup Now</button>
+          <button class="btn btn-g btn-sm" id="bk-refresh-btn">🔄 Refresh List</button>
+        </div>
+        <div id="bk-list" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+    </div>
     <!-- Template Gallery -->
     <div class="set-section">
       <div class="set-sh">🖼️ Interface Templates</div>
@@ -3762,6 +3783,13 @@ document.addEventListener('click',function(e){
   // Cash / Bank payment method toggle inside the finance modal
   const fpm=t.closest('[data-pm]');
   if(fpm){_selPM=fpm.dataset.pm;document.getElementById('fm-pm-cash').classList.toggle('on',_selPM==='cash');document.getElementById('fm-pm-bank').classList.toggle('on',_selPM==='bank');document.getElementById('fm-pm-investment').classList.toggle('on',_selPM==='investment');return;}
+  // Backup & Restore
+  if(id==='bk-create-btn'){bkCreateBackup();return;}
+  if(id==='bk-refresh-btn'){bkRenderList();return;}
+  const bkRestoreEl=t.closest('[data-bk-restore]');
+  if(bkRestoreEl){bkRestoreBackup(bkRestoreEl.dataset.bkRestore);return;}
+  const bkDeleteEl=t.closest('[data-bk-delete]');
+  if(bkDeleteEl){bkDeleteBackup(bkDeleteEl.dataset.bkDelete);return;}
   // Template gallery card click
   const ttCard=t.closest('.tt-card[data-tt]');
   if(ttCard){applyTheme(ttCard.dataset.tt);renderTemplateGallery();return;}
@@ -4872,6 +4900,102 @@ function renderLuxuryGallery(){
   // kept for compatibility — no longer rendered in Settings
 }
 
+// ===== BACKUP & RESTORE (WhatsApp-style) =====
+function _collectAllLocalData(){
+  const out={};
+  const skip=new Set(['sync_token','sync_cursor','cursorfix27','lastAutoBackup']);
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(k&&k.indexOf('lt4_')===0){
+      const shortKey=k.slice(4);
+      if(skip.has(shortKey))continue;
+      out[shortKey]=localStorage.getItem(k);
+    }
+  }
+  return out;
+}
+
+async function bkCreateBackup(silent){
+  if(!_syncToken){if(!silent)toast('Please log in first','w');return;}
+  const data=_collectAllLocalData();
+  if(!silent)toast('📦 Creating backup...','s');
+  try{
+    const r=await fetch('/api/backup.php',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_syncToken},body:JSON.stringify({data})});
+    const d=await r.json();
+    if(!d||!d.ok){if(!silent)toast('❌ Backup failed'+(d&&d.error?': '+d.error:''),'w');return;}
+    if(!silent)toast('✅ Backup created!','s');
+    else localStorage.setItem('lt4_lastAutoBackup',String(Date.now()));
+    if(document.getElementById('view-settings')?.classList.contains('on'))bkRenderList();
+  }catch(e){if(!silent)toast('❌ Backup failed — check connection','w');}
+}
+
+// WhatsApp-style: one automatic backup per 24h, silent, on top of the manual button.
+function _maybeAutoBackup(){
+  if(!_syncToken)return;
+  const last=parseInt(localStorage.getItem('lt4_lastAutoBackup')||'0',10)||0;
+  if(Date.now()-last>24*60*60*1000)bkCreateBackup(true);
+}
+
+async function bkFetchList(){
+  if(!_syncToken)return[];
+  try{
+    const r=await fetch('/api/backup.php?action=list',{headers:{'Authorization':'Bearer '+_syncToken}});
+    const d=await r.json();
+    return (d&&d.ok)?d.backups:[];
+  }catch(e){return[];}
+}
+
+async function bkRenderList(){
+  const wrap=document.getElementById('bk-list');
+  if(!wrap)return;
+  if(!_syncToken){wrap.innerHTML='<div class="bk-empty">Log in with Google to enable backups.</div>';return;}
+  wrap.innerHTML='<div class="bk-empty">Loading…</div>';
+  const list=await bkFetchList();
+  if(document.getElementById('bk-list')!==wrap)return; // view changed while loading
+  if(!list.length){wrap.innerHTML='<div class="bk-empty">No backups yet. Click "Backup Now" to create your first one.</div>';return;}
+  wrap.innerHTML=list.map(b=>{
+    const dt=new Date(b.created_at);
+    const dateStr=dt.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})+' · '+dt.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
+    const sizeStr=b.size>1024*1024?(b.size/1024/1024).toFixed(1)+' MB':(b.size/1024).toFixed(0)+' KB';
+    return `<div class="bk-item">
+      <div class="bk-item-info"><div class="bk-item-date">${dateStr}</div><div class="bk-item-size">${sizeStr}</div></div>
+      <div class="bk-item-actions">
+        <button class="bk-btn" data-bk-restore="${b.id}" title="Restore this backup">♻️</button>
+        <button class="bk-btn" data-bk-delete="${b.id}" title="Delete">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function bkRestoreBackup(id){
+  if(!confirm('Restore this backup? This will replace ALL current data on this device with the backup snapshot. This cannot be undone.'))return;
+  toast('♻️ Restoring...','s');
+  try{
+    const r=await fetch('/api/backup.php?action=get&id='+id,{headers:{'Authorization':'Bearer '+_syncToken}});
+    const d=await r.json();
+    if(!d||!d.ok||!d.data){toast('❌ Restore failed','w');return;}
+    const keep=new Set(['lt4_sync_token','lt4_sync_cursor','lt4_cursorfix27']);
+    const toRemove=[];
+    for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.indexOf('lt4_')===0&&!keep.has(k))toRemove.push(k);}
+    toRemove.forEach(k=>localStorage.removeItem(k));
+    Object.entries(d.data).forEach(([k,v])=>{localStorage.setItem('lt4_'+k,v);});
+    // Mark everything dirty so the restored snapshot also re-pushes to live sync storage,
+    // keeping the account's other devices consistent with this restore.
+    Object.keys(d.data).forEach(k=>_dirtyKeys.add(k));
+    toast('✅ Restored! Reloading…','s');
+    setTimeout(()=>location.reload(),900);
+  }catch(e){toast('❌ Restore failed — check connection','w');}
+}
+
+async function bkDeleteBackup(id){
+  if(!confirm('Delete this backup permanently?'))return;
+  try{
+    await fetch('/api/backup.php?action=delete',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_syncToken},body:JSON.stringify({id})});
+    toast('🗑 Backup deleted','s');
+    bkRenderList();
+  }catch(e){toast('❌ Delete failed','w');}
+}
+
 function renderTemplateGallery(){
   const wrap=document.getElementById('tt-gallery');
   if(!wrap)return;
@@ -5664,7 +5788,7 @@ _loggedIn=!!_syncToken;
     screen.classList.add('hide');
     const sr=document.getElementById('sb-sync-row');if(sr)sr.style.display='flex';
     updateWelcome();initWeather();
-    _pullSync();
+    _pullSync().then(()=>_maybeAutoBackup());
     return;
   }
   screen.classList.remove('hide');
@@ -5706,6 +5830,7 @@ async function handleGoogleCredential(response){
     _dirtyKeys.clear();
     _syncCursor=0;localStorage.setItem('lt4_sync_cursor','0');
     await _pullSync();
+    _maybeAutoBackup();
     // Server profile (if any) wins; only fall back to the Google display name for a
     // brand-new account that has no synced profile yet.
     const pulledProfile=S.get('profile',null);
@@ -5884,6 +6009,7 @@ function applySectionNames(){
 // ===== SETTINGS =====
 function renderSettings(){
   renderTemplateGallery();
+  bkRenderList();
   // Profile fields
   const dn=document.getElementById('set-dname');
   if(dn)dn.value=profileData.displayName||'';

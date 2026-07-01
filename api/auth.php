@@ -63,3 +63,31 @@ function require_user_id(): int {
 function current_session_token(): ?string {
   return get_bearer_token();
 }
+
+// Stable per-account storage key, valid for both pseudo-sessions (keyed by Google sub)
+// and DB-backed sessions (keyed by numeric user_id) — used to namespace backup files.
+function require_storage_key(): string {
+  $token = get_bearer_token();
+  if (!$token) json_response(['ok' => false, 'error' => 'missing_token'], 401);
+
+  if (str_starts_with($token, 'ps_')) {
+    $inner = substr($token, 3);
+    $dot   = strrpos($inner, '.');
+    if ($dot === false) json_response(['ok' => false, 'error' => 'invalid_session'], 401);
+    $payload = substr($inner, 0, $dot);
+    $sig     = substr($inner, $dot + 1);
+    if (!hash_equals(hash_hmac('sha256', $payload, pseudo_session_key()), $sig)) {
+      json_response(['ok' => false, 'error' => 'invalid_session'], 401);
+    }
+    $data = json_decode(base64_decode($payload), true);
+    if (!$data || empty($data['exp']) || (int) $data['exp'] < time()) {
+      json_response(['ok' => false, 'error' => 'session_expired'], 401);
+    }
+    $sub = preg_replace('/[^a-zA-Z0-9_\-]/', '', $data['sub'] ?? '');
+    if (!$sub) json_response(['ok' => false, 'error' => 'invalid_session'], 401);
+    return 'sub_' . $sub;
+  }
+
+  $userId = require_user_id();
+  return 'uid_' . $userId;
+}
