@@ -2468,6 +2468,14 @@ function isSafeUrl(u){
 // ===== SYNC LAYER (cross-device, via Google login) =====
 let _syncToken=localStorage.getItem('lt4_sync_token')||null;
 let _syncCursor=parseInt(localStorage.getItem('lt4_sync_cursor')||'0',10)||0;
+// One-time repair (v27): _flushSync used to advance the cursor to push-time, which could
+// permanently skip all existing server data on a freshly-installed device (the PWA
+// "everything reset" bug). Re-pull once from 0 — pulls are idempotent: identical values
+// are skipped and locally-dirty keys are never overwritten.
+if(_syncToken&&!localStorage.getItem('lt4_cursorfix27')){
+  _syncCursor=0;localStorage.setItem('lt4_sync_cursor','0');
+  localStorage.setItem('lt4_cursorfix27','1');
+}
 let _dirtyKeys=new Set();
 let _syncFlushTimer=null;
 const SYNC_MAX_BYTES=10*1024*1024;
@@ -2481,6 +2489,10 @@ function _markDirty(k){
 
 async function _flushSync(){
   if(!_syncToken||!_dirtyKeys.size)return;
+  // Never push before the first successful pull on this device (_syncCursor stays 0 until
+  // then). Pushing first uploads freshly-seeded demo/default data over the account's real
+  // server data — the "logged in on a new device/PWA and everything reset" bug.
+  if(!_syncCursor)return;
   const keys=Array.from(_dirtyKeys);
   const changes=[];
   keys.forEach(k=>{
@@ -2496,7 +2508,10 @@ async function _flushSync(){
     const d=await r.json();
     if(d&&d.ok){
       keys.forEach(k=>_dirtyKeys.delete(k));
-      if(d.server_time){_syncCursor=d.server_time;localStorage.setItem('lt4_sync_cursor',String(_syncCursor));}
+      // Deliberately do NOT advance _syncCursor here: jumping the cursor to push-time skips
+      // every change other devices made since our last pull — they'd never be pulled. The
+      // cursor only moves forward in _pullSync. (Re-pulling our own writes is a harmless
+      // no-op — _pullSync skips values identical to what's already in localStorage.)
       _lastSyncedAt=Date.now();_setSyncStatus('✓ Synced just now');
     }
   }catch(e){/* offline/server error — keys stay dirty, retried next debounce or online event */}
@@ -2512,8 +2527,14 @@ async function _pullSync(){
     const changedKeys=new Set();
     (d.changes||[]).forEach(c=>{
       if(_dirtyKeys.has(c.k))return; // a pending local edit wins until it's flushed
-      if(c.deleted)localStorage.removeItem('lt4_'+c.k);
-      else localStorage.setItem('lt4_'+c.k,c.v);
+      const cur=localStorage.getItem('lt4_'+c.k);
+      if(c.deleted){
+        if(cur===null)return; // already gone — nothing to apply
+        localStorage.removeItem('lt4_'+c.k);
+      }else{
+        if(cur===c.v)return; // identical (usually our own earlier push echoing back) — skip
+        localStorage.setItem('lt4_'+c.k,c.v);
+      }
       changedKeys.add(c.k);
     });
     if(d.server_time){_syncCursor=Math.max(_syncCursor,d.server_time);localStorage.setItem('lt4_sync_cursor',String(_syncCursor));}
@@ -5677,13 +5698,24 @@ async function handleGoogleCredential(response){
     _syncToken=d.session_token;
     localStorage.setItem('lt4_sync_token',_syncToken);
     _loggedIn=true;
-    if(d.user&&d.user.displayName){profileData.displayName=d.user.displayName;S.set('profile',profileData);}
+    // PULL FIRST, before anything can mark keys dirty. On a fresh install (new browser /
+    // "Add to Home Screen" PWA container) writing profile before the first pull started a
+    // push whose response used to advance the sync cursor past all existing server data —
+    // the pull then saw "no changes" and the account looked reset. Fresh cursor + pull
+    // first guarantees the server's real data lands before any local write can race it.
+    _dirtyKeys.clear();
+    _syncCursor=0;localStorage.setItem('lt4_sync_cursor','0');
+    await _pullSync();
+    // Server profile (if any) wins; only fall back to the Google display name for a
+    // brand-new account that has no synced profile yet.
+    const pulledProfile=S.get('profile',null);
+    if(pulledProfile&&pulledProfile.displayName){profileData=pulledProfile;}
+    else if(d.user&&d.user.displayName){profileData.displayName=d.user.displayName;S.set('profile',profileData);}
     document.getElementById('login-screen').classList.add('hide');
     const sr=document.getElementById('sb-sync-row');if(sr)sr.style.display='flex';
     updateWelcome();
     initWeather();
     toast('👋 Welcome, '+(profileData.displayName||'')+'!','s');
-    await _pullSync();
   }catch(e){
     syncing.style.display='none';
     err.style.display='block';
