@@ -89,5 +89,16 @@ function require_storage_key(): string {
   }
 
   $userId = require_user_id();
-  return 'uid_' . $userId;
+  // Resolve to the Google sub (not the numeric user_id) so storage keys stay identical
+  // whether this account was ever in pseudo-session mode or always DB-backed — otherwise
+  // backups made before/after a DB reconnect would silently split into two folders.
+  try {
+    $stmt = db()->prepare('SELECT google_sub FROM users WHERE id = ?');
+    $stmt->execute([$userId]);
+    $row = $stmt->fetch();
+    $sub = $row ? preg_replace('/[^a-zA-Z0-9_\-]/', '', $row['google_sub']) : '';
+  } catch (Throwable $e) {
+    $sub = '';
+  }
+  return $sub ? 'sub_' . $sub : 'uid_' . $userId;
 }
