@@ -15,13 +15,18 @@ if ($userId === 0) {
   $sub = preg_replace('/[^a-zA-Z0-9_\-]/', '', $payload['sub'] ?? '');
   if (!$sub) json_response(['ok' => false, 'error' => 'invalid_session'], 401);
 
-  $dataDir  = __DIR__ . '/data';
+  // IMPORTANT: the data directory lives OUTSIDE public_html. Hostinger's git auto-deploy
+  // deletes every untracked file under public_html on each push — a data dir inside the
+  // web root gets wiped on every deploy (this silently destroyed synced data before).
+  // $HOME/redbug_data is untouchable by deploys and not web-accessible at all.
+  $dataDir  = dirname(dirname(__DIR__)) . '/redbug_data'; // …/domains/alijtaba.online/redbug_data
+  if (!is_dir($dataDir)) @mkdir($dataDir, 0700, true);
   $dataFile = $dataDir . '/' . $sub . '.json';
 
-  // Bootstrap data directory on first use — PHP has write access to its own files.
-  if (!is_dir($dataDir)) {
-    mkdir($dataDir, 0700, true);
-    file_put_contents($dataDir . '/.htaccess', "Deny from all\n");
+  // One-time migration: pull any surviving data written by the old public_html location.
+  $legacyFile = __DIR__ . '/data/' . $sub . '.json';
+  if (!is_file($dataFile) && is_file($legacyFile)) {
+    @copy($legacyFile, $dataFile);
   }
 
   $store = is_file($dataFile)

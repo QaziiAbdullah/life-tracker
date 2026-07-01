@@ -17,10 +17,18 @@ set_exception_handler(function (Throwable $e) {
   exit;
 });
 
+// Config lives OUTSIDE public_html when possible: Hostinger's git auto-deploy deletes
+// untracked files under public_html on every push (this silently deleted config.php once).
+// Place real credentials at domains/<domain>/redbug_config.php — deploys can't touch it.
+function config_file(): string {
+  $safe = dirname(dirname(__DIR__)) . '/redbug_config.php';
+  return is_file($safe) ? $safe : __DIR__ . '/config.php';
+}
+
 function db(): PDO {
   static $pdo = null;
   if ($pdo !== null) return $pdo;
-  $cfg = require __DIR__ . '/config.php';
+  $cfg = require config_file();
   $dsn = "mysql:host={$cfg['db_host']};dbname={$cfg['db_name']};charset=utf8mb4";
   $pdo = new PDO($dsn, $cfg['db_user'], $cfg['db_pass'], [
     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -32,7 +40,7 @@ function db(): PDO {
 
 function config(): array {
   static $cfg = null;
-  if ($cfg === null) $cfg = require __DIR__ . '/config.php';
+  if ($cfg === null) $cfg = require config_file();
   return $cfg;
 }
 
