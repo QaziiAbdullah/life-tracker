@@ -1,4 +1,4 @@
-const CACHE_NAME = 'redbug-life-tracking-v28';
+const CACHE_NAME = 'redbug-life-tracking-v29';
 const PRECACHE_URLS = [
   '/',
   '/index.html',

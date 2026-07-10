@@ -951,7 +951,17 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
   font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;
   color:#dc2626;transition:background .15s;flex-shrink:0}
 .np-close-wall:hover{background:#fecaca}
-#np-board{flex:1;position:relative;overflow:hidden;touch-action:none}
+#np-viewport{flex:1;position:relative;overflow:hidden;touch-action:none;cursor:grab}
+#np-viewport.is-panning{cursor:grabbing}
+#np-board{position:absolute;top:0;left:0;width:3000px;height:2000px;transform-origin:0 0}
+#np-zoom-ctrl{position:absolute;right:16px;bottom:16px;z-index:2002;display:flex;align-items:center;gap:2px;
+  background:rgba(255,255,255,.95);backdrop-filter:blur(10px);border-radius:12px;padding:5px;
+  box-shadow:0 4px 20px rgba(0,0,0,.25);border:1px solid rgba(0,0,0,.08)}
+#np-zoom-ctrl button{width:28px;height:28px;border-radius:8px;border:none;background:transparent;
+  color:#1e293b;font-size:16px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s}
+#np-zoom-ctrl button:hover{background:#f1f5f9}
+#np-zoom-ctrl #np-zoom-reset{font-size:13px}
+#np-zoom-lbl{font-size:10px;font-weight:700;color:#64748b;min-width:36px;text-align:center;user-select:none}
 /* STICKY NOTE CARD */
 @keyframes snPop{from{transform:rotate(var(--sn-r)) scale(.4);opacity:0}to{transform:rotate(var(--sn-r)) scale(1);opacity:1}}
 .sn-card{position:absolute;width:150px;min-height:65px;padding:6px 8px 20px;border-radius:2px;
@@ -1295,7 +1305,15 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
         <button class="np-close-wall" id="np-close-btn" title="Close">✕</button>
       </div>
     </div>
-    <div id="np-board"></div>
+    <div id="np-viewport">
+      <div id="np-board"></div>
+    </div>
+    <div id="np-zoom-ctrl">
+      <button id="np-zoom-out" title="Zoom out">−</button>
+      <span id="np-zoom-lbl">100%</span>
+      <button id="np-zoom-in" title="Zoom in">+</button>
+      <button id="np-zoom-reset" title="Reset view">⤢</button>
+    </div>
   </div>
 </div>
 
@@ -1865,6 +1883,7 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
       <button class="btn btn-p" id="bf-inc">+ Add Income</button>
       <button class="btn btn-g btn-sm" id="bf-loan" style="border-color:#fbbf24;color:#fbbf24">🏦 Loan</button>
       <button class="btn btn-g btn-sm" id="bf-transfer" style="border-color:#8b5cf6;color:#8b5cf6">💸 Transfer</button>
+      <button class="btn btn-g btn-sm" id="bf-fbl" style="border-color:#3b82f6;color:#3b82f6">📦 FB Listings</button>
     </div>
   </div>
 
@@ -2140,6 +2159,22 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
   </div>
 </div>
 
+<!-- FACEBOOK MARKETPLACE LISTINGS -->
+<div class="overlay" id="fbl-modal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-t">📦 Facebook Marketplace Listings</div>
+    <div class="set-hint" style="margin-bottom:10px">Track what you have listed for sale — mark items sold and add the sale straight to your Facebook Marketplace income.</div>
+    <div style="display:grid;grid-template-columns:1fr 90px;gap:8px">
+      <div class="fg"><label>Product Name</label><input class="fi" id="fbl-name" placeholder="e.g. iPhone 13, Office Chair..."></div>
+      <div class="fg"><label>Price</label><input class="fi" type="number" id="fbl-price" placeholder="0" min="0"></div>
+    </div>
+    <div class="fg"><label>Note <span style="color:var(--muted);font-weight:400">(optional)</span></label><input class="fi" id="fbl-note" placeholder="Condition, buyer contact, etc."></div>
+    <button class="btn btn-p" id="fbl-add-btn" style="width:100%;justify-content:center;margin-bottom:14px">+ Add Listing</button>
+    <div id="fbl-list" style="max-height:340px;overflow-y:auto"></div>
+    <div class="mbtn"><button class="btn btn-g" id="fbl-close">Close</button></div>
+  </div>
+</div>
+
 <!-- FINANCE CATEGORY DRILL-DOWN -->
 <div class="overlay" id="fin-drill">
   <div class="modal" style="max-width:440px">
@@ -2346,7 +2381,7 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
 <div class="view" id="view-timetable">
   <div class="ph">
     <div><div class="ph-t">📋 Timetable</div><div class="ph-s" id="tt-view-sub">Your day at a glance</div></div>
-    <div class="ph-a"><button class="btn btn-g btn-sm" id="tt-reset-btn" title="Clear everything and start a fresh timetable">🗑️ Reset</button><button class="btn btn-p btn-sm" id="tt-add-top">+ Add Block</button></div>
+    <div class="ph-a"><button class="btn btn-g btn-sm" id="tt-hours-btn" title="Set your own wake/sleep hours">⏰ Sleep/Wake Hours</button><button class="btn btn-g btn-sm" id="tt-reset-btn" title="Clear everything and start a fresh timetable">🗑️ Reset</button><button class="btn btn-p btn-sm" id="tt-add-top">+ Add Block</button></div>
   </div>
   <div class="tt-view-tabs">
     <button class="tt-vtab on" id="tt-view-day">📅 Day</button>
@@ -2412,6 +2447,20 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
       <button class="btn btn-g" id="tt-modal-del" style="display:none;margin-right:auto;color:#f87171">Delete</button>
       <button class="btn btn-g" id="tt-modal-cancel">Cancel</button>
       <button class="btn btn-p" id="tt-modal-save">Save Block</button>
+    </div>
+  </div>
+</div>
+
+<!-- TIMETABLE SLEEP/WAKE HOURS MODAL -->
+<div class="overlay" id="tt-hours-modal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-t">⏰ Set Your Sleep / Wake Hours</div>
+    <div class="set-hint" style="margin-bottom:10px">Your daily schedule and sleep block will adjust to match — set these to your own routine.</div>
+    <div class="fg"><label>I wake up at</label><input class="fi" type="time" id="tt-wake-input"></div>
+    <div class="fg"><label>I go to sleep at</label><input class="fi" type="time" id="tt-sleep-input"></div>
+    <div class="mbtn">
+      <button class="btn btn-g" id="tt-hours-cancel">Cancel</button>
+      <button class="btn btn-p" id="tt-hours-save">Save Hours</button>
     </div>
   </div>
 </div>
@@ -2583,6 +2632,8 @@ function _applyRemoteChanges(changedKeys){
     else if(k==='profile'){profileData=S.get('profile',{displayName:'Admin'});if(typeof updateWelcome==='function')updateWelcome();if(document.getElementById('view-settings')?.classList.contains('on')&&typeof renderSettings==='function')renderSettings();}
     else if(k==='sectionNames'){sectionNames=S.get('sectionNames',sectionNames);if(typeof applySectionNames==='function')applySectionNames();needsAll=true;}
     else if(k==='timetable'){timetable=S.get('timetable',[]);if(document.getElementById('view-timetable')?.classList.contains('on')&&typeof renderTimetable==='function')renderTimetable();}
+    else if(k==='ttWakeStart'||k==='ttWakeEnd'){ttWakeStart=S.get('ttWakeStart',6);ttWakeEnd=S.get('ttWakeEnd',22);if(document.getElementById('view-timetable')?.classList.contains('on')&&typeof renderTimetable==='function')renderTimetable();}
+    else if(k==='fbListings'){fbListings=S.get('fbListings',[]);if(document.getElementById('fbl-modal')?.classList.contains('open')&&typeof renderFbListings==='function')renderFbListings();}
     else if(k==='theme'){currentTheme=S.get('theme','professional');if(typeof applyTheme==='function')applyTheme(currentTheme,true,true);}
     else if(k==='autoTheme'){autoOn=S.get('autoTheme',false);}
     else if(k==='wallBg'){_wallBg=S.get('wallBg','#eee8dc');if(document.getElementById('notepad-modal')?.classList.contains('open')&&typeof applyWallBg==='function')applyWallBg(_wallBg);}
@@ -2610,7 +2661,7 @@ setInterval(_pullSync,25000);
 setInterval(()=>{if(_syncToken)_flushSync();},5*60*1000);
 
 // ===== MANUAL "SAVE & SYNC" BUTTON =====
-const ALL_SYNC_KEYS=['habits','tasks','goals','logs','birthdays','events','finance','customIncSrc','customExpCat','profile','sectionNames','timetable','visionItems','stickyNotes','libBooks','currencyData','theme','autoTheme','wallBg','appName','appSub','dashOrder','weatherPref','aiPatterns'];
+const ALL_SYNC_KEYS=['habits','tasks','goals','logs','birthdays','events','finance','customIncSrc','customExpCat','profile','sectionNames','timetable','visionItems','stickyNotes','libBooks','currencyData','theme','autoTheme','wallBg','appName','appSub','dashOrder','weatherPref','aiPatterns','ttWakeStart','ttWakeEnd','fbListings'];
 // Zulqey AI assistant's learned phrase->action mappings — declared here (early, before any code
 // path can reference it) to avoid the TDZ ordering crash class documented elsewhere in this file.
 let aiPatterns=S.get('aiPatterns',[]);
@@ -2678,6 +2729,9 @@ let customExpCat=S.get('customExpCat',[]);
 let profileData=S.get('profile',{displayName:'Admin'});
 let sectionNames=S.get('sectionNames',{habits:'Habits',tasks:'Tasks',goals:'Goals',evbday:'Events & Birthday'});
 let timetable=S.get('timetable',[]);
+let ttWakeStart=S.get('ttWakeStart',6);
+let ttWakeEnd=S.get('ttWakeEnd',22);
+let fbListings=S.get('fbListings',[]);
 let visionItems=S.get('visionItems',[]);
 let _ttWeekOff=0,_ttView='day',_selTTColor='#7c3aed',_selVBColor='#7c3aed',_selVBCat='career',_vbEditId=null,_ttEditId=null,_vbFileData=null;
 let _loggedIn=false; // set from _syncToken in initAuth()
@@ -3542,6 +3596,9 @@ document.addEventListener('click',function(e){
   if(npDot&&npDot.dataset.nc){_snColor=npDot.dataset.nc;document.querySelectorAll('.np-cdot').forEach(d=>d.classList.toggle('on',d.dataset.nc===_snColor));return;}
   const wallBgBtn=t.closest('.np-wall-bg-btn');
   if(wallBgBtn&&wallBgBtn.dataset.wb){applyWallBg(wallBgBtn.dataset.wb);return;}
+  if(id==='np-zoom-in'){snSetZoom(_snZoom+0.15);return;}
+  if(id==='np-zoom-out'){snSetZoom(_snZoom-0.15);return;}
+  if(id==='np-zoom-reset'){snResetView();return;}
   const snDel=t.closest('.sn-x');
   if(snDel&&snDel.dataset.snid){_stickyNotes=_stickyNotes.filter(n=>n.id!==snDel.dataset.snid);S.set('stickyNotes',_stickyNotes);renderStickyNotes();return;}
   const snNxt=t.closest('.sn-next');
@@ -3655,6 +3712,9 @@ document.addEventListener('click',function(e){
     openTTModal(d.getDay());return;
   }
   if(id==='tt-reset-btn'){resetTimetable();return;}
+  if(id==='tt-hours-btn'){openTTHoursModal();return;}
+  if(id==='tt-hours-cancel'){closeM('tt-hours-modal');return;}
+  if(id==='tt-hours-save'){saveTTHours();return;}
   if(id==='tt-everyday-btn'){
     document.querySelectorAll('#tt-days-row input[type=checkbox]').forEach(cb=>cb.checked=true);
     return;
@@ -3758,6 +3818,15 @@ document.addEventListener('click',function(e){
   if(id==='bf-exp'||id==='bf-exp2'||id==='fw-exp-btn'){openFinanceModal('expense');return;}
   if(id==='bf-loan'){openFinanceModal('loan');return;}
   if(id==='bf-transfer'){openFinanceModal('transfer');return;}
+  if(id==='bf-fbl'){openM('fbl-modal');renderFbListings();return;}
+  if(id==='fbl-close'){closeM('fbl-modal');return;}
+  if(id==='fbl-add-btn'){addFbListing();return;}
+  const fblSold=t.closest('[data-fbl-sold]');
+  if(fblSold){toggleFbListingSold(fblSold.dataset.fblSold);return;}
+  const fblInc=t.closest('[data-fbl-inc]');
+  if(fblInc){const item=fbListings.find(x=>x.id===fblInc.dataset.fblInc);if(item){closeM('fbl-modal');openFinanceModal('income');setTimeout(()=>{document.getElementById('fm-src').value='facebook';document.getElementById('fm-amount').value=item.price;document.getElementById('fm-note').value=item.name;},80);}return;}
+  const fblDel=t.closest('[data-fbl-del]');
+  if(fblDel){fbListings=fbListings.filter(x=>x.id!==fblDel.dataset.fblDel);S.set('fbListings',fbListings);renderFbListings();return;}
   const ldEl=t.closest('[data-ld]');
   if(ldEl){_selLD=ldEl.dataset.ld;document.querySelectorAll('[data-ld]').forEach(b=>b.classList.toggle('on',b.dataset.ld===_selLD));return;}
   if(t.dataset.loanReturn){const idx=finance.findIndex(f=>f.id===t.dataset.loanReturn);if(idx>-1){finance[idx].returned=!finance[idx].returned;S.set('finance',finance);renderFinance();}return;}
@@ -4746,6 +4815,43 @@ function saveFinance(){
   document.getElementById('fm-title').textContent='💰 Add Transaction';
   toast(finType==='income'?'💰 Income saved!':'💸 Expense saved!','s');
   renderAll(true);
+}
+
+// ===== FACEBOOK MARKETPLACE LISTINGS =====
+function addFbListing(){
+  const name=document.getElementById('fbl-name').value.trim();
+  const price=parseFloat(document.getElementById('fbl-price').value);
+  const note=document.getElementById('fbl-note').value.trim();
+  if(!name){toast('Enter a product name','w');return;}
+  if(!price||price<=0){toast('Enter a valid price','w');return;}
+  fbListings.unshift({id:'fbl_'+Date.now(),name,price:Math.round(price),note,sold:false,date:today()});
+  S.set('fbListings',fbListings);
+  document.getElementById('fbl-name').value='';
+  document.getElementById('fbl-price').value='';
+  document.getElementById('fbl-note').value='';
+  renderFbListings();
+  toast('📦 Listing added!','s');
+}
+function toggleFbListingSold(id){
+  const item=fbListings.find(x=>x.id===id);
+  if(item){item.sold=!item.sold;S.set('fbListings',fbListings);renderFbListings();}
+}
+function renderFbListings(){
+  const wrap=document.getElementById('fbl-list');
+  if(!wrap)return;
+  if(!fbListings.length){wrap.innerHTML='<div class="f-empty">No listings yet.<br>Add a product above to start tracking.</div>';return;}
+  const sorted=[...fbListings].sort((a,b)=>(a.sold===b.sold?0:a.sold?1:-1)||b.date.localeCompare(a.date));
+  wrap.innerHTML=sorted.map(it=>`<div class="f-tx-item" style="${it.sold?'opacity:.55':''}">
+    <div class="f-tx-icon" style="background:#3b82f618">📦</div>
+    <div class="f-tx-info">
+      <div class="f-tx-name">${escapeHtml(it.name)}${it.note?' — '+escapeHtml(it.note):''}</div>
+      <div class="f-tx-meta">${it.date} · ${it.sold?'<span style="color:#34d399">✅ Sold</span>':'<span style="color:#fbbf24">🟢 Listed</span>'}</div>
+    </div>
+    <div class="f-tx-amt" style="color:#3b82f6">${currSym} ${fmtMoney(it.price)}</div>
+    ${it.sold?'':`<button class="f-tx-del" data-fbl-inc="${it.id}" title="Add sale as income" style="color:#34d399">💰</button>`}
+    <button class="f-tx-del" data-fbl-sold="${it.id}" title="${it.sold?'Mark as listed':'Mark as sold'}">${it.sold?'↩️':'✅'}</button>
+    <button class="f-tx-del" data-fbl-del="${it.id}" title="Delete">🗑</button>
+  </div>`).join('');
 }
 
 // ===== THEME SYSTEM =====
@@ -6229,6 +6335,24 @@ function renderTimetable(){
   if(_ttView==='month'){renderTTMonth();return;}
   renderTTDay();
 }
+function openTTHoursModal(){
+  document.getElementById('tt-wake-input').value=String(ttWakeStart).padStart(2,'0')+':00';
+  document.getElementById('tt-sleep-input').value=String(ttWakeEnd).padStart(2,'0')+':00';
+  openM('tt-hours-modal');
+}
+function saveTTHours(){
+  const wakeRaw=document.getElementById('tt-wake-input').value;
+  const sleepRaw=document.getElementById('tt-sleep-input').value;
+  if(!wakeRaw||!sleepRaw){toast('Pick both times','w');return;}
+  const wake=parseInt(wakeRaw.split(':')[0],10);
+  const sleep=parseInt(sleepRaw.split(':')[0],10);
+  if(wake>=sleep){toast('Wake time must be earlier than sleep time','w');return;}
+  ttWakeStart=wake;ttWakeEnd=sleep;
+  S.set('ttWakeStart',ttWakeStart);S.set('ttWakeEnd',ttWakeEnd);
+  closeM('tt-hours-modal');
+  renderTimetable();
+  toast('⏰ Your hours are saved!','s');
+}
 function renderTTDay(){
   const now=new Date();
   const sel=new Date(now);
@@ -6246,8 +6370,8 @@ function renderTTDay(){
   const nowH=now.getHours();
   const BLOCK_COLORS=['#7c3aed','#2563eb','#059669','#d97706','#dc2626','#db2777','#0891b2','#4f46e5','#16a34a','#ca8a04'];
   const fmt12=h=>{if(h===0)return'12:00 AM';if(h<12)return h+':00 AM';if(h===12)return'12:00 PM';return(h-12)+':00 PM';};
-  // Waking hours: 6 AM to 10 PM (6..21), Sleep: 22..5
-  const WAKE_START=6, WAKE_END=22;
+  // Waking hours are user-editable (⏰ Sleep/Wake Hours button) — default 6 AM to 10 PM.
+  const WAKE_START=ttWakeStart, WAKE_END=ttWakeEnd;
   let html=`<div class="tt-24-wrap">
     <div class="tt-24-hd">
       <span>⏰ Time</span><span>☀️ Activity</span><span>💡 Notes</span>
@@ -6274,10 +6398,11 @@ function renderTTDay(){
     }
     html+=`</div></div>`;
   }
-  // Sleep block
+  // Sleep block — computed from the user's own wake/sleep hours
+  const sleepHrs=24-(WAKE_END-WAKE_START);
   html+=`<div class="tt-sleep-row">
     <div class="tt-sleep-icon">🌙</div>
-    <div><div class="tt-sleep-txt">Sleep Time</div><div class="tt-sleep-sub">10:00 PM — 6:00 AM · 8 hrs rest</div></div>
+    <div><div class="tt-sleep-txt">Sleep Time</div><div class="tt-sleep-sub">${fmt12(WAKE_END)} — ${fmt12(WAKE_START)} · ${sleepHrs} hrs rest</div></div>
   </div>`;
   html+=`</div>`;
   wrap.innerHTML=html;
@@ -7318,10 +7443,25 @@ function openLibrary(){
   document.getElementById('lib-close-btn2')?.addEventListener('click',function(e){e.stopPropagation();libCloseModal();});
 })();
 
-const WALL_BG_COLORS=['#eee8dc','#f0f4f8','#fdf2f8','#f0fdf4','#eff6ff','#fefce8','#1e1e2e','#0f172a','#1a1a1a','#2d1b69'];
+const WALL_BG_COLORS=['#eee8dc','#f0f4f8','#fdf2f8','#f0fdf4','#eff6ff','#fefce8','#1e1e2e','#0f172a','#1a1a1a','#2d1b69',
+  'linear-gradient(135deg,#ff9a76,#ff6a88,#845ec2)',
+  'linear-gradient(135deg,#43cea2,#185a9d)',
+  'linear-gradient(120deg,#a1c4fd,#c2e9fb)',
+  'linear-gradient(160deg,#0f2027,#203a43,#2c5364)',
+  'linear-gradient(135deg,#f6d5f7,#fbe9d7)',
+  'linear-gradient(135deg,#e0c3fc,#8ec5fc)',
+  'linear-gradient(135deg,#f9d423,#ff4e50)',
+  'linear-gradient(135deg,#00c6ff,#0072ff)',
+  'linear-gradient(135deg,#fc466b,#3f5efb)',
+  'linear-gradient(135deg,#d9a566,#a9713a,#5c3a1e)'];
 let _wallBg=S.get('wallBg','#eee8dc');
 let _snZMax=20,_snDragging=null,_snDragOX=0,_snDragOY=0,_snNewId=null,_dragSetup=false;
 let _snResizing=null,_snResizeStartX=0,_snResizeStartY=0,_snResizeStartW=0,_snResizeStartH=0;
+// Zoom/pan for the sticky-notes wall — the board is a large fixed virtual canvas (see
+// snBoardSize) so notes always have room to spread out; zoom/pan is a view-only preference,
+// not synced data, and resets to a sane default each time the wall is opened.
+const SN_BOARD_W=3000,SN_BOARD_H=2000,SN_ZOOM_MIN=0.3,SN_ZOOM_MAX=2;
+let _snZoom=1,_snPanX=0,_snPanY=0,_snPanning=false,_snPanStartX=0,_snPanStartY=0,_snPanOrigX=0,_snPanOrigY=0;
 
 function updateNotesBadge(){
   const b=document.getElementById('sb-notes-count-badge');
@@ -7336,9 +7476,22 @@ function snRot(id){
 }
 
 function snBoardSize(){
-  const bw=Math.max(window.innerWidth||800,400);
-  const bh=Math.max((window.innerHeight||600)-60,300);
-  return{bw,bh};
+  return{bw:SN_BOARD_W,bh:SN_BOARD_H};
+}
+
+function applyZoomPan(){
+  const board=document.getElementById('np-board');
+  if(board)board.style.transform=`translate(${_snPanX}px,${_snPanY}px) scale(${_snZoom})`;
+  const lbl=document.getElementById('np-zoom-lbl');
+  if(lbl)lbl.textContent=Math.round(_snZoom*100)+'%';
+}
+function snSetZoom(z){
+  _snZoom=Math.max(SN_ZOOM_MIN,Math.min(SN_ZOOM_MAX,z));
+  applyZoomPan();
+}
+function snResetView(){
+  _snZoom=1;_snPanX=0;_snPanY=0;
+  applyZoomPan();
 }
 
 function renderStickyNotes(){
@@ -7392,7 +7545,10 @@ function snDragStart(e){
   const isT=e.type==='touchstart';
   const pt=isT?e.touches[0]:e;
   const rect=card.getBoundingClientRect();
-  _snDragging=card;_snDragOX=pt.clientX-rect.left;_snDragOY=pt.clientY-rect.top;
+  // Board is CSS-scaled by _snZoom, so getBoundingClientRect() returns screen (post-scale)
+  // pixels — divide by zoom to get an offset expressed in the board's own local coordinate
+  // space, matching how left/top are stored and applied below.
+  _snDragging=card;_snDragOX=(pt.clientX-rect.left)/_snZoom;_snDragOY=(pt.clientY-rect.top)/_snZoom;
   card.style.zIndex=++_snZMax;
   const n=_stickyNotes.find(x=>x.id===card.dataset.snid);
   if(n)n.z=_snZMax;
@@ -7408,9 +7564,9 @@ function snDragMove(e){
   const board=document.getElementById('np-board');
   if(!board)return;
   const br=board.getBoundingClientRect();
-  let nx=pt.clientX-br.left-_snDragOX,ny=pt.clientY-br.top-_snDragOY;
-  nx=Math.max(0,Math.min(br.width-_snDragging.offsetWidth,nx));
-  ny=Math.max(0,Math.min(br.height-_snDragging.offsetHeight,ny));
+  let nx=(pt.clientX-br.left)/_snZoom-_snDragOX,ny=(pt.clientY-br.top)/_snZoom-_snDragOY;
+  nx=Math.max(0,Math.min(SN_BOARD_W-_snDragging.offsetWidth,nx));
+  ny=Math.max(0,Math.min(SN_BOARD_H-_snDragging.offsetHeight,ny));
   _snDragging.style.left=nx+'px';_snDragging.style.top=ny+'px';
 }
 
@@ -7443,8 +7599,10 @@ function snResizeMove(e){
   const isT=e.type==='touchmove';
   if(isT)e.preventDefault();
   const pt=isT?e.touches[0]:e;
-  const nw=Math.max(100,_snResizeStartW+(pt.clientX-_snResizeStartX));
-  const nh=Math.max(65,_snResizeStartH+(pt.clientY-_snResizeStartY));
+  // Mouse deltas arrive in screen pixels; divide by zoom to convert to the board's local
+  // (unscaled) units, since the card's own width/height are stored/applied in local units.
+  const nw=Math.max(100,_snResizeStartW+(pt.clientX-_snResizeStartX)/_snZoom);
+  const nh=Math.max(65,_snResizeStartH+(pt.clientY-_snResizeStartY)/_snZoom);
   _snResizing.style.width=nw+'px';
   _snResizing.style.height=nh+'px';
   _snResizing.style.minHeight='unset';
@@ -7462,10 +7620,37 @@ function snResizeEnd(){
   _snResizing=null;
 }
 
+function snPanStart(e){
+  if(e.target.closest('.sn-card'))return; // a note handles its own drag
+  if(e.type==='mousedown'&&e.button!==0)return;
+  const isT=e.type==='touchstart';
+  const pt=isT?e.touches[0]:e;
+  _snPanning=true;
+  _snPanStartX=pt.clientX;_snPanStartY=pt.clientY;
+  _snPanOrigX=_snPanX;_snPanOrigY=_snPanY;
+  document.getElementById('np-viewport')?.classList.add('is-panning');
+  if(!isT)e.preventDefault();
+}
+function snPanMove(e){
+  if(!_snPanning)return;
+  const isT=e.type==='touchmove';
+  if(isT)e.preventDefault();
+  const pt=isT?e.touches[0]:e;
+  _snPanX=_snPanOrigX+(pt.clientX-_snPanStartX);
+  _snPanY=_snPanOrigY+(pt.clientY-_snPanStartY);
+  applyZoomPan();
+}
+function snPanEnd(){
+  if(!_snPanning)return;
+  _snPanning=false;
+  document.getElementById('np-viewport')?.classList.remove('is-panning');
+}
+
 function initNoteDrag(){
   if(_dragSetup)return;
   const board=document.getElementById('np-board');
-  if(!board)return;
+  const viewport=document.getElementById('np-viewport');
+  if(!board||!viewport)return;
   _dragSetup=true;
   board.addEventListener('mousedown',snDragStart);
   board.addEventListener('touchstart',snDragStart,{passive:false});
@@ -7479,6 +7664,15 @@ function initNoteDrag(){
   document.addEventListener('touchmove',snResizeMove,{passive:false});
   document.addEventListener('mouseup',snResizeEnd);
   document.addEventListener('touchend',snResizeEnd);
+  // Pan the wall by dragging any empty area (not a note), and zoom with the scroll wheel —
+  // matches the "extendable, move, zoom" behavior requested for the notes wall.
+  viewport.addEventListener('mousedown',snPanStart);
+  viewport.addEventListener('touchstart',snPanStart,{passive:false});
+  document.addEventListener('mousemove',snPanMove);
+  document.addEventListener('touchmove',snPanMove,{passive:false});
+  document.addEventListener('mouseup',snPanEnd);
+  document.addEventListener('touchend',snPanEnd);
+  viewport.addEventListener('wheel',e=>{e.preventDefault();snSetZoom(_snZoom+(e.deltaY<0?0.1:-0.1));},{passive:false});
 }
 
 function addStickyNote(){
@@ -7492,26 +7686,33 @@ function addStickyNote(){
   setTimeout(()=>{const ta=document.querySelector(`.sn-ta[data-snid="${n.id}"]`);if(ta)ta.focus();},80);
 }
 
-function applyWallBg(color){
-  _wallBg=color;
-  S.set('wallBg',color);
+function applyWallBg(css){
+  _wallBg=css;
+  S.set('wallBg',css);
   const wall=document.getElementById('np-fullwall');
-  if(wall)wall.style.backgroundColor=color;
-  document.querySelectorAll('.np-wall-bg-btn').forEach(b=>b.classList.toggle('on',b.dataset.wb===color));
+  if(wall){
+    // Solid hex colors keep the subtle dot-grid pattern (background-color layers under it);
+    // gradients need the full `background` shorthand, which replaces the grid entirely.
+    if(css.startsWith('#')){wall.style.background='';wall.style.backgroundColor=css;}
+    else{wall.style.backgroundColor='';wall.style.background=css;}
+  }
+  document.querySelectorAll('.np-wall-bg-btn').forEach(b=>b.classList.toggle('on',b.dataset.wb===css));
 }
 
 function renderWallBgDots(){
   const wrap=document.getElementById('np-wall-bg-dots');
   if(!wrap)return;
-  wrap.innerHTML=WALL_BG_COLORS.map(c=>`<div class="np-wall-bg-btn${c===_wallBg?' on':''}" data-wb="${c}" style="background:${c}" title="Wall color"></div>`).join('');
+  wrap.innerHTML=WALL_BG_COLORS.map(c=>`<div class="np-wall-bg-btn${c===_wallBg?' on':''}" data-wb="${c}" style="background:${c}" title="Wall background"></div>`).join('');
 }
 
 function openNotepad(){
   document.getElementById('notepad-modal')?.classList.add('open');
+  snResetView();
   setTimeout(()=>{
     renderStickyNotes();
     renderWallBgDots();
     applyWallBg(_wallBg);
+    applyZoomPan();
     document.querySelectorAll('.np-cdot').forEach(d=>d.classList.toggle('on',d.dataset.nc===_snColor));
   },30);
 }
