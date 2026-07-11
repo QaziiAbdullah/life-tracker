@@ -1525,6 +1525,19 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
     <div id="weather-card" style="display:none"><div id="w-icon"></div><div id="w-temp"></div><div id="w-desc"></div><div id="w-meta"></div><div id="w-loc"></div></div>
     <div id="weather-ask" style="display:none"><button id="w-deny"></button><button id="w-allow"></button></div>
 
+    <!-- LOCATION BLOCKED HELP -->
+    <div class="overlay" id="loc-help-modal">
+      <div class="modal" style="max-width:400px">
+        <div class="modal-t">📍 Location Access is Blocked</div>
+        <div class="set-hint" style="margin-bottom:12px">Your browser won't ask again automatically once you've said no — you have to turn it back on yourself. Follow the steps for your device:</div>
+        <div id="loc-help-steps" style="background:var(--card2);border-radius:10px;padding:12px 14px;font-size:12px;line-height:1.9;color:var(--text)"></div>
+        <div class="mbtn">
+          <button class="btn btn-g" id="loc-help-off">Don't ask again</button>
+          <button class="btn btn-p" id="loc-help-retry">🔄 I fixed it — Try Again</button>
+        </div>
+      </div>
+    </div>
+
     <!-- DRAG ZONE: reorderable dashboard sections -->
     <div id="daily-drag-zone">
 
@@ -3779,11 +3792,13 @@ document.addEventListener('click',function(e){
   if(id==='w-refresh'){fetchWeather();return;}
   if(id==='sb-weather-retry-btn'){
     // Browsers won't re-show the permission prompt once denied - retrying silently
-    // would just fail again, so tell the user where to fix it instead of looping forever.
-    if(t.dataset.wreason==='denied'){toast('Location blocked — enable it in your browser\'s site settings, then tap again','w');return;}
+    // would just fail again, so show real step-by-step instructions instead of looping forever.
+    if(t.dataset.wreason==='denied'){openLocHelpModal();return;}
     _weatherPref=null;S.set('weatherPref',null);fetchWeather();
     return;
   }
+  if(id==='loc-help-off'){_weatherPref='off';S.set('weatherPref','off');closeM('loc-help-modal');return;}
+  if(id==='loc-help-retry'){closeM('loc-help-modal');_weatherPref=null;S.set('weatherPref',null);fetchWeather();return;}
   // Edit transaction
   const defEl=t.closest('[data-def]');
   if(defEl){e.stopPropagation();openEditFinance(defEl.dataset.def);return;}
@@ -6050,6 +6065,28 @@ function applySbIcon(){
 }
 
 // ===== WEATHER =====
+// Detects the browser/OS combo well enough to give real, clickable-in-spirit steps instead
+// of a generic "check your settings" — the exact menu path differs a lot by platform and
+// getting it wrong just sends the user hunting.
+function openLocHelpModal(){
+  const ua=navigator.userAgent||'';
+  const isIOS=/iPhone|iPad|iPod/.test(ua);
+  const isAndroid=/Android/.test(ua);
+  const isSafari=/^((?!chrome|android).)*safari/i.test(ua);
+  const isChrome=/Chrome/.test(ua)&&!/Edg|OPR/.test(ua);
+  let steps;
+  if(isIOS&&isSafari){
+    steps=['Open the iPhone <b>Settings</b> app','Scroll down to <b>Safari</b> → <b>Location</b>','Set it to <b>Allow</b> (or <b>Ask Next Time</b>)','If you added this app to your Home Screen, also check <b>Settings → Privacy & Security → Location Services</b> is turned on for Safari'];
+  }else if(isIOS&&isChrome){
+    steps=['Open the iPhone <b>Settings</b> app','Scroll down to <b>Chrome</b> → <b>Location</b>','Set it to <b>Allow</b> (or <b>Ask Next Time</b>)'];
+  }else if(isAndroid){
+    steps=['Tap the <b>🔒 lock icon</b> next to the address bar at the top','Tap <b>Permissions</b> → <b>Location</b>','Set it to <b>Allow</b>','If that doesn\'t work: Android <b>Settings → Apps → Chrome → Permissions → Location</b> → Allow'];
+  }else{
+    steps=['Click the <b>🔒 lock / info icon</b> at the left of the address bar','Find <b>Location</b> in the site permissions list','Change it to <b>Allow</b>','Reload the page'];
+  }
+  document.getElementById('loc-help-steps').innerHTML='<ol style="margin:0;padding-left:18px">'+steps.map(s=>`<li style="margin-bottom:4px">${s}</li>`).join('')+'</ol>';
+  openM('loc-help-modal');
+}
 function initWeather(){
   // Auto-fetch weather (sidebar only); no dashboard prompt needed
   if(_weatherPref==='off'){
