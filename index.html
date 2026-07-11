@@ -1911,23 +1911,26 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
     </div>
   </div>
 
-  <!-- Smart Breakdown (auto-calculated, all-time — cash/bank split needs the "Paid With" field on each transaction; switch it off anytime to go back to the plain view above) -->
+  <!-- Smart Breakdown (auto-calculated — cash/bank split needs the "Paid With" field on each transaction; switch it off anytime to go back to the plain view above) -->
   <div class="card" id="fin-smart-panel" style="display:none">
-    <div class="card-h"><div class="card-t">🧠 Smart Breakdown</div><div style="font-size:10px;color:var(--muted)">All time · auto-calculated</div></div>
+    <div class="card-h"><div class="card-t">🧠 Smart Breakdown</div><div style="font-size:10px;color:var(--muted)" id="fin-smart-sub">auto-calculated</div></div>
     <div class="srow" style="grid-template-columns:repeat(5,1fr)">
-      <div class="sc cg"><div class="sv" id="fs-cash" style="color:#10b981">0</div><div class="sl">Cash in Hand</div></div>
-      <div class="sc cp"><div class="sv" id="fs-bank">0</div><div class="sl">Bank Balance</div></div>
-      <div class="sc cb"><div class="sv" id="fs-invest" style="color:#60a5fa">0</div><div class="sl">Investment Balance</div></div>
-      <div class="sc co"><div class="sv" id="fs-salary" style="color:#fbbf24">0</div><div class="sl">Total Salary Earned</div></div>
-      <div class="sc cr"><div class="sv" id="fs-biz" style="color:#f87171">0</div><div class="sl">Business Investment</div></div>
+      <div class="sc cg" title="Running total — not tied to the period tabs above"><div class="sv" id="fs-cash" style="color:#10b981">0</div><div class="sl">Cash in Hand<br><span style="font-weight:400;opacity:.6;font-size:9px">(current balance)</span></div></div>
+      <div class="sc cp" title="Running total — not tied to the period tabs above"><div class="sv" id="fs-bank">0</div><div class="sl">Bank Balance<br><span style="font-weight:400;opacity:.6;font-size:9px">(current balance)</span></div></div>
+      <div class="sc cb" title="Running total — not tied to the period tabs above. Includes unsold Facebook/Amazon/Trading/Others listings."><div class="sv" id="fs-invest" style="color:#60a5fa">0</div><div class="sl">Investment Balance<br><span style="font-weight:400;opacity:.6;font-size:9px">(current balance)</span></div></div>
+      <div class="sc co" title="Matches the period tab selected above (Today / This Month / This Year / All Time)"><div class="sv" id="fs-salary" style="color:#fbbf24">0</div><div class="sl">Salary Earned<br><span style="font-weight:400;opacity:.6;font-size:9px" id="fs-salary-period">this month</span></div></div>
+      <div class="sc cr" title="Matches the period tab selected above (Today / This Month / This Year / All Time)"><div class="sv" id="fs-biz" style="color:#f87171">0</div><div class="sl">Business Expenses<br><span style="font-weight:400;opacity:.6;font-size:9px" id="fs-biz-period">this month</span></div></div>
     </div>
   </div>
 
-  <!-- Stats row -->
+  <!-- Stats row — Income/Expenses/Savings Rate follow the period tabs above (Today/Month/Year/All Time).
+       Net Balance is different on purpose: it's your actual cash + bank holdings right now,
+       not an income-minus-expense figure for the period, so it doesn't jump around as you
+       switch tabs. -->
   <div class="srow" style="grid-template-columns:repeat(4,1fr)">
     <div class="sc cg"><div class="sv" id="f-income" style="color:#10b981">0</div><div class="sl">Total Income</div><div class="sc-sub" id="f-inc-sub">0 transactions</div></div>
     <div class="sc cr"><div class="sv" id="f-expense" style="color:#f87171">0</div><div class="sl">Total Expenses</div><div class="sc-sub" id="f-exp-sub">0 transactions</div></div>
-    <div class="sc cp"><div class="sv" id="f-net">0</div><div class="sl">Net Balance</div><div class="sc-sub" id="f-net-sub">income − expenses</div></div>
+    <div class="sc cp" title="Your actual cash + bank holdings right now — not affected by the period tabs"><div class="sv" id="f-net">0</div><div class="sl">Net Balance</div><div class="sc-sub" id="f-net-sub">cash + bank combined</div></div>
     <div class="sc co"><div class="sv" id="f-save" style="color:#fbbf24">0%</div><div class="sl">Savings Rate</div><div class="sc-sub" id="f-save-sub">of income saved</div></div>
   </div>
 
@@ -4427,11 +4430,18 @@ function renderFinanceSmartPanel(){
   const stateLbl=document.getElementById('fin-smart-state');
   if(stateLbl)stateLbl.textContent=_finSmartView?'On':'Off';
   if(panel)panel.style.display=_finSmartView?'':'none';
-  if(!_finSmartView)return;
-  let cash=0,bank=0,invest=0,salary=0,biz=0;
+  if(!_finSmartView)return{cash:0,bank:0,invest:0};
+  // Cash/Bank/Investment are running BALANCES — they always use every transaction ever
+  // recorded, regardless of which period tab is selected above, because "how much do I
+  // have right now" can't be scoped to "this month" without a separate starting balance.
+  let cash=0,bank=0,invest=0;
+  // Salary/Business are FLOWS — they follow the selected period tab (Today/Month/Year/All
+  // Time), same as Total Income/Expenses below, so switching tabs updates them together
+  // instead of Salary staying stuck on an all-time total while everything else changes.
+  let salary=0,biz=0;
+  const periodFilter=finGetPeriod();
   finance.forEach(t=>{
     if(t.type==='transfer'){
-      // Deduct from source account, add to destination account
       const acc={'cash':0,'bank':0,'investment':0};
       if(t.transferFrom in acc)acc[t.transferFrom]-=t.amount;
       if(t.transferTo in acc)acc[t.transferTo]+=t.amount;
@@ -4442,21 +4452,29 @@ function renderFinanceSmartPanel(){
     const pm=t.paymentMethod||'bank';
     const signed=t.type==='income'?t.amount:-t.amount;
     if(pm==='cash')cash+=signed;else if(pm==='investment')invest+=signed;else bank+=signed;
+    if(!periodFilter(t))return;
     if(t.type==='income'&&t.source==='salary')salary+=t.amount;
     if(t.type==='expense'&&t.source==='business')biz+=t.amount;
   });
-  // Unsold Facebook/Amazon/Trading listings are cash tied up in inventory — count them
-  // toward the Investment Balance until they're marked sold (at which point they convert
-  // to real income and drop out of this sum automatically).
+  // Unsold Facebook/Amazon/Trading/Others listings are cash tied up in inventory — count
+  // them toward the Investment Balance until they're marked sold (at which point they
+  // convert to real income and drop out of this sum automatically). This is a current
+  // balance too, so it's also unaffected by the period tabs.
   invest+=fbListings.filter(l=>!l.sold).reduce((s,l)=>s+l.price,0);
   document.getElementById('fs-cash').textContent=currSym+' '+fmtMoney(cash);
   document.getElementById('fs-bank').textContent=currSym+' '+fmtMoney(bank);
   document.getElementById('fs-invest').textContent=currSym+' '+fmtMoney(invest);
   document.getElementById('fs-salary').textContent=currSym+' '+fmtMoney(salary);
   document.getElementById('fs-biz').textContent=currSym+' '+fmtMoney(biz);
+  const periodLbl={today:'today',month:'this month',year:'this year',all:'all time'}[finPeriod]||'this month';
+  const salPeriodEl=document.getElementById('fs-salary-period'),bizPeriodEl=document.getElementById('fs-biz-period'),subEl=document.getElementById('fin-smart-sub');
+  if(salPeriodEl)salPeriodEl.textContent=periodLbl;
+  if(bizPeriodEl)bizPeriodEl.textContent=periodLbl;
+  if(subEl)subEl.textContent='balances are current · salary/business shown for '+periodLbl;
+  return{cash,bank,invest};
 }
 function renderFinance(){
-  renderFinanceSmartPanel();
+  const{cash:_holdCash,bank:_holdBank}=renderFinanceSmartPanel();
   renderSalaryReminder();
   const filter=finGetPeriod();
   const allTxs=finance.filter(filter);
@@ -4475,10 +4493,14 @@ function renderFinance(){
   document.getElementById('f-inc-sub').textContent=inc.length+' transaction'+(inc.length!==1?'s':'');
   document.getElementById('f-expense').textContent=currSym+' '+fmtMoney(totalExp);
   document.getElementById('f-exp-sub').textContent=exp.length+' transaction'+(exp.length!==1?'s':'');
+  // Net Balance intentionally shows actual cash + bank holdings (a running total), not
+  // this period's income-minus-expense — that keeps it stable as you switch period tabs,
+  // instead of jumping around like a flow figure would.
+  const holdings=_holdCash+_holdBank;
   const netEl=document.getElementById('f-net');
-  netEl.textContent=(net>=0?'+ ':'− ')+currSym+' '+fmtMoney(Math.abs(net));
-  netEl.className='sv '+(net>0?'net-pos':net<0?'net-neg':'');
-  document.getElementById('f-net-sub').textContent=net>=0?'surplus 💚':'deficit 🔴';
+  netEl.textContent=(holdings>=0?'+ ':'− ')+currSym+' '+fmtMoney(Math.abs(holdings));
+  netEl.className='sv '+(holdings>0?'net-pos':holdings<0?'net-neg':'');
+  document.getElementById('f-net-sub').textContent='cash + bank combined';
   document.getElementById('f-save').textContent=saveRate+'%';
   document.getElementById('f-save-sub').textContent=saveRate>=0?saveRate+'% of income saved':'spending more than earning';
   document.getElementById('f-inc-total-lbl').textContent=currSym+' '+fmtMoney(totalInc);
