@@ -1525,19 +1525,6 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
     <div id="weather-card" style="display:none"><div id="w-icon"></div><div id="w-temp"></div><div id="w-desc"></div><div id="w-meta"></div><div id="w-loc"></div></div>
     <div id="weather-ask" style="display:none"><button id="w-deny"></button><button id="w-allow"></button></div>
 
-    <!-- LOCATION BLOCKED HELP -->
-    <div class="overlay" id="loc-help-modal">
-      <div class="modal" style="max-width:400px">
-        <div class="modal-t">📍 Location Access is Blocked</div>
-        <div class="set-hint" style="margin-bottom:12px">Your browser won't ask again automatically once you've said no — you have to turn it back on yourself. Follow the steps for your device:</div>
-        <div id="loc-help-steps" style="background:var(--card2);border-radius:10px;padding:12px 14px;font-size:12px;line-height:1.9;color:var(--text)"></div>
-        <div class="mbtn">
-          <button class="btn btn-g" id="loc-help-off">Don't ask again</button>
-          <button class="btn btn-p" id="loc-help-retry">🔄 I fixed it — Try Again</button>
-        </div>
-      </div>
-    </div>
-
     <!-- DRAG ZONE: reorderable dashboard sections -->
     <div id="daily-drag-zone">
 
@@ -2480,6 +2467,19 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
     <div class="mbtn">
       <button class="btn btn-g" id="tt-hours-cancel">Cancel</button>
       <button class="btn btn-p" id="tt-hours-save">Save Hours</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOCATION BLOCKED HELP -->
+<div class="overlay" id="loc-help-modal">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-t">📍 Location Access is Blocked</div>
+    <div class="set-hint" style="margin-bottom:12px">Your browser won't ask again automatically once you've said no — you have to turn it back on yourself. Follow the steps for your device:</div>
+    <div id="loc-help-steps" style="background:var(--card2);border-radius:10px;padding:12px 14px;font-size:12px;line-height:1.9;color:var(--text)"></div>
+    <div class="mbtn">
+      <button class="btn btn-g" id="loc-help-off">Don't ask again</button>
+      <button class="btn btn-p" id="loc-help-retry">🔄 I fixed it — Try Again</button>
     </div>
   </div>
 </div>
