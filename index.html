@@ -3596,9 +3596,9 @@ document.addEventListener('click',function(e){
   if(npDot&&npDot.dataset.nc){_snColor=npDot.dataset.nc;document.querySelectorAll('.np-cdot').forEach(d=>d.classList.toggle('on',d.dataset.nc===_snColor));return;}
   const wallBgBtn=t.closest('.np-wall-bg-btn');
   if(wallBgBtn&&wallBgBtn.dataset.wb){applyWallBg(wallBgBtn.dataset.wb);return;}
-  if(id==='np-zoom-in'){snSetZoom(_snZoom+0.15);return;}
-  if(id==='np-zoom-out'){snSetZoom(_snZoom-0.15);return;}
-  if(id==='np-zoom-reset'){snResetView();return;}
+  if(t.id==='np-zoom-in'){snSetZoom(_snZoom+0.15);return;}
+  if(t.id==='np-zoom-out'){snSetZoom(_snZoom-0.15);return;}
+  if(t.id==='np-zoom-reset'){snResetView();return;}
   const snDel=t.closest('.sn-x');
   if(snDel&&snDel.dataset.snid){_stickyNotes=_stickyNotes.filter(n=>n.id!==snDel.dataset.snid);S.set('stickyNotes',_stickyNotes);renderStickyNotes();return;}
   const snNxt=t.closest('.sn-next');
