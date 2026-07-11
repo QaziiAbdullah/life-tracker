@@ -636,6 +636,7 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px 20px;min-height:100vh
 .fmt-btn.on.exp{background:rgba(248,113,113,.12);border-color:#f87171;color:#f87171}
 .fmt-btn.on.loan{background:rgba(251,191,36,.12);border-color:#fbbf24;color:#fbbf24}
 .fmt-btn.on.transfer{background:rgba(139,92,246,.12);border-color:#8b5cf6;color:#8b5cf6}
+.fmt-btn.on.fbl{background:rgba(59,130,246,.15);border-color:#3b82f6;color:#3b82f6}
 .fin-add-link{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--pl);cursor:pointer;padding:5px 0 2px;opacity:.8;user-select:none;font-weight:600}
 .fin-add-link:hover{opacity:1;text-decoration:underline}
 .fin-add-form{background:var(--card2);border-radius:9px;padding:10px;border:1px solid var(--border);margin-top:4px}
@@ -1883,7 +1884,7 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
       <button class="btn btn-p" id="bf-inc">+ Add Income</button>
       <button class="btn btn-g btn-sm" id="bf-loan" style="border-color:#fbbf24;color:#fbbf24">🏦 Loan</button>
       <button class="btn btn-g btn-sm" id="bf-transfer" style="border-color:#8b5cf6;color:#8b5cf6">💸 Transfer</button>
-      <button class="btn btn-g btn-sm" id="bf-fbl" style="border-color:#3b82f6;color:#3b82f6">📦 FB Listings</button>
+      <button class="btn btn-g btn-sm" id="bf-fbl" style="border-color:#3b82f6;color:#3b82f6">📦 Listings</button>
     </div>
   </div>
 
@@ -2162,8 +2163,13 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
 <!-- FACEBOOK MARKETPLACE LISTINGS -->
 <div class="overlay" id="fbl-modal">
   <div class="modal" style="max-width:480px">
-    <div class="modal-t">📦 Facebook Marketplace Listings</div>
-    <div class="set-hint" style="margin-bottom:10px">Track what you have listed for sale — mark items sold and add the sale straight to your Facebook Marketplace income.</div>
+    <div class="modal-t" id="fbl-modal-title">📦 Business Listings</div>
+    <div class="set-hint" style="margin-bottom:8px">Track what you have listed for sale. Unsold listings count toward your Investment Balance below (Smart Breakdown) — the cash tied up in inventory. Mark an item sold to add the sale straight to income.</div>
+    <div style="display:flex;gap:6px;margin-bottom:12px" id="fbl-src-tabs">
+      <button type="button" class="fmt-btn fbl on" data-fbl-src="facebook" style="flex:1;font-size:11px">📦 Facebook</button>
+      <button type="button" class="fmt-btn fbl" data-fbl-src="amazon" style="flex:1;font-size:11px">🛒 Amazon</button>
+      <button type="button" class="fmt-btn fbl" data-fbl-src="trading" style="flex:1;font-size:11px">📈 Trading</button>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 90px;gap:8px">
       <div class="fg"><label>Product Name</label><input class="fi" id="fbl-name" placeholder="e.g. iPhone 13, Office Chair..."></div>
       <div class="fg"><label>Price</label><input class="fi" type="number" id="fbl-price" placeholder="0" min="0"></div>
@@ -2732,6 +2738,8 @@ let timetable=S.get('timetable',[]);
 let ttWakeStart=S.get('ttWakeStart',6);
 let ttWakeEnd=S.get('ttWakeEnd',22);
 let fbListings=S.get('fbListings',[]);
+let _fblSrc='facebook';
+const FBL_SRC_META={facebook:{icon:'📦',label:'Facebook Marketplace'},amazon:{icon:'🛒',label:'Amazon'},trading:{icon:'📈',label:'Money Trading'}};
 let visionItems=S.get('visionItems',[]);
 let _ttWeekOff=0,_ttView='day',_selTTColor='#7c3aed',_selVBColor='#7c3aed',_selVBCat='career',_vbEditId=null,_ttEditId=null,_vbFileData=null;
 let _loggedIn=false; // set from _syncToken in initAuth()
@@ -3818,15 +3826,17 @@ document.addEventListener('click',function(e){
   if(id==='bf-exp'||id==='bf-exp2'||id==='fw-exp-btn'){openFinanceModal('expense');return;}
   if(id==='bf-loan'){openFinanceModal('loan');return;}
   if(id==='bf-transfer'){openFinanceModal('transfer');return;}
-  if(id==='bf-fbl'){openM('fbl-modal');renderFbListings();return;}
+  if(id==='bf-fbl'){openM('fbl-modal');document.querySelectorAll('#fbl-src-tabs [data-fbl-src]').forEach(b=>b.classList.toggle('on',b.dataset.fblSrc===_fblSrc));renderFbListings();return;}
   if(id==='fbl-close'){closeM('fbl-modal');return;}
   if(id==='fbl-add-btn'){addFbListing();return;}
+  const fblSrcTab=t.closest('[data-fbl-src]');
+  if(fblSrcTab){_fblSrc=fblSrcTab.dataset.fblSrc;document.querySelectorAll('#fbl-src-tabs [data-fbl-src]').forEach(b=>b.classList.toggle('on',b.dataset.fblSrc===_fblSrc));renderFbListings();return;}
   const fblSold=t.closest('[data-fbl-sold]');
   if(fblSold){toggleFbListingSold(fblSold.dataset.fblSold);return;}
   const fblInc=t.closest('[data-fbl-inc]');
-  if(fblInc){const item=fbListings.find(x=>x.id===fblInc.dataset.fblInc);if(item){closeM('fbl-modal');openFinanceModal('income');setTimeout(()=>{document.getElementById('fm-src').value='facebook';document.getElementById('fm-amount').value=item.price;document.getElementById('fm-note').value=item.name;},80);}return;}
+  if(fblInc){const item=fbListings.find(x=>x.id===fblInc.dataset.fblInc);if(item){closeM('fbl-modal');openFinanceModal('income');setTimeout(()=>{document.getElementById('fm-src').value=item.source||'facebook';document.getElementById('fm-amount').value=item.price;document.getElementById('fm-note').value=item.name;},80);}return;}
   const fblDel=t.closest('[data-fbl-del]');
-  if(fblDel){fbListings=fbListings.filter(x=>x.id!==fblDel.dataset.fblDel);S.set('fbListings',fbListings);renderFbListings();return;}
+  if(fblDel){fbListings=fbListings.filter(x=>x.id!==fblDel.dataset.fblDel);S.set('fbListings',fbListings);renderFbListings();renderFinanceSmartPanel();return;}
   const ldEl=t.closest('[data-ld]');
   if(ldEl){_selLD=ldEl.dataset.ld;document.querySelectorAll('[data-ld]').forEach(b=>b.classList.toggle('on',b.dataset.ld===_selLD));return;}
   if(t.dataset.loanReturn){const idx=finance.findIndex(f=>f.id===t.dataset.loanReturn);if(idx>-1){finance[idx].returned=!finance[idx].returned;S.set('finance',finance);renderFinance();}return;}
@@ -4381,6 +4391,10 @@ function renderFinanceSmartPanel(){
     if(t.type==='income'&&t.source==='salary')salary+=t.amount;
     if(t.type==='expense'&&t.source==='business')biz+=t.amount;
   });
+  // Unsold Facebook/Amazon/Trading listings are cash tied up in inventory — count them
+  // toward the Investment Balance until they're marked sold (at which point they convert
+  // to real income and drop out of this sum automatically).
+  invest+=fbListings.filter(l=>!l.sold).reduce((s,l)=>s+l.price,0);
   document.getElementById('fs-cash').textContent=currSym+' '+fmtMoney(cash);
   document.getElementById('fs-bank').textContent=currSym+' '+fmtMoney(bank);
   document.getElementById('fs-invest').textContent=currSym+' '+fmtMoney(invest);
@@ -4824,28 +4838,33 @@ function addFbListing(){
   const note=document.getElementById('fbl-note').value.trim();
   if(!name){toast('Enter a product name','w');return;}
   if(!price||price<=0){toast('Enter a valid price','w');return;}
-  fbListings.unshift({id:'fbl_'+Date.now(),name,price:Math.round(price),note,sold:false,date:today()});
+  fbListings.unshift({id:'fbl_'+Date.now(),name,price:Math.round(price),note,sold:false,date:today(),source:_fblSrc});
   S.set('fbListings',fbListings);
   document.getElementById('fbl-name').value='';
   document.getElementById('fbl-price').value='';
   document.getElementById('fbl-note').value='';
   renderFbListings();
-  toast('📦 Listing added!','s');
+  renderFinanceSmartPanel(); // unsold listing value counts toward Investment Balance immediately
+  toast((FBL_SRC_META[_fblSrc]?.icon||'📦')+' Listing added — counted in Investment Balance!','s');
 }
 function toggleFbListingSold(id){
   const item=fbListings.find(x=>x.id===id);
-  if(item){item.sold=!item.sold;S.set('fbListings',fbListings);renderFbListings();}
+  if(item){item.sold=!item.sold;S.set('fbListings',fbListings);renderFbListings();renderFinanceSmartPanel();}
 }
 function renderFbListings(){
   const wrap=document.getElementById('fbl-list');
+  const titleEl=document.getElementById('fbl-modal-title');
   if(!wrap)return;
-  if(!fbListings.length){wrap.innerHTML='<div class="f-empty">No listings yet.<br>Add a product above to start tracking.</div>';return;}
-  const sorted=[...fbListings].sort((a,b)=>(a.sold===b.sold?0:a.sold?1:-1)||b.date.localeCompare(a.date));
+  const meta=FBL_SRC_META[_fblSrc]||FBL_SRC_META.facebook;
+  if(titleEl)titleEl.textContent=meta.icon+' '+meta.label+' Listings';
+  const items=fbListings.filter(it=>(it.source||'facebook')===_fblSrc);
+  if(!items.length){wrap.innerHTML='<div class="f-empty">No listings yet.<br>Add a product above to start tracking.</div>';return;}
+  const sorted=[...items].sort((a,b)=>(a.sold===b.sold?0:a.sold?1:-1)||b.date.localeCompare(a.date));
   wrap.innerHTML=sorted.map(it=>`<div class="f-tx-item" style="${it.sold?'opacity:.55':''}">
-    <div class="f-tx-icon" style="background:#3b82f618">📦</div>
+    <div class="f-tx-icon" style="background:#3b82f618">${meta.icon}</div>
     <div class="f-tx-info">
       <div class="f-tx-name">${escapeHtml(it.name)}${it.note?' — '+escapeHtml(it.note):''}</div>
-      <div class="f-tx-meta">${it.date} · ${it.sold?'<span style="color:#34d399">✅ Sold</span>':'<span style="color:#fbbf24">🟢 Listed</span>'}</div>
+      <div class="f-tx-meta">${it.date} · ${it.sold?'<span style="color:#34d399">✅ Sold</span>':'<span style="color:#fbbf24">🟢 Listed (in Investment)</span>'}</div>
     </div>
     <div class="f-tx-amt" style="color:#3b82f6">${currSym} ${fmtMoney(it.price)}</div>
     ${it.sold?'':`<button class="f-tx-del" data-fbl-inc="${it.id}" title="Add sale as income" style="color:#34d399">💰</button>`}
