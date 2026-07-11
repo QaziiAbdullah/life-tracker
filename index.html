@@ -1897,6 +1897,20 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
     <button class="btn btn-g btn-sm" id="fin-smart-toggle" style="margin-left:auto">🧠 Smart Breakdown: <span id="fin-smart-state">On</span></button>
   </div>
 
+  <!-- Monthly Salary reminder — shown only when a salary is configured and not yet logged this month -->
+  <div class="card" id="fin-salary-reminder" style="display:none;margin-bottom:14px;border-color:rgba(16,185,129,.4)">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="font-size:24px">💼</div>
+        <div>
+          <div style="font-size:13px;font-weight:800;color:var(--text)">This month's salary isn't logged yet</div>
+          <div style="font-size:11px;color:var(--muted)" id="fin-salary-reminder-sub"></div>
+        </div>
+      </div>
+      <button class="btn btn-p btn-sm" id="fin-salary-add-btn">+ Add This Month's Salary</button>
+    </div>
+  </div>
+
   <!-- Smart Breakdown (auto-calculated, all-time — cash/bank split needs the "Paid With" field on each transaction; switch it off anytime to go back to the plain view above) -->
   <div class="card" id="fin-smart-panel" style="display:none">
     <div class="card-h"><div class="card-t">🧠 Smart Breakdown</div><div style="font-size:10px;color:var(--muted)">All time · auto-calculated</div></div>
@@ -2169,6 +2183,7 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
       <button type="button" class="fmt-btn fbl on" data-fbl-src="facebook" style="flex:1;font-size:11px">📦 Facebook</button>
       <button type="button" class="fmt-btn fbl" data-fbl-src="amazon" style="flex:1;font-size:11px">🛒 Amazon</button>
       <button type="button" class="fmt-btn fbl" data-fbl-src="trading" style="flex:1;font-size:11px">📈 Trading</button>
+      <button type="button" class="fmt-btn fbl" data-fbl-src="other" style="flex:1;font-size:11px">🗂️ Others</button>
     </div>
     <div style="display:grid;grid-template-columns:1fr 90px;gap:8px">
       <div class="fg"><label>Product Name</label><input class="fi" id="fbl-name" placeholder="e.g. iPhone 13, Office Chair..."></div>
@@ -2264,6 +2279,18 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
       <div class="set-row">
         <div><div class="set-lbl">Current Currency</div><div class="set-hint" id="set-cur-hint">Loading...</div></div>
         <button class="btn btn-p btn-sm" id="set-change-cur">Change Currency 🌍</button>
+      </div>
+    </div>
+    <!-- Monthly Salary -->
+    <div class="set-section">
+      <div class="set-sh">💼 Monthly Salary</div>
+      <div class="set-row" style="display:block">
+        <div style="margin-bottom:10px"><div class="set-lbl">Set your salary once</div><div class="set-hint">Every month a reminder appears on the Finance page with a one-tap "Add This Month's Salary" button — no need to fill the form from scratch each time.</div></div>
+        <div style="display:grid;grid-template-columns:1fr 110px;gap:8px;align-items:end">
+          <div class="fg" style="margin:0"><label>Salary Amount</label><input class="fi" type="number" id="set-salary-amt" placeholder="0" min="0"></div>
+          <button class="btn btn-p btn-sm" id="set-salary-save" style="height:38px;justify-content:center">Save</button>
+        </div>
+        <label style="display:flex;align-items:center;gap:6px;margin-top:10px;font-size:11px;color:var(--muted);cursor:pointer"><input type="checkbox" id="set-salary-enabled"> Remind me every month</label>
       </div>
     </div>
     <!-- Section Names -->
@@ -2652,7 +2679,8 @@ function _applyRemoteChanges(changedKeys){
     else if(k==='sectionNames'){sectionNames=S.get('sectionNames',sectionNames);if(typeof applySectionNames==='function')applySectionNames();needsAll=true;}
     else if(k==='timetable'){timetable=S.get('timetable',[]);if(document.getElementById('view-timetable')?.classList.contains('on')&&typeof renderTimetable==='function')renderTimetable();}
     else if(k==='ttWakeStart'||k==='ttWakeEnd'){ttWakeStart=S.get('ttWakeStart',6);ttWakeEnd=S.get('ttWakeEnd',22);if(document.getElementById('view-timetable')?.classList.contains('on')&&typeof renderTimetable==='function')renderTimetable();}
-    else if(k==='fbListings'){fbListings=S.get('fbListings',[]);if(document.getElementById('fbl-modal')?.classList.contains('open')&&typeof renderFbListings==='function')renderFbListings();}
+    else if(k==='fbListings'){fbListings=S.get('fbListings',[]);if(document.getElementById('fbl-modal')?.classList.contains('open')&&typeof renderFbListings==='function')renderFbListings();if(document.getElementById('view-finance')?.classList.contains('on')&&typeof renderFinance==='function')renderFinance();}
+    else if(k==='monthlySalary'){monthlySalary=S.get('monthlySalary',{amount:0,enabled:false});if(document.getElementById('view-finance')?.classList.contains('on')&&typeof renderFinance==='function')renderFinance();if(document.getElementById('view-settings')?.classList.contains('on')&&typeof renderSettings==='function')renderSettings();}
     else if(k==='theme'){currentTheme=S.get('theme','professional');if(typeof applyTheme==='function')applyTheme(currentTheme,true,true);}
     else if(k==='autoTheme'){autoOn=S.get('autoTheme',false);}
     else if(k==='wallBg'){_wallBg=S.get('wallBg','#eee8dc');if(document.getElementById('notepad-modal')?.classList.contains('open')&&typeof applyWallBg==='function')applyWallBg(_wallBg);}
@@ -2680,7 +2708,7 @@ setInterval(_pullSync,25000);
 setInterval(()=>{if(_syncToken)_flushSync();},5*60*1000);
 
 // ===== MANUAL "SAVE & SYNC" BUTTON =====
-const ALL_SYNC_KEYS=['habits','tasks','goals','logs','birthdays','events','finance','customIncSrc','customExpCat','profile','sectionNames','timetable','visionItems','stickyNotes','libBooks','currencyData','theme','autoTheme','wallBg','appName','appSub','dashOrder','weatherPref','aiPatterns','ttWakeStart','ttWakeEnd','fbListings'];
+const ALL_SYNC_KEYS=['habits','tasks','goals','logs','birthdays','events','finance','customIncSrc','customExpCat','profile','sectionNames','timetable','visionItems','stickyNotes','libBooks','currencyData','theme','autoTheme','wallBg','appName','appSub','dashOrder','weatherPref','aiPatterns','ttWakeStart','ttWakeEnd','fbListings','monthlySalary'];
 // Zulqey AI assistant's learned phrase->action mappings — declared here (early, before any code
 // path can reference it) to avoid the TDZ ordering crash class documented elsewhere in this file.
 let aiPatterns=S.get('aiPatterns',[]);
@@ -2752,7 +2780,8 @@ let ttWakeStart=S.get('ttWakeStart',6);
 let ttWakeEnd=S.get('ttWakeEnd',22);
 let fbListings=S.get('fbListings',[]);
 let _fblSrc='facebook';
-const FBL_SRC_META={facebook:{icon:'📦',label:'Facebook Marketplace'},amazon:{icon:'🛒',label:'Amazon'},trading:{icon:'📈',label:'Money Trading'}};
+let monthlySalary=S.get('monthlySalary',{amount:0,enabled:false});
+const FBL_SRC_META={facebook:{icon:'📦',label:'Facebook Marketplace'},amazon:{icon:'🛒',label:'Amazon'},trading:{icon:'📈',label:'Money Trading'},other:{icon:'🗂️',label:'Other Business'}};
 let visionItems=S.get('visionItems',[]);
 let _ttWeekOff=0,_ttView='day',_selTTColor='#7c3aed',_selVBColor='#7c3aed',_selVBCat='career',_vbEditId=null,_ttEditId=null,_vbFileData=null;
 let _loggedIn=false; // set from _syncToken in initAuth()
@@ -3833,6 +3862,8 @@ document.addEventListener('click',function(e){
   if(id==='set-phone-save'){const v=document.getElementById('set-phone').value.trim();if(!v){toast('Enter a phone number','w');return;}profileData.recoveryPhone=v;S.set('profile',profileData);document.getElementById('set-phone-del').style.display='';toast('✅ Recovery number saved!','s');return;}
   if(id==='set-phone-del'){delete profileData.recoveryPhone;S.set('profile',profileData);document.getElementById('set-phone').value='';document.getElementById('set-phone-del').style.display='none';toast('Recovery number removed','w');return;}
   if(id==='set-change-cur'){openCurrencyModal();return;}
+  if(id==='set-salary-save'){saveMonthlySalarySettings();return;}
+  if(id==='fin-salary-add-btn'){addMonthlySalaryQuick();return;}
   if(id==='set-ai-copy'){genAISummary();return;}
   if(id==='set-check-update'){checkForAppUpdate();return;}
   if(id==='set-logout'){doLogout();return;}
@@ -3849,7 +3880,15 @@ document.addEventListener('click',function(e){
   const fblSold=t.closest('[data-fbl-sold]');
   if(fblSold){toggleFbListingSold(fblSold.dataset.fblSold);return;}
   const fblInc=t.closest('[data-fbl-inc]');
-  if(fblInc){const item=fbListings.find(x=>x.id===fblInc.dataset.fblInc);if(item){closeM('fbl-modal');openFinanceModal('income');setTimeout(()=>{document.getElementById('fm-src').value=item.source||'facebook';document.getElementById('fm-amount').value=item.price;document.getElementById('fm-note').value=item.name;},80);}return;}
+  if(fblInc){const item=fbListings.find(x=>x.id===fblInc.dataset.fblInc);if(item){closeM('fbl-modal');openFinanceModal('income');setTimeout(()=>{
+    // FINC_SRC has no literal 'other' key — the Facebook/Amazon/Trading listing sources map
+    // 1:1 to income-source option values, but "Others" maps to the generic 'other_inc' slot.
+    const srcVal=item.source==='other'?'other_inc':(item.source||'facebook');
+    document.getElementById('fm-src').value=srcVal;
+    if(srcVal==='other_inc'){document.getElementById('fm-other-inc-wrap').style.display='';document.getElementById('fm-other-inc').value=item.name;}
+    document.getElementById('fm-amount').value=item.price;
+    document.getElementById('fm-note').value=item.name;
+  },80);}return;}
   const fblDel=t.closest('[data-fbl-del]');
   if(fblDel){fbListings=fbListings.filter(x=>x.id!==fblDel.dataset.fblDel);S.set('fbListings',fbListings);renderFbListings();renderFinanceSmartPanel();return;}
   const ldEl=t.closest('[data-ld]');
@@ -4418,6 +4457,7 @@ function renderFinanceSmartPanel(){
 }
 function renderFinance(){
   renderFinanceSmartPanel();
+  renderSalaryReminder();
   const filter=finGetPeriod();
   const allTxs=finance.filter(filter);
   const loans=finance.filter(t=>t.type==='loan_given'||t.type==='loan_taken');
@@ -4843,6 +4883,44 @@ function saveFinance(){
   closeM('fm');
   document.getElementById('fm-title').textContent='💰 Add Transaction';
   toast(finType==='income'?'💰 Income saved!':'💸 Expense saved!','s');
+  renderAll(true);
+}
+
+// ===== MONTHLY SALARY REMINDER =====
+function saveMonthlySalarySettings(){
+  const amt=parseFloat(document.getElementById('set-salary-amt').value);
+  const enabled=document.getElementById('set-salary-enabled').checked;
+  if(enabled&&(!amt||amt<=0)){toast('Enter a valid salary amount first','w');return;}
+  monthlySalary={amount:Math.round(amt||0),enabled};
+  S.set('monthlySalary',monthlySalary);
+  toast('💼 Salary settings saved!','s');
+  if(document.getElementById('view-finance')?.classList.contains('on'))renderFinance();
+}
+// True once an income transaction tagged 'salary' already exists for the current
+// calendar month — used to hide the reminder banner after it's been logged.
+function salaryLoggedThisMonth(){
+  const now=new Date(),y=now.getFullYear(),m=now.getMonth();
+  return finance.some(t=>{
+    if(t.type!=='income'||t.source!=='salary')return false;
+    const[ty,tm]=t.date.split('-').map(Number);
+    return ty===y&&(tm-1)===m;
+  });
+}
+function renderSalaryReminder(){
+  const box=document.getElementById('fin-salary-reminder');
+  if(!box)return;
+  const due=monthlySalary.enabled&&monthlySalary.amount>0&&!salaryLoggedThisMonth();
+  box.style.display=due?'':'none';
+  if(due){
+    const monthLbl=new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'});
+    document.getElementById('fin-salary-reminder-sub').textContent=monthLbl+' · '+currSym+' '+fmtMoney(monthlySalary.amount);
+  }
+}
+function addMonthlySalaryQuick(){
+  const monthLbl=new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  finance.push({id:'f_'+Date.now(),date:today(),type:'income',source:'salary',amount:monthlySalary.amount,note:monthLbl+' Salary',paymentMethod:'cash'});
+  S.set('finance',finance);
+  toast('💰 '+currSym+' '+fmtMoney(monthlySalary.amount)+' salary added!','s');
   renderAll(true);
 }
 
@@ -6182,6 +6260,10 @@ function renderSettings(){
   const ch=document.getElementById('set-cur-hint');
   if(ch&&currencyData)ch.textContent=currencyData.flag+' '+currencyData.name+' ('+currSym+')';
   else if(ch)ch.textContent='Not set — visit Finance to choose';
+  // Monthly salary
+  const salAmt=document.getElementById('set-salary-amt'),salEn=document.getElementById('set-salary-enabled');
+  if(salAmt)salAmt.value=monthlySalary.amount||'';
+  if(salEn)salEn.checked=!!monthlySalary.enabled;
   // Custom income sources
   const inc=document.getElementById('set-inc-cats');
   if(inc){
