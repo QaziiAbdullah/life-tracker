@@ -944,10 +944,10 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
   transition:all .15s;flex-shrink:0;box-shadow:0 1px 5px rgba(0,0,0,.22)}
 .np-cdot:hover{transform:scale(1.3)}
 .np-cdot.on{border-color:#1e293b;transform:scale(1.2);box-shadow:0 0 0 2px rgba(0,0,0,.15)}
-.np-add-btn-wall{padding:7px 14px;border-radius:10px;background:#1e293b;color:#fff;
+.np-add-btn-wall,.np-header-btn{padding:7px 14px;border-radius:10px;background:#1e293b;color:#fff;
   border:none;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.3px;
   transition:background .15s;white-space:nowrap}
-.np-add-btn-wall:hover{background:#334155}
+.np-add-btn-wall:hover,.np-header-btn:hover{background:#334155}
 .np-close-wall{width:32px;height:32px;border-radius:50%;background:#fee2e2;border:none;
   font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;
   color:#dc2626;transition:background .15s;flex-shrink:0}
@@ -955,6 +955,16 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
 #np-viewport{flex:1;position:relative;overflow:hidden;touch-action:none;cursor:grab}
 #np-viewport.is-panning{cursor:grabbing}
 #np-board{position:absolute;top:0;left:0;width:3000px;height:2000px;transform-origin:0 0}
+#np-connections-svg{position:absolute;top:0;left:0;width:3000px;height:2000px;pointer-events:none;overflow:visible}
+#np-connections-svg .snc-hit{pointer-events:stroke;cursor:pointer}
+#np-connections-svg .snc-hit:hover+.snc-line{stroke:#fbbf24}
+#np-cards-layer{position:absolute;top:0;left:0;width:3000px;height:2000px}
+.np-header-btn.connect-active{background:#dc2626!important;box-shadow:0 0 0 2px #fca5a5}
+.sn-card.sn-connect-src{outline:3px solid #dc2626;outline-offset:2px}
+.sn-photo-card{padding:6px!important;cursor:grab}
+.sn-photo-card img{width:100%;height:100%;object-fit:cover;border-radius:2px;pointer-events:none;display:block}
+.sn-pin{position:absolute;top:-7px;left:50%;transform:translateX(-50%);width:14px;height:14px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#f87171,#b91c1c);box-shadow:0 2px 4px rgba(0,0,0,.4);z-index:2}
 #np-zoom-ctrl{position:absolute;right:16px;bottom:16px;z-index:2002;display:flex;align-items:center;gap:2px;
   background:rgba(255,255,255,.95);backdrop-filter:blur(10px);border-radius:12px;padding:5px;
   box-shadow:0 4px 20px rgba(0,0,0,.25);border:1px solid rgba(0,0,0,.08)}
@@ -1304,11 +1314,17 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
         <span style="font-size:9px;color:rgba(0,0,0,.35);font-weight:600;letter-spacing:.5px;flex-shrink:0">WALL</span>
         <div id="np-wall-bg-dots" style="display:flex;align-items:center;gap:4px;flex-shrink:0"></div>
         <button class="np-add-btn-wall" id="np-add-btn">＋ New Note</button>
+        <button class="np-header-btn" id="np-add-photo-btn" style="background:#1d4ed8">📷 Add Photo</button>
+        <input type="file" id="np-photo-file" accept="image/*" style="display:none">
+        <button class="np-header-btn" id="np-connect-btn" style="background:#7c2d12">🧵 Connect</button>
         <button class="np-close-wall" id="np-close-btn" title="Close">✕</button>
       </div>
     </div>
     <div id="np-viewport">
-      <div id="np-board"></div>
+      <div id="np-board">
+        <svg id="np-connections-svg"></svg>
+        <div id="np-cards-layer"></div>
+      </div>
     </div>
     <div id="np-zoom-ctrl">
       <button id="np-zoom-out" title="Zoom out">−</button>
@@ -2674,6 +2690,7 @@ function _applyRemoteChanges(changedKeys){
     else if(k==='finance'){finance=S.get('finance',[]);needsAll=true;if(document.getElementById('view-finance')?.classList.contains('on')&&typeof renderFinance==='function')renderFinance();}
     else if(k==='visionItems'){visionItems=S.get('visionItems',[]);if(typeof renderVision==='function')renderVision();}
     else if(k==='stickyNotes'){if(typeof _stickyNotes!=='undefined')_stickyNotes=S.get('stickyNotes',[]);if(typeof renderStickyNotes==='function')renderStickyNotes();}
+    else if(k==='stickyConnections'){if(typeof _stickyConnections!=='undefined')_stickyConnections=S.get('stickyConnections',[]);if(typeof renderStickyConnections==='function')renderStickyConnections();}
     else if(k==='libBooks'){if(document.getElementById('library-modal')?.classList.contains('open')&&typeof renderLibShelf==='function')renderLibShelf();}
     else if(k.indexOf('nb')===0){if(document.getElementById('notebook-modal')?.classList.contains('open')){if(typeof renderNbShelf==='function')renderNbShelf();if(typeof nbLoadPage==='function')nbLoadPage();}}
     // The keys below used to only update localStorage on pull, never the in-memory variable —
@@ -2712,7 +2729,7 @@ setInterval(_pullSync,25000);
 setInterval(()=>{if(_syncToken)_flushSync();},5*60*1000);
 
 // ===== MANUAL "SAVE & SYNC" BUTTON =====
-const ALL_SYNC_KEYS=['habits','tasks','goals','logs','birthdays','events','finance','customIncSrc','customExpCat','profile','sectionNames','timetable','visionItems','stickyNotes','libBooks','currencyData','theme','autoTheme','wallBg','appName','appSub','dashOrder','weatherPref','aiPatterns','ttWakeStart','ttWakeEnd','fbListings','monthlySalary'];
+const ALL_SYNC_KEYS=['habits','tasks','goals','logs','birthdays','events','finance','customIncSrc','customExpCat','profile','sectionNames','timetable','visionItems','stickyNotes','stickyConnections','libBooks','currencyData','theme','autoTheme','wallBg','appName','appSub','dashOrder','weatherPref','aiPatterns','ttWakeStart','ttWakeEnd','fbListings','monthlySalary'];
 // Zulqey AI assistant's learned phrase->action mappings — declared here (early, before any code
 // path can reference it) to avoid the TDZ ordering crash class documented elsewhere in this file.
 let aiPatterns=S.get('aiPatterns',[]);
@@ -3653,6 +3670,10 @@ document.addEventListener('click',function(e){
   if(t.id==='np-zoom-in'){snSetZoom(_snZoom+0.15);return;}
   if(t.id==='np-zoom-out'){snSetZoom(_snZoom-0.15);return;}
   if(t.id==='np-zoom-reset'){snResetView();return;}
+  if(t.id==='np-add-photo-btn'){document.getElementById('np-photo-file').click();return;}
+  if(t.id==='np-connect-btn'){toggleConnectMode();return;}
+  const sncHit=t.closest('.snc-hit');
+  if(sncHit){const g=sncHit.closest('[data-connid]');if(g)deleteConnection(g.dataset.connid);return;}
   const snDel=t.closest('.sn-x');
   if(snDel&&snDel.dataset.snid){_stickyNotes=_stickyNotes.filter(n=>n.id!==snDel.dataset.snid);S.set('stickyNotes',_stickyNotes);renderStickyNotes();return;}
   const snNxt=t.closest('.sn-next');
@@ -7003,6 +7024,28 @@ document.addEventListener('change',function(e){
   reader.readAsDataURL(file);
 });
 
+// Sticky Notes Wall — photo pin upload handler (same compress-to-base64 approach as Vision Board)
+document.addEventListener('change',function(e){
+  if(e.target.id!=='np-photo-file')return;
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const img=new Image();
+    img.onload=function(){
+      const MAX=480;
+      let w=img.width,h=img.height;
+      if(w>MAX||h>MAX){const r=Math.min(MAX/w,MAX/h);w=Math.round(w*r);h=Math.round(h*r);}
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      addStickyPhoto(c.toDataURL('image/jpeg',0.6));
+      e.target.value='';
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
 // Library — PDF upload handler (read as base64 data URL). Supports picking several PDFs at
 // once: with one file, it fills the normal add/edit form same as before; with several, each
 // becomes its own book immediately (title = filename) since asking for a title per file would
@@ -7117,6 +7160,8 @@ document.getElementById('congrats-overlay')?.addEventListener('click',hideCongra
 
 // ===== STICKY NOTES — draggable wall =====
 let _stickyNotes=S.get('stickyNotes',[]);
+let _stickyConnections=S.get('stickyConnections',[]);
+let _snConnectMode=false,_snConnectSrc=null;
 let _snColor='#fef08a';
 const SN_COLORS=['#fef08a','#fde68a','#bbf7d0','#6ee7b7','#fbcfe8','#f9a8d4','#bfdbfe','#93c5fd','#e9d5ff','#c4b5fd','#fed7aa','#fdba74','#fecaca','#fca5a5','#99f6e4','#67e8f9','#d9f99d','#a3e635','#f1f5f9','#e2e8f0'];
 const SN_ROTS=[-8,-5,-3,-2,-1,0,1,2,3,5,8];
@@ -7638,7 +7683,10 @@ const WALL_BG_COLORS=['#eee8dc','#f0f4f8','#fdf2f8','#f0fdf4','#eff6ff','#fefce8
   'linear-gradient(135deg,#f9d423,#ff4e50)',
   'linear-gradient(135deg,#00c6ff,#0072ff)',
   'linear-gradient(135deg,#fc466b,#3f5efb)',
-  'linear-gradient(135deg,#d9a566,#a9713a,#5c3a1e)'];
+  'linear-gradient(135deg,#d9a566,#a9713a,#5c3a1e)',
+  // Detective/investigation cork board — matches the classic "case wall" look for use with
+  // the 🧵 Connect strings and 📷 pinned photos.
+  'radial-gradient(circle at 1px 1px,rgba(0,0,0,.3) 1.1px,transparent 0) 0 0/13px 13px,linear-gradient(160deg,#ad7a45,#8a5a2b)'];
 let _wallBg=S.get('wallBg','#eee8dc');
 let _snZMax=20,_snDragging=null,_snDragOX=0,_snDragOY=0,_snNewId=null,_dragSetup=false;
 let _snResizing=null,_snResizeStartX=0,_snResizeStartY=0,_snResizeStartW=0,_snResizeStartH=0;
@@ -7680,8 +7728,10 @@ function snResetView(){
 }
 
 function renderStickyNotes(){
-  const board=document.getElementById('np-board');
-  if(!board)return;
+  // Cards render into their own layer, separate from #np-board (the zoom/pan container) and
+  // #np-connections-svg (the string overlay) — both siblings that must survive this rebuild.
+  const layer=document.getElementById('np-cards-layer');
+  if(!layer)return;
   updateNotesBadge();
   const{bw,bh}=snBoardSize();
   _stickyNotes.forEach(n=>{
@@ -7690,10 +7740,21 @@ function renderStickyNotes(){
     if(n.z==null)n.z=++_snZMax;
   });
   S.set('stickyNotes',_stickyNotes);
-  board.innerHTML=_stickyNotes.map(n=>{
+  layer.innerHTML=_stickyNotes.map(n=>{
+    const pin=`<div class="sn-pin"></div>`;
+    if(n.type==='photo'){
+      return `<div class="sn-card sn-photo-card${n.id===_snNewId?' sn-new':''}${_snConnectSrc===n.id?' sn-connect-src':''}" data-snid="${n.id}"
+        style="left:${n.x}px;top:${n.y}px;z-index:${n.z};background:#fff;transform:rotate(${n.rot}deg);--sn-r:${n.rot}deg;width:${n.w||160}px;height:${n.h||160}px;min-height:unset">
+        ${pin}
+        <button class="sn-x" data-snid="${n.id}" title="Delete">✕</button>
+        <img src="${n.img}" draggable="false">
+        <div class="sn-resize" data-snid="${n.id}"></div>
+      </div>`;
+    }
     const strip=SN_COLORS.map(c=>`<div class="sn-c-dot${n.color===c?' on':''}" data-snid="${n.id}" data-snc="${c}" style="background:${c}"></div>`).join('');
-    return `<div class="sn-card${n.id===_snNewId?' sn-new':''}" data-snid="${n.id}"
+    return `<div class="sn-card${n.id===_snNewId?' sn-new':''}${_snConnectSrc===n.id?' sn-connect-src':''}" data-snid="${n.id}"
       style="left:${n.x}px;top:${n.y}px;z-index:${n.z};background:${n.color};transform:rotate(${n.rot}deg);--sn-r:${n.rot}deg;width:${n.w||150}px;${n.h?'height:'+n.h+'px;min-height:unset':'min-height:65px'}">
+      ${pin}
       <div class="sn-tape"></div>
       <button class="sn-x" data-snid="${n.id}" title="Delete">✕</button>
       <button class="sn-next" data-snid="${n.id}" title="Add next note">＋</button>
@@ -7703,7 +7764,7 @@ function renderStickyNotes(){
     </div>`;
   }).join('');
   _snNewId=null;
-  board.querySelectorAll('.sn-ta').forEach(ta=>{
+  layer.querySelectorAll('.sn-ta').forEach(ta=>{
     let tmr=null;
     ta.addEventListener('input',()=>{clearTimeout(tmr);tmr=setTimeout(()=>{const n=_stickyNotes.find(x=>x.id===ta.dataset.snid);if(n){n.text=ta.value;S.set('stickyNotes',_stickyNotes);}},400);});
     ta.addEventListener('blur',()=>{const n=_stickyNotes.find(x=>x.id===ta.dataset.snid);if(n&&n.text!==ta.value){n.text=ta.value;S.set('stickyNotes',_stickyNotes);}});
@@ -7711,6 +7772,57 @@ function renderStickyNotes(){
     ta.addEventListener('touchstart',e=>e.stopPropagation(),{passive:true});
   });
   initNoteDrag();
+  renderStickyConnections();
+}
+
+// ===== DETECTIVE-BOARD STRING CONNECTIONS =====
+function toggleConnectMode(){
+  _snConnectMode=!_snConnectMode;
+  _snConnectSrc=null;
+  document.getElementById('np-connect-btn')?.classList.toggle('connect-active',_snConnectMode);
+  toast(_snConnectMode?'🧵 Connect mode on — tap two cards to link them with a string':'Connect mode off','s');
+  renderStickyNotes();
+}
+// Called instead of a drag when connect mode is active: first tap picks the "from" card
+// (highlighted red), second tap on a different card creates the string and clears the
+// selection so the next pair can be linked right away without re-toggling the button.
+function handleCardClickForConnect(id){
+  if(!_snConnectSrc){_snConnectSrc=id;renderStickyNotes();return;}
+  if(_snConnectSrc===id){_snConnectSrc=null;renderStickyNotes();return;}
+  const exists=_stickyConnections.some(c=>(c.from===_snConnectSrc&&c.to===id)||(c.from===id&&c.to===_snConnectSrc));
+  if(!exists){
+    _stickyConnections.push({id:'snc_'+Date.now(),from:_snConnectSrc,to:id});
+    S.set('stickyConnections',_stickyConnections);
+  }
+  _snConnectSrc=null;
+  renderStickyNotes();
+}
+function deleteConnection(id){
+  _stickyConnections=_stickyConnections.filter(c=>c.id!==id);
+  S.set('stickyConnections',_stickyConnections);
+  renderStickyConnections();
+}
+// Draws the red "string" lines between linked cards, using each card's current x/y/w/h from
+// the data model — called after every full render AND continuously while a card is being
+// dragged, so strings follow their pins in real time instead of only updating after drop.
+function renderStickyConnections(){
+  const svg=document.getElementById('np-connections-svg');
+  if(!svg)return;
+  const center=id=>{
+    const n=_stickyNotes.find(x=>x.id===id);
+    if(!n)return null;
+    return{x:(n.x||0)+(n.w||150)/2,y:(n.y||0)+(n.h||65)/2};
+  };
+  svg.innerHTML=_stickyConnections.map(c=>{
+    const a=center(c.from),b=center(c.to);
+    if(!a||!b)return'';
+    // Slight sag/curve like a real pinned string instead of a perfectly straight line.
+    const mx=(a.x+b.x)/2,my=(a.y+b.y)/2+18;
+    return `<g data-connid="${c.id}">
+      <path class="snc-hit" d="M${a.x},${a.y} Q${mx},${my} ${b.x},${b.y}" fill="none" stroke="transparent" stroke-width="16"></path>
+      <path class="snc-line" d="M${a.x},${a.y} Q${mx},${my} ${b.x},${b.y}" fill="none" stroke="#dc2626" stroke-width="2.5" opacity="0.85"></path>
+    </g>`;
+  }).join('');
 }
 
 // Reads whatever is currently typed into every open sticky-note textarea straight into
@@ -7727,6 +7839,7 @@ function flushStickyNotesNow(){
 function snDragStart(e){
   const card=e.target.closest('.sn-card');
   if(!card||e.target.closest('.sn-x')||e.target.closest('.sn-ta')||e.target.closest('.sn-c-dot')||e.target.closest('.sn-resize')||e.target.closest('.sn-next'))return;
+  if(_snConnectMode){handleCardClickForConnect(card.dataset.snid);return;}
   const isT=e.type==='touchstart';
   const pt=isT?e.touches[0]:e;
   const rect=card.getBoundingClientRect();
@@ -7753,6 +7866,10 @@ function snDragMove(e){
   nx=Math.max(0,Math.min(SN_BOARD_W-_snDragging.offsetWidth,nx));
   ny=Math.max(0,Math.min(SN_BOARD_H-_snDragging.offsetHeight,ny));
   _snDragging.style.left=nx+'px';_snDragging.style.top=ny+'px';
+  // Update the in-memory position (not yet persisted) so any connected strings follow the
+  // card live instead of only snapping into place after the drag ends.
+  const dn=_stickyNotes.find(x=>x.id===_snDragging.dataset.snid);
+  if(dn){dn.x=nx;dn.y=ny;renderStickyConnections();}
 }
 
 function snDragEnd(){
@@ -7791,6 +7908,8 @@ function snResizeMove(e){
   _snResizing.style.width=nw+'px';
   _snResizing.style.height=nh+'px';
   _snResizing.style.minHeight='unset';
+  const rn=_stickyNotes.find(x=>x.id===_snResizing.dataset.snid);
+  if(rn){rn.w=nw;rn.h=nh;renderStickyConnections();}
 }
 
 function snResizeEnd(){
@@ -7865,10 +7984,20 @@ function addStickyNote(){
   const rot=SN_ROTS[Math.floor(Math.random()*SN_ROTS.length)];
   const x=Math.max(10,Math.floor(Math.random()*(bw-180)+10));
   const y=Math.max(10,Math.floor(Math.random()*(bh-120)+10));
-  const n={id:'sn_'+Date.now(),text:'',color:_snColor,x,y,rot,z:++_snZMax};
+  const n={id:'sn_'+Date.now(),type:'note',text:'',color:_snColor,x,y,rot,z:++_snZMax};
   _snNewId=n.id;_stickyNotes.unshift(n);S.set('stickyNotes',_stickyNotes);
   renderStickyNotes();
   setTimeout(()=>{const ta=document.querySelector(`.sn-ta[data-snid="${n.id}"]`);if(ta)ta.focus();},80);
+}
+function addStickyPhoto(dataUrl){
+  const{bw,bh}=snBoardSize();
+  const rot=SN_ROTS[Math.floor(Math.random()*SN_ROTS.length)];
+  const x=Math.max(10,Math.floor(Math.random()*(bw-180)+10));
+  const y=Math.max(10,Math.floor(Math.random()*(bh-160)+10));
+  const n={id:'sn_'+Date.now(),type:'photo',img:dataUrl,x,y,rot,w:160,h:160,z:++_snZMax};
+  _snNewId=n.id;_stickyNotes.unshift(n);S.set('stickyNotes',_stickyNotes);
+  renderStickyNotes();
+  toast('📷 Photo pinned to the wall!','s');
 }
 
 function applyWallBg(css){
@@ -7893,6 +8022,8 @@ function renderWallBgDots(){
 function openNotepad(){
   document.getElementById('notepad-modal')?.classList.add('open');
   snResetView();
+  _snConnectMode=false;_snConnectSrc=null;
+  document.getElementById('np-connect-btn')?.classList.remove('connect-active');
   setTimeout(()=>{
     renderStickyNotes();
     renderWallBgDots();
