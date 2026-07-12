@@ -954,11 +954,12 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
 .np-close-wall:hover{background:#fecaca}
 #np-viewport{flex:1;position:relative;overflow:hidden;touch-action:none;cursor:grab}
 #np-viewport.is-panning{cursor:grabbing}
-#np-board{position:absolute;top:0;left:0;width:3000px;height:2000px;transform-origin:0 0}
-#np-connections-svg{position:absolute;top:0;left:0;width:3000px;height:2000px;pointer-events:none;overflow:visible}
+#np-viewport.is-wiring{cursor:crosshair}
+#np-board{position:absolute;top:0;left:0;width:9000px;height:6000px;transform-origin:0 0}
+#np-connections-svg{position:absolute;top:0;left:0;width:9000px;height:6000px;pointer-events:none;overflow:visible}
 #np-connections-svg .snc-hit{pointer-events:stroke;cursor:pointer}
 #np-connections-svg .snc-hit:hover+.snc-line{stroke:#fbbf24}
-#np-cards-layer{position:absolute;top:0;left:0;width:3000px;height:2000px}
+#np-cards-layer{position:absolute;top:0;left:0;width:9000px;height:6000px}
 .np-header-btn.connect-active{background:#dc2626!important;box-shadow:0 0 0 2px #fca5a5}
 .sn-card.sn-connect-src{outline:3px solid #dc2626;outline-offset:2px}
 .sn-photo-card{padding:6px!important;cursor:grab}
@@ -7209,7 +7210,8 @@ document.getElementById('congrats-overlay')?.addEventListener('click',hideCongra
 // ===== STICKY NOTES — draggable wall =====
 let _stickyNotes=S.get('stickyNotes',[]);
 let _stickyConnections=S.get('stickyConnections',[]);
-let _snConnectMode=false,_snConnectSrc=null;
+let _snWireFrom=null;
+let _snLastCardClick={id:null,t:0};
 let _snColor='#fef08a';
 const SN_COLORS=['#fef08a','#fde68a','#bbf7d0','#6ee7b7','#fbcfe8','#f9a8d4','#bfdbfe','#93c5fd','#e9d5ff','#c4b5fd','#fed7aa','#fdba74','#fecaca','#fca5a5','#99f6e4','#67e8f9','#d9f99d','#a3e635','#f1f5f9','#e2e8f0'];
 const SN_ROTS=[-8,-5,-3,-2,-1,0,1,2,3,5,8];
@@ -7741,7 +7743,7 @@ let _snResizing=null,_snResizeStartX=0,_snResizeStartY=0,_snResizeStartW=0,_snRe
 // Zoom/pan for the sticky-notes wall — the board is a large fixed virtual canvas (see
 // snBoardSize) so notes always have room to spread out; zoom/pan is a view-only preference,
 // not synced data, and resets to a sane default each time the wall is opened.
-const SN_BOARD_W=3000,SN_BOARD_H=2000,SN_ZOOM_MIN=0.3,SN_ZOOM_MAX=2;
+const SN_BOARD_W=9000,SN_BOARD_H=6000,SN_ZOOM_MIN=0.12,SN_ZOOM_MAX=2;
 let _snZoom=1,_snPanX=0,_snPanY=0,_snPanning=false,_snPanStartX=0,_snPanStartY=0,_snPanOrigX=0,_snPanOrigY=0;
 
 function updateNotesBadge(){
@@ -7791,7 +7793,7 @@ function renderStickyNotes(){
   layer.innerHTML=_stickyNotes.map(n=>{
     const pin=`<div class="sn-pin"></div>`;
     if(n.type==='photo'){
-      return `<div class="sn-card sn-photo-card${n.id===_snNewId?' sn-new':''}${_snConnectSrc===n.id?' sn-connect-src':''}" data-snid="${n.id}"
+      return `<div class="sn-card sn-photo-card${n.id===_snNewId?' sn-new':''}${_snWireFrom===n.id?' sn-connect-src':''}" data-snid="${n.id}"
         style="left:${n.x}px;top:${n.y}px;z-index:${n.z};background:#fff;transform:rotate(${n.rot}deg);--sn-r:${n.rot}deg;width:${n.w||160}px;height:${n.h||160}px;min-height:unset">
         ${pin}
         <button class="sn-x" data-snid="${n.id}" title="Delete">✕</button>
@@ -7800,7 +7802,7 @@ function renderStickyNotes(){
       </div>`;
     }
     const strip=SN_COLORS.map(c=>`<div class="sn-c-dot${n.color===c?' on':''}" data-snid="${n.id}" data-snc="${c}" style="background:${c}"></div>`).join('');
-    return `<div class="sn-card${n.id===_snNewId?' sn-new':''}${_snConnectSrc===n.id?' sn-connect-src':''}" data-snid="${n.id}"
+    return `<div class="sn-card${n.id===_snNewId?' sn-new':''}${_snWireFrom===n.id?' sn-connect-src':''}" data-snid="${n.id}"
       style="left:${n.x}px;top:${n.y}px;z-index:${n.z};background:${n.color};transform:rotate(${n.rot}deg);--sn-r:${n.rot}deg;width:${n.w||150}px;${n.h?'height:'+n.h+'px;min-height:unset':'min-height:65px'}">
       ${pin}
       <div class="sn-tape"></div>
@@ -7824,26 +7826,14 @@ function renderStickyNotes(){
 }
 
 // ===== DETECTIVE-BOARD STRING CONNECTIONS =====
+// Double-click and hold on any card, then drag to another card and release — a live red
+// string follows the cursor the whole time, like pinning real string on a corkboard.
+// _snWireFrom holds the source card's id while a wire is being dragged; _snLastCardClick
+// tracks the last mousedown per card so a second mousedown within 450ms counts as the
+// "double-click" that starts the wire (dblclick itself fires too late — after mouseup — to
+// use as a drag-start trigger).
 function toggleConnectMode(){
-  _snConnectMode=!_snConnectMode;
-  _snConnectSrc=null;
-  document.getElementById('np-connect-btn')?.classList.toggle('connect-active',_snConnectMode);
-  toast(_snConnectMode?'🧵 Connect mode on — tap two cards to link them with a string':'Connect mode off','s');
-  renderStickyNotes();
-}
-// Called instead of a drag when connect mode is active: first tap picks the "from" card
-// (highlighted red), second tap on a different card creates the string and clears the
-// selection so the next pair can be linked right away without re-toggling the button.
-function handleCardClickForConnect(id){
-  if(!_snConnectSrc){_snConnectSrc=id;renderStickyNotes();return;}
-  if(_snConnectSrc===id){_snConnectSrc=null;renderStickyNotes();return;}
-  const exists=_stickyConnections.some(c=>(c.from===_snConnectSrc&&c.to===id)||(c.from===id&&c.to===_snConnectSrc));
-  if(!exists){
-    _stickyConnections.push({id:'snc_'+Date.now(),from:_snConnectSrc,to:id});
-    S.set('stickyConnections',_stickyConnections);
-  }
-  _snConnectSrc=null;
-  renderStickyNotes();
+  toast('🧵 Double-click any card, then drag to another card to connect them with a string. Click a string to remove it.','s');
 }
 function deleteConnection(id){
   _stickyConnections=_stickyConnections.filter(c=>c.id!==id);
@@ -7853,7 +7843,9 @@ function deleteConnection(id){
 // Draws the red "string" lines between linked cards, using each card's current x/y/w/h from
 // the data model — called after every full render AND continuously while a card is being
 // dragged, so strings follow their pins in real time instead of only updating after drop.
-function renderStickyConnections(){
+// `livePreview` (optional {fromId,x,y}) draws one extra dashed line from a card to the
+// current cursor position while a new wire is being dragged into place.
+function renderStickyConnections(livePreview){
   const svg=document.getElementById('np-connections-svg');
   if(!svg)return;
   const center=id=>{
@@ -7861,7 +7853,7 @@ function renderStickyConnections(){
     if(!n)return null;
     return{x:(n.x||0)+(n.w||150)/2,y:(n.y||0)+(n.h||65)/2};
   };
-  svg.innerHTML=_stickyConnections.map(c=>{
+  let html=_stickyConnections.map(c=>{
     const a=center(c.from),b=center(c.to);
     if(!a||!b)return'';
     // Slight sag/curve like a real pinned string instead of a perfectly straight line.
@@ -7871,6 +7863,13 @@ function renderStickyConnections(){
       <path class="snc-line" d="M${a.x},${a.y} Q${mx},${my} ${b.x},${b.y}" fill="none" stroke="#dc2626" stroke-width="2.5" opacity="0.85"></path>
     </g>`;
   }).join('');
+  if(livePreview){
+    const a=center(livePreview.fromId);
+    if(a){
+      html+=`<path d="M${a.x},${a.y} L${livePreview.x},${livePreview.y}" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-dasharray="6,5" opacity="0.7"></path>`;
+    }
+  }
+  svg.innerHTML=html;
 }
 
 // Reads whatever is currently typed into every open sticky-note textarea straight into
@@ -7887,9 +7886,21 @@ function flushStickyNotesNow(){
 function snDragStart(e){
   const card=e.target.closest('.sn-card');
   if(!card||e.target.closest('.sn-x')||e.target.closest('.sn-ta')||e.target.closest('.sn-c-dot')||e.target.closest('.sn-resize')||e.target.closest('.sn-next'))return;
-  if(_snConnectMode){handleCardClickForConnect(card.dataset.snid);return;}
   const isT=e.type==='touchstart';
   const pt=isT?e.touches[0]:e;
+  // A second press on the SAME card within 450ms counts as "double-click and hold" — start
+  // dragging a wire instead of moving the card. (dblclick itself fires only after the second
+  // mouseup, too late to hook a drag-start into, so this is tracked manually via mousedown.)
+  const now=Date.now();
+  const isDbl=_snLastCardClick.id===card.dataset.snid&&(now-_snLastCardClick.t)<450;
+  _snLastCardClick={id:card.dataset.snid,t:now};
+  if(isDbl){
+    _snWireFrom=card.dataset.snid;
+    card.classList.add('sn-connect-src');
+    document.getElementById('np-viewport')?.classList.add('is-wiring');
+    if(!isT)e.preventDefault();
+    return;
+  }
   const rect=card.getBoundingClientRect();
   // Board is CSS-scaled by _snZoom, so getBoundingClientRect() returns screen (post-scale)
   // pixels — divide by zoom to get an offset expressed in the board's own local coordinate
@@ -7900,6 +7911,38 @@ function snDragStart(e){
   if(n)n.z=_snZMax;
   card.classList.add('is-dragging');
   if(!isT)e.preventDefault();
+}
+
+function snWireMove(e){
+  if(!_snWireFrom)return;
+  const isT=e.type==='touchmove';
+  if(isT)e.preventDefault();
+  const pt=isT?e.touches[0]:e;
+  const board=document.getElementById('np-board');
+  if(!board)return;
+  const br=board.getBoundingClientRect();
+  const x=(pt.clientX-br.left)/_snZoom,y=(pt.clientY-br.top)/_snZoom;
+  renderStickyConnections({fromId:_snWireFrom,x,y});
+}
+function snWireEnd(e){
+  if(!_snWireFrom)return;
+  const isT=e.type==='touchend';
+  const pt=isT?(e.changedTouches&&e.changedTouches[0]):e;
+  const dropEl=pt?document.elementFromPoint(pt.clientX,pt.clientY):null;
+  const targetCard=dropEl?.closest?.('.sn-card');
+  document.querySelectorAll('.sn-connect-src').forEach(c=>c.classList.remove('sn-connect-src'));
+  document.getElementById('np-viewport')?.classList.remove('is-wiring');
+  if(targetCard&&targetCard.dataset.snid!==_snWireFrom){
+    const toId=targetCard.dataset.snid;
+    const exists=_stickyConnections.some(c=>(c.from===_snWireFrom&&c.to===toId)||(c.from===toId&&c.to===_snWireFrom));
+    if(!exists){
+      _stickyConnections.push({id:'snc_'+Date.now(),from:_snWireFrom,to:toId});
+      S.set('stickyConnections',_stickyConnections);
+      toast('🧵 String connected!','s');
+    }
+  }
+  _snWireFrom=null;
+  renderStickyConnections();
 }
 
 function snDragMove(e){
@@ -8016,6 +8059,12 @@ function initNoteDrag(){
   document.addEventListener('touchmove',snResizeMove,{passive:false});
   document.addEventListener('mouseup',snResizeEnd);
   document.addEventListener('touchend',snResizeEnd);
+  // Double-click-and-drag wire connection (see snDragStart for how the "double-click" is
+  // detected, and renderStickyConnections click handler in the main delegator for deleting).
+  document.addEventListener('mousemove',snWireMove);
+  document.addEventListener('touchmove',snWireMove,{passive:false});
+  document.addEventListener('mouseup',snWireEnd);
+  document.addEventListener('touchend',snWireEnd);
   // Pan the wall by dragging any empty area (not a note), and zoom with the scroll wheel —
   // matches the "extendable, move, zoom" behavior requested for the notes wall.
   viewport.addEventListener('mousedown',snPanStart);
@@ -8070,8 +8119,7 @@ function renderWallBgDots(){
 function openNotepad(){
   document.getElementById('notepad-modal')?.classList.add('open');
   snResetView();
-  _snConnectMode=false;_snConnectSrc=null;
-  document.getElementById('np-connect-btn')?.classList.remove('connect-active');
+  _snWireFrom=null;_snLastCardClick={id:null,t:0};
   setTimeout(()=>{
     renderStickyNotes();
     renderWallBgDots();
