@@ -1023,6 +1023,9 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
 .tt-hour-row{display:grid;grid-template-columns:90px 1fr 1fr;border-bottom:1px solid rgba(255,255,255,.035);min-height:44px;transition:background .12s;cursor:pointer}
 .tt-hour-row:hover{background:rgba(var(--pa),.05)}
 .tt-hour-row.has-block{background:rgba(255,255,255,.02)}
+.tt-hour-row.tt-hour-sleeping{opacity:.45}
+.tt-hour-row.tt-hour-sleeping:hover{opacity:.8}
+.tt-hour-row.tt-hour-sleeping.has-block{opacity:.85}
 .tt-hour-slot{padding:10px 14px;font-size:11px;font-weight:700;color:var(--muted);display:flex;align-items:flex-start;border-right:1px solid rgba(255,255,255,.05);white-space:nowrap}
 .tt-hour-content{padding:6px 10px;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
 .tt-hour-tip{padding:6px 10px;display:flex;align-items:center;font-size:11px;color:var(--muted);border-left:1px solid rgba(255,255,255,.04)}
@@ -1718,8 +1721,20 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
   <!-- HABITS -->
   <div class="view" id="view-habits">
     <div class="ph"><div><div class="ph-t">Habits</div><div class="ph-s">Build powerful daily routines</div></div><button class="btn btn-p" id="boh3">+ New Habit</button></div>
-    <div class="chips" id="s-chips"></div>
-    <div class="card"><div class="card-h"><div class="card-t">All Habits</div></div><div id="all-habits"></div></div>
+    <div class="g2" style="grid-template-columns:1.5fr 1fr;align-items:start">
+      <div>
+        <div class="chips" id="s-chips"></div>
+        <div class="card"><div class="card-h"><div class="card-t">All Habits</div></div><div id="all-habits"></div></div>
+      </div>
+      <!-- Timetable panel — today's schedule at a glance, right next to Habits -->
+      <div class="card" id="habits-tt-card">
+        <div class="card-h">
+          <div class="card-t">📋 Today's Timetable</div>
+          <button class="btn btn-g btn-sm" data-vl="timetable" style="font-size:10px">Full View →</button>
+        </div>
+        <div id="habits-tt-list"></div>
+      </div>
+    </div>
   </div>
 
   <!-- TASKS & PRIORITIES -->
@@ -2698,7 +2713,7 @@ function _applyRemoteChanges(changedKeys){
     // value actually showed up anywhere in the UI. Refresh each one's live variable here too.
     else if(k==='profile'){profileData=S.get('profile',{displayName:'Admin'});if(typeof updateWelcome==='function')updateWelcome();if(document.getElementById('view-settings')?.classList.contains('on')&&typeof renderSettings==='function')renderSettings();}
     else if(k==='sectionNames'){sectionNames=S.get('sectionNames',sectionNames);if(typeof applySectionNames==='function')applySectionNames();needsAll=true;}
-    else if(k==='timetable'){timetable=S.get('timetable',[]);if(document.getElementById('view-timetable')?.classList.contains('on')&&typeof renderTimetable==='function')renderTimetable();}
+    else if(k==='timetable'){timetable=S.get('timetable',[]);if(document.getElementById('view-timetable')?.classList.contains('on')&&typeof renderTimetable==='function')renderTimetable();if(document.getElementById('view-habits')?.classList.contains('on')&&typeof renderHabitsTimetablePanel==='function')renderHabitsTimetablePanel();}
     else if(k==='ttWakeStart'||k==='ttWakeEnd'){ttWakeStart=S.get('ttWakeStart',6);ttWakeEnd=S.get('ttWakeEnd',22);if(document.getElementById('view-timetable')?.classList.contains('on')&&typeof renderTimetable==='function')renderTimetable();}
     else if(k==='fbListings'){fbListings=S.get('fbListings',[]);if(document.getElementById('fbl-modal')?.classList.contains('open')&&typeof renderFbListings==='function')renderFbListings();if(document.getElementById('view-finance')?.classList.contains('on')&&typeof renderFinance==='function')renderFinance();}
     else if(k==='monthlySalary'){monthlySalary=S.get('monthlySalary',{amount:0,enabled:false});if(document.getElementById('view-finance')?.classList.contains('on')&&typeof renderFinance==='function')renderFinance();if(document.getElementById('view-settings')?.classList.contains('on')&&typeof renderSettings==='function')renderSettings();}
@@ -3369,7 +3384,41 @@ function renderYearly(){
 }
 
 // ===== HABITS VIEW =====
+// Compact "Today's Timetable" panel shown to the right of Habits — a quick-glance summary
+// of today's schedule blocks, with a "Full View →" shortcut to the dedicated Timetable page
+// (which still has the full 24-hour editable grid, week/month views, etc).
+function renderHabitsTimetablePanel(){
+  const list=document.getElementById('habits-tt-list');
+  if(!list)return;
+  const now=new Date();
+  const dayIdx=now.getDay();
+  const nowDec=now.getHours()+now.getMinutes()/60;
+  const blocks=[...timetable.filter(b=>b.day===dayIdx)].sort((a,b)=>a.start-b.start);
+  const fmt12=dec=>{
+    let h=Math.floor(dec),m=Math.round((dec-h)*60);if(m===60){m=0;h++;}
+    const mm=String(m).padStart(2,'0');
+    if(h===0||h===24)return`12:${mm} AM`;if(h<12)return`${h}:${mm} AM`;if(h===12)return`12:${mm} PM`;return`${h-12}:${mm} PM`;
+  };
+  if(!blocks.length){
+    list.innerHTML=`<div class="f-empty">No blocks scheduled today.<br><span data-vl="timetable" style="cursor:pointer;color:var(--pl);text-decoration:underline">Open Timetable to add one →</span></div>`;
+    return;
+  }
+  const BLOCK_COLORS=['#7c3aed','#2563eb','#059669','#d97706','#dc2626','#db2777','#0891b2','#4f46e5','#16a34a','#ca8a04'];
+  list.innerHTML=blocks.map((b,bi)=>{
+    const col=b.color||BLOCK_COLORS[bi%BLOCK_COLORS.length];
+    const isCurrent=nowDec>=b.start&&(b.end?nowDec<b.end:nowDec<b.start+1);
+    const isPast=b.end?nowDec>=b.end:nowDec>=b.start+1;
+    return `<div class="f-tx-item" style="${isPast?'opacity:.45':''}${isCurrent?'background:rgba(var(--pa),.08)':''}">
+      <div class="f-tx-icon" style="background:${col}22;color:${col}">${b.emoji||'📌'}</div>
+      <div class="f-tx-info">
+        <div class="f-tx-name">${escapeHtml(b.title)}${isCurrent?' <span style="color:var(--pl);font-size:9px">● now</span>':''}</div>
+        <div class="f-tx-meta">${fmt12(b.start)}${b.end?' – '+fmt12(b.end):''}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
 function renderHabits(){
+  renderHabitsTimetablePanel();
   const td=today(),log=getLog(td);
   const top=habits.map(h=>({...h,sk:habitStreak(h.id)})).filter(h=>h.sk>0).sort((a,b)=>b.sk-a.sk).slice(0,8);
   document.getElementById('s-chips').innerHTML=top.map(h=>`<div class="chip" style="background:${h.color}18;border:1px solid ${h.color}33;color:${h.color}">🔥 ${escapeHtml(h.name)}: ${h.sk}d</div>`).join('');
@@ -6569,21 +6618,22 @@ function renderTTDay(){
     const mm=String(m).padStart(2,'0');
     if(h===0||h===24)return`12:${mm} AM`;if(h<12)return`${h}:${mm} AM`;if(h===12)return`12:${mm} PM`;return`${h-12}:${mm} PM`;
   };
-  // Waking hours are user-editable (⏰ Sleep/Wake Hours button, or tap the Sleep Time row) —
-  // default 6 AM to 10 PM. Stored as decimal hours so minutes aren't lost, but the hourly
-  // grid below still shows one row per whole hour, rounded outward to cover the full range.
+  // Every one of the 24 hours is shown and individually editable now — sleep hours are just
+  // visually dimmed with a 🌙 marker (based on your own Sleep/Wake Hours setting) instead of
+  // being hidden behind a single collapsed summary row, so you can set your whole day your way.
   const WAKE_START=ttWakeStart, WAKE_END=ttWakeEnd;
-  const gridStart=Math.floor(WAKE_START), gridEnd=Math.ceil(WAKE_END);
+  const isSleepHour=h=>(h+1<=WAKE_START)||(h>=WAKE_END);
   let html=`<div class="tt-24-wrap">
     <div class="tt-24-hd">
       <span>⏰ Time</span><span>☀️ Activity</span><span>💡 Notes</span>
     </div>`;
-  for(let h=gridStart;h<gridEnd;h++){
+  for(let h=0;h<24;h++){
     const isNow=isToday&&h===nowH;
+    const sleeping=isSleepHour(h);
     const hBlocks=blocks.filter(b=>Math.floor(b.start)===h);
     const rowBg=isNow?'rgba(var(--pa),.1)':'';
-    html+=`<div class="tt-hour-row${hBlocks.length?' has-block':''}" data-tthour="${h}" style="${rowBg?'background:'+rowBg:''}">
-      <div class="tt-hour-slot">${isNow?'▶ ':''}${fmt12(h)}${isNow?'<br><span style="font-size:9px;color:var(--pl)">Now</span>':''}</div>
+    html+=`<div class="tt-hour-row${hBlocks.length?' has-block':''}${sleeping?' tt-hour-sleeping':''}" data-tthour="${h}" style="${rowBg?'background:'+rowBg:''}">
+      <div class="tt-hour-slot">${isNow?'▶ ':sleeping?'🌙 ':''}${fmt12(h)}${isNow?'<br><span style="font-size:9px;color:var(--pl)">Now</span>':''}</div>
       <div class="tt-hour-content">`;
     if(hBlocks.length){
       hBlocks.forEach((b,bi)=>{
@@ -6592,7 +6642,7 @@ function renderTTDay(){
         html+=`<div class="tt-block-pill" data-ttid="${b.id}" style="background:${col}22;border-color:${col}55;color:${col}">${b.emoji||'📌'} ${escapeHtml(b.title)}<span style="font-size:9px;opacity:.7;margin-left:3px">${endStr}</span></div>`;
       });
     }else{
-      html+=`<span style="font-size:11px;color:var(--muted);opacity:.35">+ tap to add</span>`;
+      html+=`<span style="font-size:11px;color:var(--muted);opacity:.3">${sleeping?'😴 sleeping — tap to add anyway':'+ tap to add'}</span>`;
     }
     html+=`</div><div class="tt-hour-tip">`;
     if(hBlocks.length){
@@ -6600,14 +6650,12 @@ function renderTTDay(){
     }
     html+=`</div></div>`;
   }
-  // Sleep block — computed from the user's own wake/sleep hours, shown to the minute.
-  // Clickable (like the header button) so adjusting your schedule is one tap away.
   const sleepDec=24-(WAKE_END-WAKE_START);
   const sleepH=Math.floor(sleepDec),sleepM=Math.round((sleepDec-sleepH)*60);
-  const sleepLbl=sleepM>0?`${sleepH}h ${sleepM}m rest`:`${sleepH}h rest`;
+  const sleepLbl=sleepM>0?`${sleepH}h ${sleepM}m`:`${sleepH}h`;
   html+=`<div class="tt-sleep-row" id="tt-sleep-row-clickable" title="Tap to adjust your sleep/wake hours">
-    <div class="tt-sleep-icon">🌙</div>
-    <div><div class="tt-sleep-txt">Sleep Time</div><div class="tt-sleep-sub">${fmtTime(WAKE_END)} — ${fmtTime(WAKE_START)} · ${sleepLbl}</div></div>
+    <div class="tt-sleep-icon">⏰</div>
+    <div><div class="tt-sleep-txt">Wake ${fmtTime(WAKE_START)} · Sleep ${fmtTime(WAKE_END)}</div><div class="tt-sleep-sub">${sleepLbl} rest — tap to change your hours</div></div>
     <div style="margin-left:auto;font-size:11px;color:var(--pl)">✏️ Adjust</div>
   </div>`;
   html+=`</div>`;
