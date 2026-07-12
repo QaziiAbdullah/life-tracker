@@ -1018,7 +1018,8 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
 .tt-hour-tip{padding:6px 10px;display:flex;align-items:center;font-size:11px;color:var(--muted);border-left:1px solid rgba(255,255,255,.04)}
 .tt-block-pill{display:inline-flex;align-items:center;gap:5px;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.08);transition:transform .12s;white-space:nowrap}
 .tt-block-pill:hover{transform:scale(1.03)}
-.tt-sleep-row{display:flex;align-items:center;gap:10px;padding:12px 14px;background:rgba(255,255,255,.025);border-top:1px solid rgba(255,255,255,.05)}
+.tt-sleep-row{display:flex;align-items:center;gap:10px;padding:12px 14px;background:rgba(255,255,255,.025);border-top:1px solid rgba(255,255,255,.05);cursor:pointer;transition:background .15s}
+.tt-sleep-row:hover{background:rgba(var(--pa),.08)}
 .tt-sleep-icon{font-size:20px}
 .tt-sleep-txt{font-size:12px;font-weight:700;color:var(--muted);font-style:italic}
 .tt-sleep-sub{font-size:10px;color:var(--muted);opacity:.6;margin-top:1px}
@@ -3766,6 +3767,7 @@ document.addEventListener('click',function(e){
   }
   if(id==='tt-reset-btn'){resetTimetable();return;}
   if(id==='tt-hours-btn'){openTTHoursModal();return;}
+  if(t.closest('#tt-sleep-row-clickable')){openTTHoursModal();return;}
   if(id==='tt-hours-cancel'){closeM('tt-hours-modal');return;}
   if(id==='tt-hours-save'){saveTTHours();return;}
   if(id==='tt-everyday-btn'){
@@ -6495,17 +6497,25 @@ function renderTimetable(){
   if(_ttView==='month'){renderTTMonth();return;}
   renderTTDay();
 }
+// Converts a decimal hour (e.g. 6.5) to an "HH:MM" string for a <input type=time> value.
+function decToHM(dec){
+  let h=Math.floor(dec),m=Math.round((dec-h)*60);
+  if(m===60){m=0;h++;}
+  return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+}
 function openTTHoursModal(){
-  document.getElementById('tt-wake-input').value=String(ttWakeStart).padStart(2,'0')+':00';
-  document.getElementById('tt-sleep-input').value=String(ttWakeEnd).padStart(2,'0')+':00';
+  document.getElementById('tt-wake-input').value=decToHM(ttWakeStart);
+  document.getElementById('tt-sleep-input').value=decToHM(ttWakeEnd);
   openM('tt-hours-modal');
 }
 function saveTTHours(){
   const wakeRaw=document.getElementById('tt-wake-input').value;
   const sleepRaw=document.getElementById('tt-sleep-input').value;
   if(!wakeRaw||!sleepRaw){toast('Pick both times','w');return;}
-  const wake=parseInt(wakeRaw.split(':')[0],10);
-  const sleep=parseInt(sleepRaw.split(':')[0],10);
+  // Full minute precision now, not just whole hours — e.g. 6:30 AM wake, 10:45 PM sleep.
+  const[wh,wm]=wakeRaw.split(':').map(Number);
+  const[sh,sm]=sleepRaw.split(':').map(Number);
+  const wake=wh+wm/60,sleep=sh+sm/60;
   if(wake>=sleep){toast('Wake time must be earlier than sleep time','w');return;}
   ttWakeStart=wake;ttWakeEnd=sleep;
   S.set('ttWakeStart',ttWakeStart);S.set('ttWakeEnd',ttWakeEnd);
@@ -6530,13 +6540,24 @@ function renderTTDay(){
   const nowH=now.getHours();
   const BLOCK_COLORS=['#7c3aed','#2563eb','#059669','#d97706','#dc2626','#db2777','#0891b2','#4f46e5','#16a34a','#ca8a04'];
   const fmt12=h=>{if(h===0)return'12:00 AM';if(h<12)return h+':00 AM';if(h===12)return'12:00 PM';return(h-12)+':00 PM';};
-  // Waking hours are user-editable (⏰ Sleep/Wake Hours button) — default 6 AM to 10 PM.
+  // Same as fmt12 but keeps minutes — WAKE_START/WAKE_END can be a decimal hour (e.g. 6.5 = 6:30)
+  // now that Sleep/Wake Hours supports minute precision, not just whole hours.
+  const fmtTime=dec=>{
+    let h=Math.floor(dec),m=Math.round((dec-h)*60);
+    if(m===60){m=0;h++;}
+    const mm=String(m).padStart(2,'0');
+    if(h===0||h===24)return`12:${mm} AM`;if(h<12)return`${h}:${mm} AM`;if(h===12)return`12:${mm} PM`;return`${h-12}:${mm} PM`;
+  };
+  // Waking hours are user-editable (⏰ Sleep/Wake Hours button, or tap the Sleep Time row) —
+  // default 6 AM to 10 PM. Stored as decimal hours so minutes aren't lost, but the hourly
+  // grid below still shows one row per whole hour, rounded outward to cover the full range.
   const WAKE_START=ttWakeStart, WAKE_END=ttWakeEnd;
+  const gridStart=Math.floor(WAKE_START), gridEnd=Math.ceil(WAKE_END);
   let html=`<div class="tt-24-wrap">
     <div class="tt-24-hd">
       <span>⏰ Time</span><span>☀️ Activity</span><span>💡 Notes</span>
     </div>`;
-  for(let h=WAKE_START;h<WAKE_END;h++){
+  for(let h=gridStart;h<gridEnd;h++){
     const isNow=isToday&&h===nowH;
     const hBlocks=blocks.filter(b=>Math.floor(b.start)===h);
     const rowBg=isNow?'rgba(var(--pa),.1)':'';
@@ -6558,11 +6579,15 @@ function renderTTDay(){
     }
     html+=`</div></div>`;
   }
-  // Sleep block — computed from the user's own wake/sleep hours
-  const sleepHrs=24-(WAKE_END-WAKE_START);
-  html+=`<div class="tt-sleep-row">
+  // Sleep block — computed from the user's own wake/sleep hours, shown to the minute.
+  // Clickable (like the header button) so adjusting your schedule is one tap away.
+  const sleepDec=24-(WAKE_END-WAKE_START);
+  const sleepH=Math.floor(sleepDec),sleepM=Math.round((sleepDec-sleepH)*60);
+  const sleepLbl=sleepM>0?`${sleepH}h ${sleepM}m rest`:`${sleepH}h rest`;
+  html+=`<div class="tt-sleep-row" id="tt-sleep-row-clickable" title="Tap to adjust your sleep/wake hours">
     <div class="tt-sleep-icon">🌙</div>
-    <div><div class="tt-sleep-txt">Sleep Time</div><div class="tt-sleep-sub">${fmt12(WAKE_END)} — ${fmt12(WAKE_START)} · ${sleepHrs} hrs rest</div></div>
+    <div><div class="tt-sleep-txt">Sleep Time</div><div class="tt-sleep-sub">${fmtTime(WAKE_END)} — ${fmtTime(WAKE_START)} · ${sleepLbl}</div></div>
+    <div style="margin-left:auto;font-size:11px;color:var(--pl)">✏️ Adjust</div>
   </div>`;
   html+=`</div>`;
   wrap.innerHTML=html;
