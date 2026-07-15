@@ -676,6 +676,11 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px 20px;min-height:100vh
 .set-page{max-width:760px}
 .set-section{background:var(--card);border-radius:13px;border:1px solid var(--border);margin-bottom:16px;overflow:hidden}
 .set-sh{padding:14px 18px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);border-bottom:1px solid var(--border);background:rgba(255,255,255,.02)}
+.mode-switch-row{display:flex;align-items:center;gap:10px}
+.mode-switch{width:52px;height:28px;border-radius:16px;border:2px solid var(--border);background:rgba(255,255,255,.06);cursor:pointer;position:relative;padding:0;transition:background .2s,border-color .2s;flex-shrink:0}
+.mode-switch-knob{position:absolute;top:1px;left:1px;width:20px;height:20px;border-radius:50%;background:#94a3b8;transition:transform .2s,background .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.mode-switch.on{background:rgba(var(--pa),.35);border-color:var(--primary)}
+.mode-switch.on .mode-switch-knob{transform:translateX(24px);background:#fbbf24}
 .set-row{padding:14px 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
 .set-row:last-child{border-bottom:none}
 .set-lbl{font-size:12px;font-weight:600;flex:1}
@@ -956,7 +961,10 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
 #np-viewport.is-panning{cursor:grabbing}
 #np-viewport.is-wiring{cursor:crosshair}
 #np-board{position:absolute;top:0;left:0;width:9000px;height:6000px;transform-origin:0 0}
-#np-connections-svg{position:absolute;top:0;left:0;width:9000px;height:6000px;pointer-events:none;overflow:visible}
+#np-connections-svg{position:absolute;top:0;left:0;width:9000px;height:6000px;pointer-events:none;overflow:visible;z-index:5000}
+.snc-scissors{cursor:pointer;pointer-events:all}
+.snc-scissors circle{transition:r .12s}
+.snc-scissors:hover circle{r:15}
 #np-connections-svg .snc-hit{pointer-events:stroke;cursor:pointer}
 #np-connections-svg .snc-hit:hover+.snc-line{stroke:#fbbf24}
 #np-cards-layer{position:absolute;top:0;left:0;width:9000px;height:6000px}
@@ -1293,28 +1301,7 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
         <span id="np-count-lbl">0 notes</span>
       </div>
       <div class="np-hd-r">
-        <div class="np-dots-scroll">
-          <div class="np-cdot on" data-nc="#fef08a" style="background:#fef08a" title="Yellow"></div>
-          <div class="np-cdot" data-nc="#fde68a" style="background:#fde68a" title="Amber"></div>
-          <div class="np-cdot" data-nc="#bbf7d0" style="background:#bbf7d0" title="Mint"></div>
-          <div class="np-cdot" data-nc="#6ee7b7" style="background:#6ee7b7" title="Emerald"></div>
-          <div class="np-cdot" data-nc="#fbcfe8" style="background:#fbcfe8" title="Pink"></div>
-          <div class="np-cdot" data-nc="#f9a8d4" style="background:#f9a8d4" title="Rose"></div>
-          <div class="np-cdot" data-nc="#bfdbfe" style="background:#bfdbfe" title="Blue"></div>
-          <div class="np-cdot" data-nc="#93c5fd" style="background:#93c5fd" title="Sky"></div>
-          <div class="np-cdot" data-nc="#e9d5ff" style="background:#e9d5ff" title="Lavender"></div>
-          <div class="np-cdot" data-nc="#c4b5fd" style="background:#c4b5fd" title="Violet"></div>
-          <div class="np-cdot" data-nc="#fed7aa" style="background:#fed7aa" title="Peach"></div>
-          <div class="np-cdot" data-nc="#fdba74" style="background:#fdba74" title="Orange"></div>
-          <div class="np-cdot" data-nc="#fecaca" style="background:#fecaca" title="Coral"></div>
-          <div class="np-cdot" data-nc="#fca5a5" style="background:#fca5a5" title="Salmon"></div>
-          <div class="np-cdot" data-nc="#99f6e4" style="background:#99f6e4" title="Teal"></div>
-          <div class="np-cdot" data-nc="#67e8f9" style="background:#67e8f9" title="Cyan"></div>
-          <div class="np-cdot" data-nc="#d9f99d" style="background:#d9f99d" title="Lime"></div>
-          <div class="np-cdot" data-nc="#a3e635" style="background:#a3e635" title="Grass"></div>
-          <div class="np-cdot" data-nc="#f1f5f9" style="background:#f1f5f9" title="Cloud"></div>
-          <div class="np-cdot" data-nc="#e2e8f0" style="background:#e2e8f0" title="Silver"></div>
-        </div>
+        <div class="np-dots-scroll" id="np-dots-scroll"></div>
         <span style="font-size:9px;color:rgba(0,0,0,.35);font-weight:600;letter-spacing:.5px;flex-shrink:0">WALL</span>
         <div id="np-wall-bg-dots" style="display:flex;align-items:center;gap:4px;flex-shrink:0"></div>
         <button class="np-add-btn-wall" id="np-add-btn">＋ New Note</button>
@@ -2225,6 +2212,13 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
       <div class="fg"><label>Product Name</label><input class="fi" id="fbl-name" placeholder="e.g. iPhone 13, Office Chair..."></div>
       <div class="fg"><label>Price</label><input class="fi" type="number" id="fbl-price" placeholder="0" min="0"></div>
     </div>
+    <div class="fg">
+      <label>Paid With <span style="color:var(--muted);font-weight:400">(where this listing's cost came from)</span></label>
+      <div style="display:flex;gap:8px">
+        <button type="button" class="fmt-btn fbl on" id="fbl-pm-cash" data-fblpm="cash" style="flex:1">💵 Cash</button>
+        <button type="button" class="fmt-btn fbl" id="fbl-pm-bank" data-fblpm="bank" style="flex:1">🏦 Bank</button>
+      </div>
+    </div>
     <div class="fg"><label>Note <span style="color:var(--muted);font-weight:400">(optional)</span></label><input class="fi" id="fbl-note" placeholder="Condition, buyer contact, etc."></div>
     <button class="btn btn-p" id="fbl-add-btn" style="width:100%;justify-content:center;margin-bottom:14px">+ Add Listing</button>
     <div id="fbl-list" style="max-height:340px;overflow-y:auto"></div>
@@ -2299,6 +2293,17 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
           <button class="btn btn-g btn-sm" id="bk-refresh-btn">🔄 Refresh List</button>
         </div>
         <div id="bk-list" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+    </div>
+    <!-- Appearance: Dark / Light Mode -->
+    <div class="set-section">
+      <div class="set-sh">🌗 Appearance</div>
+      <div class="set-row">
+        <div><div class="set-lbl">Dark / Light Mode</div><div class="set-hint">Switch the whole app's background and colors — applies everywhere, syncs across your devices.</div></div>
+        <div class="mode-switch-row">
+          <span id="set-mode-lbl" style="font-size:12px;font-weight:700;min-width:100px;text-align:right">🌙 Dark Mode</span>
+          <button type="button" id="set-mode-switch" class="mode-switch" title="Toggle dark/light mode"><span class="mode-switch-knob"></span></button>
+        </div>
       </div>
     </div>
     <!-- Template Gallery -->
@@ -2719,6 +2724,7 @@ function _applyRemoteChanges(changedKeys){
     else if(k==='fbListings'){fbListings=S.get('fbListings',[]);if(document.getElementById('fbl-modal')?.classList.contains('open')&&typeof renderFbListings==='function')renderFbListings();if(document.getElementById('view-finance')?.classList.contains('on')&&typeof renderFinance==='function')renderFinance();}
     else if(k==='monthlySalary'){monthlySalary=S.get('monthlySalary',{amount:0,enabled:false});if(document.getElementById('view-finance')?.classList.contains('on')&&typeof renderFinance==='function')renderFinance();if(document.getElementById('view-settings')?.classList.contains('on')&&typeof renderSettings==='function')renderSettings();}
     else if(k==='theme'){currentTheme=S.get('theme','professional');if(typeof applyTheme==='function')applyTheme(currentTheme,true,true);}
+    else if(k==='lightMode'){if(typeof applyMode==='function')applyMode(S.get('lightMode',false));}
     else if(k==='autoTheme'){autoOn=S.get('autoTheme',false);}
     else if(k==='wallBg'){_wallBg=S.get('wallBg','#eee8dc');if(document.getElementById('notepad-modal')?.classList.contains('open')&&typeof applyWallBg==='function')applyWallBg(_wallBg);}
     else if(k==='appName'||k==='appSub'){
@@ -2745,7 +2751,7 @@ setInterval(_pullSync,25000);
 setInterval(()=>{if(_syncToken)_flushSync();},5*60*1000);
 
 // ===== MANUAL "SAVE & SYNC" BUTTON =====
-const ALL_SYNC_KEYS=['habits','tasks','goals','logs','birthdays','events','finance','customIncSrc','customExpCat','profile','sectionNames','timetable','visionItems','stickyNotes','stickyConnections','libBooks','currencyData','theme','autoTheme','wallBg','appName','appSub','dashOrder','weatherPref','aiPatterns','ttWakeStart','ttWakeEnd','fbListings','monthlySalary'];
+const ALL_SYNC_KEYS=['habits','tasks','goals','logs','birthdays','events','finance','customIncSrc','customExpCat','profile','sectionNames','timetable','visionItems','stickyNotes','stickyConnections','libBooks','currencyData','theme','autoTheme','wallBg','appName','appSub','dashOrder','weatherPref','aiPatterns','ttWakeStart','ttWakeEnd','fbListings','monthlySalary','lightMode'];
 // Zulqey AI assistant's learned phrase->action mappings — declared here (early, before any code
 // path can reference it) to avoid the TDZ ordering crash class documented elsewhere in this file.
 let aiPatterns=S.get('aiPatterns',[]);
@@ -2817,7 +2823,14 @@ let ttWakeStart=S.get('ttWakeStart',6);
 let ttWakeEnd=S.get('ttWakeEnd',22);
 let fbListings=S.get('fbListings',[]);
 let _fblSrc='facebook';
+let _fblPM='cash';
 let monthlySalary=S.get('monthlySalary',{amount:0,enabled:false});
+// Declared early (not at its point-of-use further down) to dodge the TDZ crash class
+// documented elsewhere in this file: _pullSync()/_applyRemoteChanges() can run synchronously
+// on page load for an already-logged-in user, and referencing a `let` before its line has
+// executed throws "Cannot access before initialization", silently aborting every later
+// top-level statement in the script.
+let _lightMode=S.get('lightMode',false);
 const FBL_SRC_META={facebook:{icon:'📦',label:'Facebook Marketplace'},amazon:{icon:'🛒',label:'Amazon'},trading:{icon:'📈',label:'Money Trading'},other:{icon:'🗂️',label:'Other Business'}};
 let visionItems=S.get('visionItems',[]);
 let _ttWeekOff=0,_ttView='day',_selTTColor='#7c3aed',_selVBColor='#7c3aed',_selVBCat='career',_vbEditId=null,_ttEditId=null,_vbFileData=null;
@@ -3722,10 +3735,21 @@ document.addEventListener('click',function(e){
   if(t.id==='np-zoom-reset'){snResetView();return;}
   if(t.id==='np-add-photo-btn'){document.getElementById('np-photo-file').click();return;}
   if(t.id==='np-connect-btn'){toggleConnectMode();return;}
+  const sncScissors=t.closest('.snc-scissors');
+  if(sncScissors){const g=sncScissors.closest('[data-connid]');if(g){deleteConnection(g.dataset.connid);toast('✂️ String cut!','w');}return;}
   const sncHit=t.closest('.snc-hit');
   if(sncHit){const g=sncHit.closest('[data-connid]');if(g)deleteConnection(g.dataset.connid);return;}
   const snDel=t.closest('.sn-x');
-  if(snDel&&snDel.dataset.snid){_stickyNotes=_stickyNotes.filter(n=>n.id!==snDel.dataset.snid);S.set('stickyNotes',_stickyNotes);renderStickyNotes();return;}
+  if(snDel&&snDel.dataset.snid){
+    _stickyNotes=_stickyNotes.filter(n=>n.id!==snDel.dataset.snid);
+    S.set('stickyNotes',_stickyNotes);
+    // A deleted card's strings would otherwise become orphaned records that silently
+    // accumulate forever without ever rendering (nothing to draw a line to/from).
+    const before=_stickyConnections.length;
+    _stickyConnections=_stickyConnections.filter(c=>c.from!==snDel.dataset.snid&&c.to!==snDel.dataset.snid);
+    if(_stickyConnections.length!==before)S.set('stickyConnections',_stickyConnections);
+    renderStickyNotes();return;
+  }
   const snNxt=t.closest('.sn-next');
   if(snNxt){addStickyNote();return;}
   const snCol=t.closest('.sn-c-dot');
@@ -3938,6 +3962,7 @@ document.addEventListener('click',function(e){
   if(id==='set-phone-save'){const v=document.getElementById('set-phone').value.trim();if(!v){toast('Enter a phone number','w');return;}profileData.recoveryPhone=v;S.set('profile',profileData);document.getElementById('set-phone-del').style.display='';toast('✅ Recovery number saved!','s');return;}
   if(id==='set-phone-del'){delete profileData.recoveryPhone;S.set('profile',profileData);document.getElementById('set-phone').value='';document.getElementById('set-phone-del').style.display='none';toast('Recovery number removed','w');return;}
   if(id==='set-change-cur'){openCurrencyModal();return;}
+  if(id==='set-mode-switch'){applyMode(!_lightMode);toast(_lightMode?'☀️ Light mode on':'🌙 Dark mode on','s');return;}
   if(id==='set-salary-save'){saveMonthlySalarySettings();return;}
   if(id==='fin-salary-add-btn'){addMonthlySalaryQuick();return;}
   if(id==='set-ai-copy'){genAISummary();return;}
@@ -3948,11 +3973,13 @@ document.addEventListener('click',function(e){
   if(id==='bf-exp'||id==='bf-exp2'||id==='fw-exp-btn'){openFinanceModal('expense');return;}
   if(id==='bf-loan'){openFinanceModal('loan');return;}
   if(id==='bf-transfer'){openFinanceModal('transfer');return;}
-  if(id==='bf-fbl'){openM('fbl-modal');document.querySelectorAll('#fbl-src-tabs [data-fbl-src]').forEach(b=>b.classList.toggle('on',b.dataset.fblSrc===_fblSrc));renderFbListings();return;}
+  if(id==='bf-fbl'){openM('fbl-modal');document.querySelectorAll('#fbl-src-tabs [data-fbl-src]').forEach(b=>b.classList.toggle('on',b.dataset.fblSrc===_fblSrc));_fblPM='cash';document.getElementById('fbl-pm-cash').classList.add('on');document.getElementById('fbl-pm-bank').classList.remove('on');renderFbListings();return;}
   if(id==='fbl-close'){closeM('fbl-modal');return;}
   if(id==='fbl-add-btn'){addFbListing();return;}
   const fblSrcTab=t.closest('[data-fbl-src]');
   if(fblSrcTab){_fblSrc=fblSrcTab.dataset.fblSrc;document.querySelectorAll('#fbl-src-tabs [data-fbl-src]').forEach(b=>b.classList.toggle('on',b.dataset.fblSrc===_fblSrc));renderFbListings();return;}
+  const fblPmBtn=t.closest('[data-fblpm]');
+  if(fblPmBtn){_fblPM=fblPmBtn.dataset.fblpm;document.getElementById('fbl-pm-cash').classList.toggle('on',_fblPM==='cash');document.getElementById('fbl-pm-bank').classList.toggle('on',_fblPM==='bank');return;}
   const fblSold=t.closest('[data-fbl-sold]');
   if(fblSold){toggleFbListingSold(fblSold.dataset.fblSold);return;}
   const fblInc=t.closest('[data-fbl-inc]');
@@ -4529,11 +4556,15 @@ function renderFinanceSmartPanel(){
     if(t.type==='income'&&t.source==='salary')salary+=t.amount;
     if(t.type==='expense'&&t.source==='business')biz+=t.amount;
   });
-  // Unsold Facebook/Amazon/Trading/Others listings are cash tied up in inventory — count
-  // them toward the Investment Balance until they're marked sold (at which point they
-  // convert to real income and drop out of this sum automatically). This is a current
-  // balance too, so it's also unaffected by the period tabs.
-  invest+=fbListings.filter(l=>!l.sold).reduce((s,l)=>s+l.price,0);
+  // Unsold Facebook/Amazon/Trading/Others listings are cash tied up in inventory. The money
+  // to buy that stock came out of Cash or Bank (whichever "Paid With" was chosen when the
+  // listing was added), so it moves OUT of that balance and INTO Investment — not just
+  // added to Investment out of nowhere — until the item sells and converts back to real
+  // income. This keeps total money conserved and is also unaffected by the period tabs.
+  fbListings.filter(l=>!l.sold).forEach(l=>{
+    if((l.paymentMethod||'cash')==='bank')bank-=l.price;else cash-=l.price;
+    invest+=l.price;
+  });
   document.getElementById('fs-cash').textContent=currSym+' '+fmtMoney(cash);
   document.getElementById('fs-bank').textContent=currSym+' '+fmtMoney(bank);
   document.getElementById('fs-invest').textContent=currSym+' '+fmtMoney(invest);
@@ -5026,7 +5057,7 @@ function addFbListing(){
   const note=document.getElementById('fbl-note').value.trim();
   if(!name){toast('Enter a product name','w');return;}
   if(!price||price<=0){toast('Enter a valid price','w');return;}
-  fbListings.unshift({id:'fbl_'+Date.now(),name,price:Math.round(price),note,sold:false,date:today(),source:_fblSrc});
+  fbListings.unshift({id:'fbl_'+Date.now(),name,price:Math.round(price),note,sold:false,date:today(),source:_fblSrc,paymentMethod:_fblPM});
   S.set('fbListings',fbListings);
   document.getElementById('fbl-name').value='';
   document.getElementById('fbl-price').value='';
@@ -6345,6 +6376,11 @@ function applySectionNames(){
 function renderSettings(){
   renderTemplateGallery();
   bkRenderList();
+  // Keep the dark/light switch in sync in case it changed via a sync pull from another
+  // device while this page wasn't open.
+  const modeLbl=document.getElementById('set-mode-lbl'),modeSw=document.getElementById('set-mode-switch');
+  if(modeLbl)modeLbl.textContent=_lightMode?'☀️ Light Mode':'🌙 Dark Mode';
+  if(modeSw)modeSw.classList.toggle('on',_lightMode);
   // Profile fields
   const dn=document.getElementById('set-dname');
   if(dn)dn.value=profileData.displayName||'';
@@ -7196,12 +7232,18 @@ function initBugWalk(){}
   },true);
 })();
 
-// Dark / Light mode (persists setting, no button)
-(function(){
-  let _lightMode=S.get('lightMode',false);
-  function applyMode(light){document.documentElement.classList.toggle('light-mode',light);_lightMode=light;S.set('lightMode',light);}
-  applyMode(_lightMode);
-})();
+// Dark / Light mode — global (not IIFE-scoped) so the Settings toggle can call applyMode too.
+// (_lightMode itself is declared early near the other sync-safe state, see comment there.)
+function applyMode(light){
+  document.documentElement.classList.toggle('light-mode',light);
+  _lightMode=light;
+  S.set('lightMode',light);
+  const lbl=document.getElementById('set-mode-lbl');
+  if(lbl)lbl.textContent=light?'☀️ Light Mode':'🌙 Dark Mode';
+  const sw=document.getElementById('set-mode-switch');
+  if(sw)sw.classList.toggle('on',light);
+}
+applyMode(_lightMode);
 
 // Congrats close
 document.getElementById('congrats-close')?.addEventListener('click',hideCongrats);
@@ -7213,7 +7255,8 @@ let _stickyConnections=S.get('stickyConnections',[]);
 let _snWireFrom=null;
 let _snLastCardClick={id:null,t:0};
 let _snColor='#fef08a';
-const SN_COLORS=['#fef08a','#fde68a','#bbf7d0','#6ee7b7','#fbcfe8','#f9a8d4','#bfdbfe','#93c5fd','#e9d5ff','#c4b5fd','#fed7aa','#fdba74','#fecaca','#fca5a5','#99f6e4','#67e8f9','#d9f99d','#a3e635','#f1f5f9','#e2e8f0'];
+const SN_COLORS=['#fef08a','#fde68a','#bbf7d0','#6ee7b7','#fbcfe8','#f9a8d4','#bfdbfe','#93c5fd','#e9d5ff','#c4b5fd','#fed7aa','#fdba74','#fecaca','#fca5a5','#99f6e4','#67e8f9','#d9f99d','#a3e635','#f1f5f9','#e2e8f0',
+  '#f43f5e','#ec4899','#d946ef','#a855f7','#6366f1','#3b82f6','#0ea5e9','#06b6d4','#14b8a6','#10b981','#22c55e','#84cc16','#eab308','#f59e0b','#f97316','#ef4444','#78350f','#374151','#1e293b','#000000'];
 const SN_ROTS=[-8,-5,-3,-2,-1,0,1,2,3,5,8];
 
 // ===== NOTEBOOK — Real Bookshelf (20 books × 100,000 pages) =====
@@ -7833,7 +7876,7 @@ function renderStickyNotes(){
 // "double-click" that starts the wire (dblclick itself fires too late — after mouseup — to
 // use as a drag-start trigger).
 function toggleConnectMode(){
-  toast('🧵 Double-click any card, then drag to another card to connect them with a string. Click a string to remove it.','s');
+  toast('🧵 Double-click any card, then drag to another card to connect them. Click the ✂️ on a string to cut it.','s');
 }
 function deleteConnection(id){
   _stickyConnections=_stickyConnections.filter(c=>c.id!==id);
@@ -7858,9 +7901,17 @@ function renderStickyConnections(livePreview){
     if(!a||!b)return'';
     // Slight sag/curve like a real pinned string instead of a perfectly straight line.
     const mx=(a.x+b.x)/2,my=(a.y+b.y)/2+18;
+    // Point actually ON the curve at t=0.5 (quadratic bezier midpoint formula) — not the
+    // straight-line midpoint — so the scissors icon sits exactly on the visible sagging
+    // string instead of floating off it.
+    const cx=0.25*a.x+0.5*mx+0.25*b.x, cy=0.25*a.y+0.5*my+0.25*b.y;
     return `<g data-connid="${c.id}">
       <path class="snc-hit" d="M${a.x},${a.y} Q${mx},${my} ${b.x},${b.y}" fill="none" stroke="transparent" stroke-width="16"></path>
       <path class="snc-line" d="M${a.x},${a.y} Q${mx},${my} ${b.x},${b.y}" fill="none" stroke="#dc2626" stroke-width="2.5" opacity="0.85"></path>
+      <g class="snc-scissors" transform="translate(${cx},${cy})">
+        <circle r="12" fill="rgba(20,10,5,.75)" stroke="#dc2626" stroke-width="1.5"></circle>
+        <text x="0" y="5" text-anchor="middle" font-size="13" style="pointer-events:none;user-select:none">✂️</text>
+      </g>
     </g>`;
   }).join('');
   if(livePreview){
@@ -8076,21 +8127,36 @@ function initNoteDrag(){
   viewport.addEventListener('wheel',e=>{e.preventDefault();snSetZoom(_snZoom+(e.deltaY<0?0.1:-0.1));},{passive:false});
 }
 
-function addStickyNote(){
+// New notes/photos used to spawn at a fully random spot anywhere on the (now much larger,
+// 9000x6000) board — easy to lose track of since it could land far off-screen from wherever
+// you're actually looking. Instead, spawn near the current viewport center (converted from
+// screen space to the board's local coordinate space using the active pan/zoom), with a
+// little random jitter so several quick adds don't stack exactly on top of each other.
+function snSpawnPoint(w,h){
   const{bw,bh}=snBoardSize();
+  const viewport=document.getElementById('np-viewport');
+  let cx=bw/2,cy=bh/2;
+  if(viewport){
+    const vw=viewport.clientWidth||900,vh=viewport.clientHeight||600;
+    cx=(vw/2-_snPanX)/_snZoom;
+    cy=(vh/2-_snPanY)/_snZoom;
+  }
+  const jx=(Math.random()-0.5)*160,jy=(Math.random()-0.5)*160;
+  const x=Math.max(10,Math.min(bw-w-10,cx-w/2+jx));
+  const y=Math.max(10,Math.min(bh-h-10,cy-h/2+jy));
+  return{x,y};
+}
+function addStickyNote(){
   const rot=SN_ROTS[Math.floor(Math.random()*SN_ROTS.length)];
-  const x=Math.max(10,Math.floor(Math.random()*(bw-180)+10));
-  const y=Math.max(10,Math.floor(Math.random()*(bh-120)+10));
+  const{x,y}=snSpawnPoint(150,65);
   const n={id:'sn_'+Date.now(),type:'note',text:'',color:_snColor,x,y,rot,z:++_snZMax};
   _snNewId=n.id;_stickyNotes.unshift(n);S.set('stickyNotes',_stickyNotes);
   renderStickyNotes();
   setTimeout(()=>{const ta=document.querySelector(`.sn-ta[data-snid="${n.id}"]`);if(ta)ta.focus();},80);
 }
 function addStickyPhoto(dataUrl){
-  const{bw,bh}=snBoardSize();
   const rot=SN_ROTS[Math.floor(Math.random()*SN_ROTS.length)];
-  const x=Math.max(10,Math.floor(Math.random()*(bw-180)+10));
-  const y=Math.max(10,Math.floor(Math.random()*(bh-160)+10));
+  const{x,y}=snSpawnPoint(160,160);
   const n={id:'sn_'+Date.now(),type:'photo',img:dataUrl,x,y,rot,w:160,h:160,z:++_snZMax};
   _snNewId=n.id;_stickyNotes.unshift(n);S.set('stickyNotes',_stickyNotes);
   renderStickyNotes();
@@ -8116,6 +8182,12 @@ function renderWallBgDots(){
   wrap.innerHTML=WALL_BG_COLORS.map(c=>`<div class="np-wall-bg-btn${c===_wallBg?' on':''}" data-wb="${c}" style="background:${c}" title="Wall background"></div>`).join('');
 }
 
+function renderNpColorDots(){
+  const wrap=document.getElementById('np-dots-scroll');
+  if(!wrap)return;
+  wrap.innerHTML=SN_COLORS.map(c=>`<div class="np-cdot${c===_snColor?' on':''}" data-nc="${c}" style="background:${c}" title="Note color"></div>`).join('');
+}
+
 function openNotepad(){
   document.getElementById('notepad-modal')?.classList.add('open');
   snResetView();
@@ -8123,6 +8195,7 @@ function openNotepad(){
   setTimeout(()=>{
     renderStickyNotes();
     renderWallBgDots();
+    renderNpColorDots();
     applyWallBg(_wallBg);
     applyZoomPan();
     document.querySelectorAll('.np-cdot').forEach(d=>d.classList.toggle('on',d.dataset.nc===_snColor));
