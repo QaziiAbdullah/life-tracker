@@ -1301,7 +1301,8 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
         <span id="np-count-lbl">0 notes</span>
       </div>
       <div class="np-hd-r">
-        <div class="np-dots-scroll" id="np-dots-scroll"></div>
+        <button class="np-header-btn" id="np-colors-toggle" onclick="toggleNpColors()" style="background:#334155;padding:6px 10px" title="Note colors">🎨</button>
+        <div class="np-dots-scroll" id="np-dots-scroll" style="display:none"></div>
         <span style="font-size:9px;color:rgba(0,0,0,.35);font-weight:600;letter-spacing:.5px;flex-shrink:0">WALL</span>
         <div id="np-wall-bg-dots" style="display:flex;align-items:center;gap:4px;flex-shrink:0"></div>
         <button class="np-add-btn-wall" id="np-add-btn">＋ New Note</button>
@@ -5210,6 +5211,15 @@ function _hslToHex(h,s,l){
   const toHex=v=>Math.round(v*255).toString(16).padStart(2,'0');
   return'#'+toHex(r)+toHex(g)+toHex(b);
 }
+// Light mode keeps --bg/--card pure white (explicit user request), but derives a subtly
+// tinted --card2 from whichever accent theme is active so switching themes still visibly
+// changes something in light mode too, instead of every theme looking identical there.
+function deriveLightCard2(hex){
+  const[r,g,b]=_hexToRgb(hex);
+  const[h,s]=_rgbToHsl(r,g,b);
+  const sat=Math.min(Math.max(s,20),40);
+  return _hslToHex(h,sat,95);
+}
 function deriveLuxuryTheme(hex){
   const[r,g,b]=_hexToRgb(hex);
   const[h,s]=_rgbToHsl(r,g,b);
@@ -5235,7 +5245,7 @@ function applyLuxuryTheme(key,silent,noSave){
   r.setProperty('--primary',t.primary);r.setProperty('--pl',t.pl);r.setProperty('--pa',t.pa);
   r.setProperty('--bg',t.bg);r.setProperty('--card',t.card);r.setProperty('--card2',t.card2);
   r.setProperty('--sb',t.sb);r.setProperty('--gs',t.gs);r.setProperty('--ge',t.ge);
-  if(typeof _lightMode!=='undefined'&&_lightMode){r.setProperty('--bg','#ffffff');r.setProperty('--card','#ffffff');r.setProperty('--card2','#eef2ff');}
+  if(typeof _lightMode!=='undefined'&&_lightMode){r.setProperty('--bg','#ffffff');r.setProperty('--card','#ffffff');r.setProperty('--card2',deriveLightCard2(t.primary));}
   const ic=document.getElementById('sb-icon-txt');
   if(ic)ic.style.background=`linear-gradient(135deg,${t.primary},${t.ge})`;
   document.querySelectorAll('#rg stop:first-child').forEach(s=>s.setAttribute('stop-color',t.pl));
@@ -5383,7 +5393,7 @@ function applyTheme(name,silent,noSave){
   r.setProperty('--primary',t.primary);r.setProperty('--pl',t.pl);r.setProperty('--pa',t.pa);
   r.setProperty('--bg',t.bg);r.setProperty('--card',t.card);r.setProperty('--card2',t.card2);
   r.setProperty('--sb',t.sb);r.setProperty('--gs',t.gs);r.setProperty('--ge',t.ge);
-  if(typeof _lightMode!=='undefined'&&_lightMode){r.setProperty('--bg','#ffffff');r.setProperty('--card','#ffffff');r.setProperty('--card2','#eef2ff');}
+  if(typeof _lightMode!=='undefined'&&_lightMode){r.setProperty('--bg','#ffffff');r.setProperty('--card','#ffffff');r.setProperty('--card2',deriveLightCard2(t.primary));}
   // Update icon gradient
   const ic=document.getElementById('sb-icon-txt');
   if(ic)ic.style.background=`linear-gradient(135deg,${t.primary},${t.ge})`;
@@ -7266,7 +7276,8 @@ function applyMode(light){
   if(light){
     r.setProperty('--bg','#ffffff');
     r.setProperty('--card','#ffffff');
-    r.setProperty('--card2','#eef2ff');
+    const primary=getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()||'#2563eb';
+    r.setProperty('--card2',deriveLightCard2(primary));
   }else if(typeof currentTheme!=='undefined'){
     if(typeof LUXURY_NAMES!=='undefined'&&LUXURY_NAMES[currentTheme])applyLuxuryTheme(currentTheme,true,true);
     else if(typeof applyTheme==='function')applyTheme(currentTheme,true,true);
@@ -8219,6 +8230,15 @@ function renderNpColorDots(){
   const wrap=document.getElementById('np-dots-scroll');
   if(!wrap)return;
   wrap.innerHTML=SN_COLORS.map(c=>`<div class="np-cdot${c===_snColor?' on':''}" data-nc="${c}" style="background:${c}" title="Note color"></div>`).join('');
+}
+
+let _npColorsOpen=false;
+function toggleNpColors(){
+  _npColorsOpen=!_npColorsOpen;
+  const wrap=document.getElementById('np-dots-scroll');
+  const btn=document.getElementById('np-colors-toggle');
+  if(wrap)wrap.style.display=_npColorsOpen?'flex':'none';
+  if(btn)btn.classList.toggle('on',_npColorsOpen);
 }
 
 function openNotepad(){
