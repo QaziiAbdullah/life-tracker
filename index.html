@@ -5116,17 +5116,38 @@ const THEMES={
   analytics_dash:{primary:'#8b5cf6',pl:'#c4b5fd',pa:'139,92,246',  bg:'#04020d',card:'#0b0820',card2:'#12102e',sb:'#020110',gs:'#8b5cf6',ge:'#ec4899'},
   wealth_gold:   {primary:'#f59e0b',pl:'#fde68a',pa:'245,158,11',  bg:'#0a0600',card:'#160d00',card2:'#1f1400',sb:'#080400',gs:'#f59e0b',ge:'#ef4444'},
   midnight_fin:  {primary:'#3b82f6',pl:'#93c5fd',pa:'59,130,246',  bg:'#01040c',card:'#030d1e',card2:'#05152e',sb:'#010309',gs:'#3b82f6',ge:'#8b5cf6'},
+  // New alternatives
+  indigo_night:  {primary:'#4f46e5',pl:'#a5b4fc',pa:'79,70,229',   bg:'#05050f',card:'#0b0a1f',card2:'#121030',sb:'#04040c',gs:'#4f46e5',ge:'#7c3aed'},
+  mint_fresh:    {primary:'#059669',pl:'#6ee7b7',pa:'5,150,105',   bg:'#020e0a',card:'#041a14',card2:'#07261c',sb:'#010b07',gs:'#10b981',ge:'#34d399'},
+  coffee_bean:   {primary:'#92400e',pl:'#fbbf24',pa:'146,64,14',   bg:'#0e0904',card:'#1c130a',card2:'#281c0f',sb:'#0a0603',gs:'#b45309',ge:'#f59e0b'},
+  slate_pro:     {primary:'#475569',pl:'#cbd5e1',pa:'71,85,105',   bg:'#08090b',card:'#111418',card2:'#1a1e24',sb:'#06070a',gs:'#64748b',ge:'#94a3b8'},
 };
-const THEME_ORDER=['professional','purple','ocean','emerald','sunset','rose','gold','teal','neon','controltower','stripe_fintech','banking_pro','biz_district','analytics_dash','wealth_gold','midnight_fin'];
-const THEME_NAMES={professional:'Professional Navy',purple:'Violet Dream',ocean:'Deep Sea',emerald:'Forest Dark',sunset:'Volcano',rose:'Cherry Blossom',gold:'Gold Mine',teal:'Arctic Glow',neon:'Neon Nights',controltower:'Control Tower',stripe_fintech:'Stripe Fintech',banking_pro:'Banking Pro',biz_district:'Business District',analytics_dash:'Analytics Dashboard',wealth_gold:'Wealth Manager',midnight_fin:'Midnight Finance'};
-// Template metadata for gallery cards
+const THEME_ORDER=['professional','purple','ocean','emerald','sunset','rose','gold','teal','neon','controltower','stripe_fintech','banking_pro','biz_district','analytics_dash','wealth_gold','midnight_fin','indigo_night','mint_fresh','coffee_bean','slate_pro'];
+const THEME_NAMES={professional:'Professional Navy',purple:'Violet Dream',ocean:'Deep Sea',emerald:'Forest Dark',sunset:'Volcano',rose:'Cherry Blossom',gold:'Gold Mine',teal:'Arctic Glow',neon:'Neon Nights',controltower:'Control Tower',stripe_fintech:'Stripe Fintech',banking_pro:'Banking Pro',biz_district:'Business District',analytics_dash:'Analytics Dashboard',wealth_gold:'Wealth Manager',midnight_fin:'Midnight Finance',indigo_night:'Indigo Night',mint_fresh:'Mint Fresh',coffee_bean:'Coffee Bean',slate_pro:'Slate Pro'};
+// Template metadata for gallery cards — every theme in THEME_ORDER gets a full preview card
+// here (not just the original 6), so this nicer gallery UI is the one real way to browse and
+// pick a theme instead of the tiny 15px sidebar dots being the only way to reach most of them.
 const TEMPLATE_META={
+  professional:   {icon:'🏢',sub:'Classic · Blue to Cyan',gs:'#3b82f6',ge:'#0ea5e9'},
+  purple:         {icon:'🔮',sub:'Elegant · Purple to Indigo',gs:'#8b5cf6',ge:'#6366f1'},
+  ocean:          {icon:'🌊',sub:'Cool · Sky to Cyan',gs:'#0ea5e9',ge:'#22d3ee'},
+  emerald:        {icon:'🌲',sub:'Nature · Green to Emerald',gs:'#22c55e',ge:'#10b981'},
+  sunset:         {icon:'🌋',sub:'Bold · Orange to Red',gs:'#f97316',ge:'#ef4444'},
+  rose:           {icon:'🌸',sub:'Soft · Pink to Purple',gs:'#ec4899',ge:'#a855f7'},
+  gold:           {icon:'⚡',sub:'Rich · Amber to Yellow',gs:'#f59e0b',ge:'#eab308'},
+  teal:           {icon:'❄️',sub:'Fresh · Teal to Cyan',gs:'#14b8a6',ge:'#2dd4bf'},
+  neon:           {icon:'🌃',sub:'Vivid · Magenta to Purple',gs:'#d946ef',ge:'#9333ea'},
+  controltower:   {icon:'🛰️',sub:'Luxury · Cyan to Violet',gs:'#22d3ee',ge:'#a78bfa'},
   stripe_fintech: {icon:'💳',sub:'Vibrant · Coral to Gold',gs:'#ff6b6b',ge:'#ffbe0b'},
   banking_pro:    {icon:'🏦',sub:'Pro · Emerald to Cyan',gs:'#10b981',ge:'#06b6d4'},
   biz_district:   {icon:'🌃',sub:'Tech · Cyan to Indigo',gs:'#06b6d4',ge:'#6366f1'},
   analytics_dash: {icon:'📊',sub:'Analytics · Purple to Pink',gs:'#8b5cf6',ge:'#ec4899'},
   wealth_gold:    {icon:'💰',sub:'Luxury · Gold to Red',gs:'#f59e0b',ge:'#ef4444'},
   midnight_fin:   {icon:'🌙',sub:'Classic · Blue to Violet',gs:'#3b82f6',ge:'#8b5cf6'},
+  indigo_night:   {icon:'🌌',sub:'Deep · Indigo to Violet',gs:'#4f46e5',ge:'#7c3aed'},
+  mint_fresh:     {icon:'🌱',sub:'Crisp · Emerald to Mint',gs:'#10b981',ge:'#34d399'},
+  coffee_bean:    {icon:'☕',sub:'Warm · Bronze to Amber',gs:'#b45309',ge:'#f59e0b'},
+  slate_pro:      {icon:'⚙️',sub:'Neutral · Slate to Silver',gs:'#64748b',ge:'#94a3b8'},
 };
 let currentTheme=S.get('theme','professional');
 let autoOn=S.get('autoTheme',false);
