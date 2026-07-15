@@ -902,7 +902,7 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px 20px;min-height:100vh
 .drag-handle:hover{opacity:.9!important;color:var(--pl)}
 
 /* LIGHT MODE */
-html.light-mode{--bg:#f0f4ff;--card:#ffffff;--card2:#eef2ff;--text:#1e293b;--muted:#64748b;--border:rgba(0,0,0,.09)}
+html.light-mode{--bg:#ffffff;--card:#ffffff;--card2:#eef2ff;--text:#1e293b;--muted:#64748b;--border:rgba(0,0,0,.09)}
 html.light-mode body{background:var(--bg);color:var(--text)}
 html.light-mode .sb{background:#16123a;border-right-color:rgba(255,255,255,.06)}
 html.light-mode .ticker::before{background:linear-gradient(180deg,#16123a,transparent)}
@@ -5235,7 +5235,7 @@ function applyLuxuryTheme(key,silent,noSave){
   r.setProperty('--primary',t.primary);r.setProperty('--pl',t.pl);r.setProperty('--pa',t.pa);
   r.setProperty('--bg',t.bg);r.setProperty('--card',t.card);r.setProperty('--card2',t.card2);
   r.setProperty('--sb',t.sb);r.setProperty('--gs',t.gs);r.setProperty('--ge',t.ge);
-  if(typeof _lightMode!=='undefined'&&_lightMode){r.setProperty('--bg','#f0f4ff');r.setProperty('--card','#ffffff');r.setProperty('--card2','#eef2ff');}
+  if(typeof _lightMode!=='undefined'&&_lightMode){r.setProperty('--bg','#ffffff');r.setProperty('--card','#ffffff');r.setProperty('--card2','#eef2ff');}
   const ic=document.getElementById('sb-icon-txt');
   if(ic)ic.style.background=`linear-gradient(135deg,${t.primary},${t.ge})`;
   document.querySelectorAll('#rg stop:first-child').forEach(s=>s.setAttribute('stop-color',t.pl));
@@ -5383,7 +5383,7 @@ function applyTheme(name,silent,noSave){
   r.setProperty('--primary',t.primary);r.setProperty('--pl',t.pl);r.setProperty('--pa',t.pa);
   r.setProperty('--bg',t.bg);r.setProperty('--card',t.card);r.setProperty('--card2',t.card2);
   r.setProperty('--sb',t.sb);r.setProperty('--gs',t.gs);r.setProperty('--ge',t.ge);
-  if(typeof _lightMode!=='undefined'&&_lightMode){r.setProperty('--bg','#f0f4ff');r.setProperty('--card','#ffffff');r.setProperty('--card2','#eef2ff');}
+  if(typeof _lightMode!=='undefined'&&_lightMode){r.setProperty('--bg','#ffffff');r.setProperty('--card','#ffffff');r.setProperty('--card2','#eef2ff');}
   // Update icon gradient
   const ic=document.getElementById('sb-icon-txt');
   if(ic)ic.style.background=`linear-gradient(135deg,${t.primary},${t.ge})`;
@@ -7264,7 +7264,7 @@ function applyMode(light){
   // theme's inline values, making text unreadable. Fix: drive --bg/--card/--card2 inline too.
   const r=document.documentElement.style;
   if(light){
-    r.setProperty('--bg','#f0f4ff');
+    r.setProperty('--bg','#ffffff');
     r.setProperty('--card','#ffffff');
     r.setProperty('--card2','#eef2ff');
   }else if(typeof currentTheme!=='undefined'){
