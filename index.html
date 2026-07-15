@@ -2292,7 +2292,11 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
           <button class="btn btn-p btn-sm" id="bk-create-btn">📦 Backup Now</button>
           <button class="btn btn-g btn-sm" id="bk-refresh-btn">🔄 Refresh List</button>
         </div>
-        <div id="bk-list" style="display:flex;flex-direction:column;gap:6px"></div>
+        <div id="bk-list-toggle" onclick="toggleBkList()" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:9px 12px;background:var(--card2);border:1px solid var(--border);border-radius:10px;margin-bottom:6px">
+          <span style="font-size:11px;font-weight:700;color:var(--text)">📋 Backup History (<span id="bk-count">0</span>)</span>
+          <span id="bk-chevron" style="font-size:12px;color:var(--muted);transition:transform .2s">▸</span>
+        </div>
+        <div id="bk-list" style="display:none;flex-direction:column;gap:6px"></div>
       </div>
     </div>
     <!-- Appearance: Dark / Light Mode -->
@@ -5290,13 +5294,26 @@ async function bkFetchList(){
   }catch(e){return[];}
 }
 
+let _bkListOpen=false;
+function toggleBkList(){
+  _bkListOpen=!_bkListOpen;
+  const wrap=document.getElementById('bk-list');
+  const chev=document.getElementById('bk-chevron');
+  if(wrap)wrap.style.display=_bkListOpen?'flex':'none';
+  if(chev)chev.style.transform=_bkListOpen?'rotate(90deg)':'rotate(0deg)';
+}
+function _setBkCount(n){
+  const c=document.getElementById('bk-count');
+  if(c)c.textContent=String(n);
+}
 async function bkRenderList(){
   const wrap=document.getElementById('bk-list');
   if(!wrap)return;
-  if(!_syncToken){wrap.innerHTML='<div class="bk-empty">Log in with Google to enable backups.</div>';return;}
+  if(!_syncToken){wrap.innerHTML='<div class="bk-empty">Log in with Google to enable backups.</div>';_setBkCount(0);return;}
   wrap.innerHTML='<div class="bk-empty">Loading…</div>';
   const list=await bkFetchList();
   if(document.getElementById('bk-list')!==wrap)return; // view changed while loading
+  _setBkCount(list.length);
   if(!list.length){wrap.innerHTML='<div class="bk-empty">No backups yet. Click "Backup Now" to create your first one.</div>';return;}
   wrap.innerHTML=list.map(b=>{
     const dt=new Date(b.created_at);
