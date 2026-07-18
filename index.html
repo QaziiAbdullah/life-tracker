@@ -1269,6 +1269,10 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
       <span class="sb-notepad-open-lbl">Cyber &amp; Hacking</span>
       <span class="sb-notepad-count-badge" id="sb-cyber-count-badge">0</span>
     </button>
+    <button class="sb-notepad-open-btn" id="sb-azan-open" style="margin-top:5px">
+      <span class="sb-notepad-open-icon">🕌</span>
+      <span class="sb-notepad-open-lbl">Azan Timing</span>
+    </button>
   </div>
 
   <nav class="sb-nav">
@@ -1409,7 +1413,7 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
 
 <!-- CYBER & HACKING VAULT -->
 <div class="overlay" id="cyber-modal">
-  <div class="modal" style="max-width:920px;width:95vw;max-height:88vh;display:flex;flex-direction:column;padding:0">
+  <div class="modal" style="max-width:none;width:100vw;height:100vh;max-height:100vh;border-radius:0;display:flex;flex-direction:column;padding:0">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0">
       <div style="display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px">🛡️ Cyber &amp; Hacking</div>
       <button class="np-close-wall" id="cyber-close-btn" title="Close">✕</button>
@@ -1467,6 +1471,54 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
       <div style="display:flex;gap:8px;justify-content:flex-end">
         <button class="btn btn-g btn-sm" id="cyber-img-delete-btn" style="color:#ef4444;border-color:rgba(239,68,68,.3)">🗑 Delete</button>
         <button class="btn btn-p btn-sm" id="cyber-img-save-btn">💾 Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AZAN TIMING -->
+<div class="overlay" id="azan-modal">
+  <div class="modal" style="max-width:480px;width:92vw;max-height:88vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-weight:800;font-size:15px">🕌 Azan Timing</div>
+      <button class="np-close-wall" id="azan-close-btn" title="Close">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--text)">Enable Azan Notifications</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">Notify + play sound automatically at each prayer time</div>
+        </div>
+        <div class="mode-switch-row">
+          <button type="button" id="azan-enable-switch" class="mode-switch" title="Toggle azan notifications"><span class="mode-switch-knob"></span></button>
+        </div>
+      </div>
+      <div>
+        <div id="azan-loc-lbl" style="font-size:11px;color:var(--muted);margin-bottom:6px">📍 Location not set</div>
+        <button class="btn btn-g btn-sm" id="azan-loc-btn">📍 Use My Location</button>
+      </div>
+      <div class="fg">
+        <label>Calculation Method</label>
+        <select id="azan-method-select" class="fi">
+          <option value="2">ISNA (North America)</option>
+          <option value="3">Muslim World League</option>
+          <option value="4">Umm al-Qura, Makkah</option>
+          <option value="1">University of Islamic Sciences, Karachi</option>
+          <option value="5">Egyptian General Authority</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">Today's Prayer Times</div>
+        <div id="azan-timings-list" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px">Azan Sound</div>
+        <div id="azan-sound-lbl" style="font-size:10px;color:var(--muted);margin-bottom:6px">No custom azan sound uploaded (silent alert only)</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-g btn-sm" id="azan-sound-upload-btn">🔊 Upload Azan Sound</button>
+          <input type="file" id="azan-sound-file" accept="audio/*" style="display:none">
+          <button class="btn btn-g btn-sm" id="azan-sound-test-btn">▶️ Test Play</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1679,6 +1731,33 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
             </div>
           </div>
           <div class="fw-tx-list" id="fw-tx"></div>
+        </div>
+      </div>
+
+      <div class="drag-blk" draggable="true" data-blk="storage">
+        <div class="drag-handle" title="Drag to reorder">⠿</div>
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-h">
+            <div class="card-t">💾 Storage Analytics</div>
+            <button class="btn btn-g btn-sm" id="storage-refresh-btn" style="font-size:10px">🔄 Refresh</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:6px 0">
+            <div style="position:relative;width:110px;height:110px;flex-shrink:0">
+              <svg width="110" height="110" viewBox="0 0 110 110">
+                <circle cx="55" cy="55" r="46" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="10"/>
+                <circle id="storage-ring" cx="55" cy="55" r="46" fill="none" stroke="url(#storage-rg)" stroke-width="10"
+                  stroke-linecap="round" stroke-dasharray="289" stroke-dashoffset="289"
+                  transform="rotate(-90 55 55)" style="transition:stroke-dashoffset .6s ease"/>
+                <defs><linearGradient id="storage-rg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#34d399"/><stop offset="100%" stop-color="#60a5fa"/></linearGradient></defs>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <span id="storage-pct" style="font-size:18px;font-weight:800;color:var(--text)">0%</span>
+                <span style="font-size:9px;color:var(--muted)">used</span>
+              </div>
+            </div>
+            <div style="flex:1;min-width:200px;display:flex;flex-direction:column;gap:8px" id="storage-breakdown"></div>
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:6px" id="storage-total-lbl"></div>
         </div>
       </div>
 
@@ -2389,6 +2468,14 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
         <div class="tt-grid" id="tt-gallery"></div>
       </div>
     </div>
+    <!-- Luxury Color Gallery -->
+    <div class="set-section">
+      <div class="set-sh">💎 Luxury Colors</div>
+      <div class="set-row" style="display:block">
+        <div class="set-hint">~98 curated luxury accent colors, grouped by mood. Click any swatch to recolor the whole app around it.</div>
+        <div id="lux-gallery" style="display:flex;flex-direction:column;gap:12px;margin-top:10px"></div>
+      </div>
+    </div>
     <!-- Currency -->
     <div class="set-section">
       <div class="set-sh">💱 Currency</div>
@@ -2801,6 +2888,7 @@ function _applyRemoteChanges(changedKeys){
     else if(k==='theme'){currentTheme=S.get('theme','professional');if(typeof applyTheme==='function')applyTheme(currentTheme,true,true);}
     else if(k==='lightMode'){if(typeof applyMode==='function')applyMode(S.get('lightMode',false));}
     else if(k==='cyberVault'){cyberVault=S.get('cyberVault',{folders:[],docs:[]});if(document.getElementById('cyber-modal')?.classList.contains('open')&&typeof cyberRenderFolders==='function'){cyberRenderFolders();cyberRenderDocs();}if(typeof cyberUpdateBadge==='function')cyberUpdateBadge();}
+    else if(k==='azanSettings'){azanSettings=S.get('azanSettings',{enabled:false,lat:null,lon:null,method:2,sound:null,soundName:''});_azanTimings=null;_azanTimingsDate=null;if(document.getElementById('azan-modal')?.classList.contains('open')&&typeof azanRenderPanel==='function')azanRenderPanel();}
     else if(k==='autoTheme'){autoOn=S.get('autoTheme',false);}
     else if(k==='wallBg'){_wallBg=S.get('wallBg','#eee8dc');if(document.getElementById('notepad-modal')?.classList.contains('open')&&typeof applyWallBg==='function')applyWallBg(_wallBg);}
     else if(k==='appName'||k==='appSub'){
@@ -2827,7 +2915,7 @@ setInterval(_pullSync,25000);
 setInterval(()=>{if(_syncToken)_flushSync();},5*60*1000);
 
 // ===== MANUAL "SAVE & SYNC" BUTTON =====
-const ALL_SYNC_KEYS=['habits','tasks','goals','logs','birthdays','events','finance','customIncSrc','customExpCat','profile','sectionNames','timetable','visionItems','stickyNotes','stickyConnections','libBooks','currencyData','theme','autoTheme','wallBg','appName','appSub','dashOrder','weatherPref','aiPatterns','ttWakeStart','ttWakeEnd','fbListings','monthlySalary','lightMode','cyberVault'];
+const ALL_SYNC_KEYS=['habits','tasks','goals','logs','birthdays','events','finance','customIncSrc','customExpCat','profile','sectionNames','timetable','visionItems','stickyNotes','stickyConnections','libBooks','currencyData','theme','autoTheme','wallBg','appName','appSub','dashOrder','weatherPref','aiPatterns','ttWakeStart','ttWakeEnd','fbListings','monthlySalary','lightMode','cyberVault','azanSettings'];
 // Zulqey AI assistant's learned phrase->action mappings — declared here (early, before any code
 // path can reference it) to avoid the TDZ ordering crash class documented elsewhere in this file.
 let aiPatterns=S.get('aiPatterns',[]);
@@ -2909,6 +2997,8 @@ let monthlySalary=S.get('monthlySalary',{amount:0,enabled:false});
 let _lightMode=S.get('lightMode',false);
 let cyberVault=S.get('cyberVault',{folders:[],docs:[]});
 let _cyberPath=[],_cyberActiveDoc=null;
+let azanSettings=S.get('azanSettings',{enabled:false,lat:null,lon:null,method:2,sound:null,soundName:''});
+let _azanTimings=null,_azanTimingsDate=null,_azanFiredToday={};
 const FBL_SRC_META={facebook:{icon:'📦',label:'Facebook Marketplace'},amazon:{icon:'🛒',label:'Amazon'},trading:{icon:'📈',label:'Money Trading'},other:{icon:'🗂️',label:'Other Business'}};
 let visionItems=S.get('visionItems',[]);
 let _ttWeekOff=0,_ttView='day',_selTTColor='#7c3aed',_selVBColor='#7c3aed',_selVBCat='career',_vbEditId=null,_ttEditId=null,_vbFileData=null;
@@ -3112,6 +3202,86 @@ function hideCongrats(){
 }
 
 // ===== DAILY =====
+// ===== STORAGE ANALYTICS =====
+function _byteSize(str){try{return new Blob([str]).size;}catch(e){return str?str.length:0;}}
+function computeStorageBreakdown(){
+  const cats={photos:0,documents:0,videos:0,other:0};
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(!k||k.indexOf('lt4_')!==0)continue;
+    const shortKey=k.slice(4);
+    const v=localStorage.getItem(k)||'';
+    if(shortKey==='visionItems'){cats.photos+=_byteSize(v);continue;}
+    if(shortKey==='stickyNotes'){
+      try{
+        const arr=JSON.parse(v);
+        arr.forEach(n=>{
+          const s=_byteSize(JSON.stringify(n));
+          if(n.type==='photo')cats.photos+=s;else cats.other+=s;
+        });
+      }catch(e){cats.other+=_byteSize(v);}
+      continue;
+    }
+    if(shortKey==='cyberVault'){
+      try{
+        const cv=JSON.parse(v);
+        (cv.docs||[]).forEach(d=>{
+          const s=_byteSize(JSON.stringify(d));
+          if(d.type==='image')cats.photos+=s;else cats.documents+=s;
+        });
+        cats.other+=_byteSize(JSON.stringify(cv.folders||[]));
+      }catch(e){cats.other+=_byteSize(v);}
+      continue;
+    }
+    if(shortKey==='libBooks'){cats.documents+=_byteSize(v);continue;}
+    if(shortKey.indexOf('nbB')===0||shortKey.indexOf('nbH')===0){cats.documents+=_byteSize(v);continue;}
+    cats.other+=_byteSize(v);
+  }
+  return cats;
+}
+function _fmtBytes(b){return b<1024?b+' B':b<1024*1024?(b/1024).toFixed(1)+' KB':(b/1024/1024).toFixed(2)+' MB';}
+function renderStorageWidget(){
+  const ring=document.getElementById('storage-ring');
+  if(!ring)return; // widget not on this page (or reordered off-screen — still in DOM though, so this only skips if truly absent)
+  const cats=computeStorageBreakdown();
+  const total=cats.photos+cats.documents+cats.videos+cats.other;
+  // Browsers cap localStorage per-origin around 5-10MB; this app stores everything (including
+  // base64 photos) there, so 5MB is the honest, conservative ceiling that actually matters —
+  // not navigator.storage.estimate()'s origin-wide quota, which includes Cache/IndexedDB and
+  // would make usage look near-zero even when localStorage itself is close to throwing
+  // QuotaExceededError (already handled silently in S.set).
+  const CAP=5*1024*1024;
+  const pct=Math.min(100,Math.round((total/CAP)*100));
+  const C=289.03;
+  ring.style.strokeDashoffset=String(C-(C*pct/100));
+  if(pct>=90){ring.style.stroke='#ef4444';}else if(pct>=70){ring.style.stroke='#f59e0b';}else{ring.style.stroke='url(#storage-rg)';}
+  const pctEl=document.getElementById('storage-pct');
+  if(pctEl)pctEl.textContent=pct+'%';
+  const rows=[
+    {label:'🖼️ Photos',color:'#f472b6',val:cats.photos},
+    {label:'📄 Documents',color:'#60a5fa',val:cats.documents},
+    {label:'🎬 Videos',color:'#a78bfa',val:cats.videos},
+    {label:'📦 Other Data',color:'#34d399',val:cats.other},
+  ];
+  const wrap=document.getElementById('storage-breakdown');
+  if(wrap){
+    wrap.innerHTML=rows.map(r=>{
+      const rp=total?Math.round((r.val/total)*100):0;
+      return `<div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">
+          <span style="color:var(--text);font-weight:600">${r.label}</span>
+          <span style="color:var(--muted)">${_fmtBytes(r.val)}</span>
+        </div>
+        <div style="height:5px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden">
+          <div style="height:100%;width:${rp}%;background:${r.color};border-radius:3px"></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  const totalLbl=document.getElementById('storage-total-lbl');
+  if(totalLbl)totalLbl.textContent=`Total: ${_fmtBytes(total)} of ~${_fmtBytes(CAP)} browser storage limit`;
+}
+
 function renderDaily(){
   const td=today(),log=getLog(td);
   const score=dayScore(td);
@@ -3212,6 +3382,8 @@ function renderDaily(){
   renderBdayWidget();
   // Finance widget
   renderFinanceWidget();
+  // Storage analytics widget
+  renderStorageWidget();
 }
 
 function renderPriorities(td,log,dayT){
@@ -3800,6 +3972,14 @@ document.addEventListener('click',function(e){
   if(t.closest('#sb-library-open')){openLibrary();return;}
   if(t.id==='lib-close-btn'||t.closest('#lib-close-btn')){libCloseModal();return;}
   if(t.id==='lib-shelf-back-btn'||t.closest('#lib-shelf-back-btn')){libCloseModal();return;}
+  if(t.id==='storage-refresh-btn'||t.closest('#storage-refresh-btn')){renderStorageWidget();toast('🔄 Storage refreshed','s');return;}
+  // --- AZAN TIMING ---
+  if(t.closest('#sb-azan-open')){openAzanPanel();return;}
+  if(t.id==='azan-close-btn'||t.closest('#azan-close-btn')){closeM('azan-modal');return;}
+  if(t.id==='azan-enable-switch'||t.closest('#azan-enable-switch')){azanToggleEnable();return;}
+  if(t.id==='azan-loc-btn'||t.closest('#azan-loc-btn')){azanRequestLocation();return;}
+  if(t.id==='azan-sound-upload-btn'||t.closest('#azan-sound-upload-btn')){document.getElementById('azan-sound-file').click();return;}
+  if(t.id==='azan-sound-test-btn'||t.closest('#azan-sound-test-btn')){azanTestPlay();return;}
   // --- CYBER & HACKING VAULT ---
   if(t.closest('#sb-cyber-open')){openCyberVault();return;}
   if(t.id==='cyber-close-btn'||t.closest('#cyber-close-btn')){closeM('cyber-modal');return;}
@@ -4133,10 +4313,10 @@ document.addEventListener('click',function(e){
   if(bkDeleteEl){bkDeleteBackup(bkDeleteEl.dataset.bkDelete);return;}
   // Template gallery card click
   const ttCard=t.closest('.tt-card[data-tt]');
-  if(ttCard){applyTheme(ttCard.dataset.tt);renderTemplateGallery();return;}
-  // Luxury theme swatch click (legacy)
+  if(ttCard){applyTheme(ttCard.dataset.tt);renderTemplateGallery();renderLuxuryGallery();return;}
+  // Luxury theme swatch click
   const luxSw=t.closest('.lux-swatch[data-lux]');
-  if(luxSw){applyLuxuryTheme(luxSw.dataset.lux);return;}
+  if(luxSw){applyLuxuryTheme(luxSw.dataset.lux);renderLuxuryGallery();renderTemplateGallery();return;}
   // Smart Breakdown toggle on the Finance page
   if(id==='fin-smart-toggle'){_finSmartView=!_finSmartView;S.set('financeSmartView',_finSmartView);renderFinance();return;}
   // Manual "Update" button on the Finance page — force a fresh push+pull then re-render this view
@@ -5377,7 +5557,19 @@ function applyLuxuryTheme(key,silent,noSave){
   if(!silent)toast('🎨 '+entry[0],'s');
 }
 function renderLuxuryGallery(){
-  // kept for compatibility — no longer rendered in Settings
+  const wrap=document.getElementById('lux-gallery');
+  if(!wrap)return;
+  wrap.innerHTML=Object.entries(LUXURY_PALETTE).map(([groupName,swatches])=>{
+    const dots=swatches.map(([name,hex])=>{
+      const key='lux_'+name.toLowerCase().replace(/[^a-z0-9]+/g,'');
+      const on=currentTheme===key;
+      return `<div class="lux-swatch${on?' on':''}" data-lux="${key}" style="background:${hex}" title="${escapeHtml(name)}"></div>`;
+    }).join('');
+    return `<div>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px">${groupName}</div>
+      <div class="lux-swatch-row">${dots}</div>
+    </div>`;
+  }).join('');
 }
 
 // ===== BACKUP & RESTORE (WhatsApp-style) =====
@@ -6525,6 +6717,7 @@ function applySectionNames(){
 // ===== SETTINGS =====
 function renderSettings(){
   renderTemplateGallery();
+  renderLuxuryGallery();
   bkRenderList();
   // Keep the dark/light switch in sync in case it changed via a sync pull from another
   // device while this page wasn't open.
@@ -7300,6 +7493,30 @@ document.addEventListener('change',function(e){
       e.target.value='';
     };
     img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+document.addEventListener('change',function(e){
+  if(e.target.id!=='azan-method-select')return;
+  azanSetMethod(e.target.value);
+});
+
+// Azan sound upload — stored as base64 like everything else in this app; capped well under
+// the 5MB localStorage budget so one audio clip can't single-handedly blow the quota.
+document.addEventListener('change',function(e){
+  if(e.target.id!=='azan-sound-file')return;
+  const file=e.target.files[0];
+  if(!file)return;
+  if(file.size>3*1024*1024){toast('❌ Audio file too large (max 3MB)','w');e.target.value='';return;}
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    azanSettings.sound=ev.target.result;
+    azanSettings.soundName=file.name;
+    azanSave();
+    azanRenderPanel();
+    toast('🔊 Azan sound saved','s');
+    e.target.value='';
   };
   reader.readAsDataURL(file);
 });
@@ -8216,6 +8433,110 @@ function cyberDeleteDoc(){
   cyberRenderDocs();cyberUpdateBadge();
   toast('🗑 Document deleted','w');
 }
+
+// ===== AZAN (PRAYER TIME) NOTIFICATIONS =====
+// Uses the free, keyless Aladhan API (https://aladhan.com/prayer-times-api) — no account or
+// token needed, CORS-enabled. Times are fetched once per calendar day per location and cached
+// in memory; azanCheckTimes() polls every 30s for a minute-exact match against the clock.
+const AZAN_PRAYERS=['Fajr','Dhuhr','Asr','Maghrib','Isha'];
+function azanSave(){S.set('azanSettings',azanSettings);}
+function openAzanPanel(){
+  document.getElementById('azan-modal')?.classList.add('open');
+  azanRenderPanel();
+  if(azanSettings.lat!=null)azanFetchTimings();
+}
+function azanRenderPanel(){
+  const sw=document.getElementById('azan-enable-switch');
+  if(sw)sw.classList.toggle('on',azanSettings.enabled);
+  const lbl=document.getElementById('azan-loc-lbl');
+  if(lbl)lbl.textContent=azanSettings.lat!=null?`📍 ${azanSettings.lat.toFixed(3)}, ${azanSettings.lon.toFixed(3)}`:'📍 Location not set';
+  const methodSel=document.getElementById('azan-method-select');
+  if(methodSel)methodSel.value=String(azanSettings.method||2);
+  const soundLbl=document.getElementById('azan-sound-lbl');
+  if(soundLbl)soundLbl.textContent=azanSettings.soundName?('🔊 '+azanSettings.soundName):'No custom azan sound uploaded (silent alert only)';
+  azanRenderTimingsList();
+}
+function azanToggleEnable(){
+  azanSettings.enabled=!azanSettings.enabled;
+  azanSave();
+  azanRenderPanel();
+  if(azanSettings.enabled&&azanSettings.lat==null)azanRequestLocation();
+  toast(azanSettings.enabled?'🕌 Azan notifications enabled':'🔕 Azan notifications disabled',azanSettings.enabled?'s':'w');
+}
+function azanRequestLocation(){
+  if(!navigator.geolocation){toast('❌ Geolocation not supported by this browser','w');return;}
+  toast('📍 Getting your location...','s');
+  navigator.geolocation.getCurrentPosition(pos=>{
+    azanSettings.lat=pos.coords.latitude;
+    azanSettings.lon=pos.coords.longitude;
+    azanSave();
+    _azanTimings=null;_azanTimingsDate=null;
+    azanRenderPanel();
+    azanFetchTimings();
+    toast('📍 Location updated','s');
+  },err=>{
+    toast('❌ Could not get location: '+(err.message||'permission denied'),'w');
+  },{timeout:10000});
+}
+function azanSetMethod(v){
+  azanSettings.method=parseInt(v,10)||2;
+  azanSave();
+  _azanTimings=null;_azanTimingsDate=null;
+  if(azanSettings.lat!=null)azanFetchTimings();
+}
+async function azanFetchTimings(){
+  if(azanSettings.lat==null)return;
+  const td=today();
+  if(_azanTimingsDate===td&&_azanTimings){azanRenderTimingsList();return;}
+  try{
+    const url=`https://api.aladhan.com/v1/timings?latitude=${azanSettings.lat}&longitude=${azanSettings.lon}&method=${azanSettings.method||2}`;
+    const r=await fetch(url);
+    const d=await r.json();
+    if(d&&d.code===200&&d.data&&d.data.timings){
+      _azanTimings=d.data.timings;
+      _azanTimingsDate=td;
+      _azanFiredToday={};
+      azanRenderTimingsList();
+    }
+  }catch(e){/* offline or API down — silently skip, retried on next check/open */}
+}
+function azanRenderTimingsList(){
+  const wrap=document.getElementById('azan-timings-list');
+  if(!wrap)return;
+  if(!_azanTimings){wrap.innerHTML='<div class="bk-empty">Set your location to load today\'s prayer times.</div>';return;}
+  wrap.innerHTML=AZAN_PRAYERS.map(p=>{
+    const t=(_azanTimings[p]||'--:--').split(' ')[0];
+    return `<div class="bk-item" style="justify-content:space-between">
+      <span style="font-size:12px;font-weight:700">🕌 ${p}</span>
+      <span style="font-size:12px;color:var(--muted)">${t}</span>
+    </div>`;
+  }).join('');
+}
+function azanTestPlay(){
+  if(!azanSettings.sound){toast('❌ Upload an azan sound first','w');return;}
+  const a=new Audio(azanSettings.sound);
+  a.play().catch(()=>toast('❌ Could not play audio — tap somewhere on the page first, then try again','w'));
+}
+function azanCheckTimes(){
+  if(!azanSettings.enabled)return;
+  if(azanSettings.lat!=null)azanFetchTimings(); // no-op network call if today's data is already cached
+  if(!_azanTimings)return;
+  const now=new Date();
+  const hm=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  AZAN_PRAYERS.forEach(p=>{
+    const t=(_azanTimings[p]||'').split(' ')[0];
+    if(t===hm&&!_azanFiredToday[p]){
+      _azanFiredToday[p]=true;
+      showFloatNotif('azan-'+p,'🕌',p+' — Prayer Time',"It's time for "+p+' prayer','fn-blue','Azan');
+      if(azanSettings.sound){
+        const a=new Audio(azanSettings.sound);
+        a.play().catch(()=>{});
+      }
+    }
+  });
+}
+setInterval(azanCheckTimes,30000);
+if(azanSettings.enabled&&azanSettings.lat!=null)azanFetchTimings();
 
 function snRot(id){
   const seed=id.split('').reduce((a,c)=>a+c.charCodeAt(0),0);
