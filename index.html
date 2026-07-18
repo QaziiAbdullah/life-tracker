@@ -6692,11 +6692,38 @@ function initWeather(){
 // Keep the sidebar weather "live" for long sessions instead of only ever showing
 // whatever was current at login time.
 setInterval(()=>{if(_weatherPref==='on')fetchWeather();},20*60*1000);
+// IP-based location: no browser permission prompt at all, works immediately every time —
+// used as an automatic fallback so weather/azan "just work" on open instead of getting stuck
+// behind a permission the user may have denied once and can never be silently re-asked for.
+// Less precise (city-level, not exact GPS) but that's the tradeoff for zero-friction "auto".
+async function ipGeolocate(){
+  try{
+    const r=await fetch('https://ipwho.is/');
+    const d=await r.json();
+    if(d&&d.success!==false&&d.latitude&&d.longitude)return{lat:d.latitude,lon:d.longitude,city:d.city||'',country:d.country_code||''};
+  }catch(e){}
+  try{
+    const r=await fetch('https://ipapi.co/json/');
+    const d=await r.json();
+    if(d&&d.latitude&&d.longitude)return{lat:d.latitude,lon:d.longitude,city:d.city||'',country:d.country_code||''};
+  }catch(e){}
+  return null;
+}
 async function fetchWeather(){
   // weather-card is hidden in dashboard; only sidebar clock updates
   try{
-    const pos=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{timeout:8000}));
-    const {latitude:lat,longitude:lon}=pos.coords;
+    let lat,lon,approxLabel=null;
+    try{
+      const pos=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{timeout:5000}));
+      lat=pos.coords.latitude;lon=pos.coords.longitude;
+    }catch(geoErr){
+      // GPS unavailable/denied/timed out — fall back to IP-based location automatically,
+      // no permission needed, instead of stopping here.
+      const ip=await ipGeolocate();
+      if(!ip)throw geoErr;
+      lat=ip.lat;lon=ip.lon;
+      approxLabel=(ip.city?(ip.city+(ip.country?' · '+ip.country:'')):'Approximate location')+' (approx.)';
+    }
     const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relative_humidity_2m&timezone=auto`;
     const r=await fetch(url);const d=await r.json();
     const cw=d.current_weather;
@@ -6713,29 +6740,29 @@ async function fetchWeather(){
     if(clkW){clkW.style.display='flex';document.getElementById('swc-icon').innerHTML=getSbWeatherIcon(wc);document.getElementById('swc-temp').textContent=Math.round(cw.temperature)+'°C';document.getElementById('swc-desc').textContent=wDesc;}
     const rb0=document.getElementById('sb-weather-retry-btn');
     if(rb0)rb0.style.display='none';
-    // Reverse geocode city (best effort)
-    try{
-      const gr=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
-      const gd=await gr.json();
-      const city=gd.address?.city||gd.address?.town||gd.address?.village||gd.address?.county||'';
-      const country=gd.address?.country_code?.toUpperCase()||'';
-      document.getElementById('w-loc').textContent='📍 '+(city?(city+(country?' · '+country:'')):'Location detected');
-    }catch{}
+    if(approxLabel){
+      document.getElementById('w-loc').textContent='📍 '+approxLabel;
+    }else{
+      // Reverse geocode city (best effort) — only needed for precise GPS coords.
+      try{
+        const gr=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+        const gd=await gr.json();
+        const city=gd.address?.city||gd.address?.town||gd.address?.village||gd.address?.county||'';
+        const country=gd.address?.country_code?.toUpperCase()||'';
+        document.getElementById('w-loc').textContent='📍 '+(city?(city+(country?' · '+country:'')):'Location detected');
+      }catch{}
+    }
     _weatherPref='on';S.set('weatherPref','on');
     // Re-render monthly calendar if visible so weather scene appears
     if(document.getElementById('view-monthly')?.classList.contains('on'))renderMonthly();
   }catch(e){
+    // Only reached if BOTH GPS and the IP-based fallback failed (e.g. no internet at all) —
+    // the permission-blocked case no longer dead-ends here since IP geolocation covers it.
     _weatherPref='off';S.set('weatherPref','off');
     const rb=document.getElementById('sb-weather-retry-btn');
     if(rb){
       rb.style.display='flex';
-      // Geolocation errors have a .code (1=permission denied, 2=unavailable, 3=timeout) -
-      // fetch/JSON errors from the weather API itself don't. Tell the user which kind of
-      // problem it is instead of just "tap to retry" every time, since #1 needs them to change
-      // a browser/OS setting before retrying will ever help.
-      if(e&&e.code===1){rb.textContent='📍 Location blocked — tap for help';rb.dataset.wreason='denied';}
-      else if(e&&(e.code===2||e.code===3)){rb.textContent='📍 Location unavailable — tap to retry';rb.dataset.wreason='unavailable';}
-      else{rb.textContent='📍 Tap to show weather';rb.dataset.wreason='';}
+      rb.textContent='📍 Weather unavailable — tap to retry';rb.dataset.wreason='unavailable';
     }
   }
 }
@@ -8510,25 +8537,32 @@ function azanToggleEnable(){
   if(azanSettings.enabled&&azanSettings.lat==null)azanRequestLocation();
   toast(azanSettings.enabled?'🕌 Azan notifications enabled':'🔕 Azan notifications disabled',azanSettings.enabled?'s':'w');
 }
-function azanRequestLocation(){
-  if(!navigator.geolocation){toast('❌ Geolocation not supported by this browser','w');return;}
+async function azanRequestLocation(){
   toast('📍 Getting your location...','s');
-  navigator.geolocation.getCurrentPosition(pos=>{
+  let approx=false;
+  try{
+    if(!navigator.geolocation)throw{code:2};
+    const pos=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{timeout:6000}));
     azanSettings.lat=pos.coords.latitude;
     azanSettings.lon=pos.coords.longitude;
-    azanSave();
-    _azanTimings=null;_azanTimingsDate=null;
-    azanRenderPanel();
-    azanFetchTimings();
-    toast('📍 Location updated','s');
-  },err=>{
-    // Same root cause as the weather widget's "Location blocked" case: once a browser denies
-    // a site's location permission, it won't ask again — no retry from JS can fix that, the
-    // user has to flip it back on in their browser/OS settings. Reuse the same step-by-step
-    // help modal instead of a toast that just tells them "no" with no path forward.
-    if(err&&err.code===1){openLocHelpModal('azan');return;}
-    toast('❌ Could not get location: '+(err.message||'unavailable — check GPS/network and try again'),'w');
-  },{timeout:10000});
+  }catch(err){
+    // GPS unavailable/denied/no browser support — fall back to IP-based location automatically
+    // (no permission prompt, works immediately) instead of dead-ending on a blocked-permission
+    // screen. City-level accuracy is plenty for prayer times. If even this fails, the real
+    // problem is connectivity, not permissions — ipGeolocate() itself needs a network call.
+    const ip=await ipGeolocate();
+    if(!ip){
+      toast('❌ Could not get your location — check your internet connection and try again','w');
+      return;
+    }
+    azanSettings.lat=ip.lat;azanSettings.lon=ip.lon;
+    approx=true;
+  }
+  azanSave();
+  _azanTimings=null;_azanTimingsDate=null;
+  azanRenderPanel();
+  azanFetchTimings();
+  toast(approx?'📍 Using approximate location from your internet connection':'📍 Location updated','s');
 }
 function azanSetMethod(v){
   azanSettings.method=parseInt(v,10)||2;
@@ -8588,7 +8622,13 @@ function azanCheckTimes(){
   });
 }
 setInterval(azanCheckTimes,30000);
-if(azanSettings.enabled&&azanSettings.lat!=null)azanFetchTimings();
+if(azanSettings.enabled){
+  if(azanSettings.lat!=null)azanFetchTimings();
+  // Enabled but no location saved yet — locate automatically (GPS if already granted, else
+  // the permission-free IP fallback inside azanRequestLocation) instead of waiting for the
+  // user to remember to press "Use My Location".
+  else azanRequestLocation();
+}
 
 function snRot(id){
   const seed=id.split('').reduce((a,c)=>a+c.charCodeAt(0),0);
