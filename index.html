@@ -4207,12 +4207,21 @@ document.addEventListener('click',function(e){
   if(id==='sb-weather-retry-btn'){
     // Browsers won't re-show the permission prompt once denied - retrying silently
     // would just fail again, so show real step-by-step instructions instead of looping forever.
-    if(t.dataset.wreason==='denied'){openLocHelpModal();return;}
+    if(t.dataset.wreason==='denied'){openLocHelpModal('weather');return;}
     _weatherPref=null;S.set('weatherPref',null);fetchWeather();
     return;
   }
-  if(id==='loc-help-off'){_weatherPref='off';S.set('weatherPref','off');closeM('loc-help-modal');return;}
-  if(id==='loc-help-retry'){closeM('loc-help-modal');_weatherPref=null;S.set('weatherPref',null);fetchWeather();return;}
+  if(id==='loc-help-off'){
+    if(_locHelpSource==='azan'){azanSettings.enabled=false;azanSave();if(typeof azanRenderPanel==='function')azanRenderPanel();}
+    else{_weatherPref='off';S.set('weatherPref','off');}
+    closeM('loc-help-modal');return;
+  }
+  if(id==='loc-help-retry'){
+    closeM('loc-help-modal');
+    if(_locHelpSource==='azan'){azanRequestLocation();}
+    else{_weatherPref=null;S.set('weatherPref',null);fetchWeather();}
+    return;
+  }
   // Edit transaction
   const defEl=t.closest('[data-def]');
   if(defEl){e.stopPropagation();openEditFinance(defEl.dataset.def);return;}
@@ -6614,7 +6623,9 @@ function applySbIcon(){
 // Detects the browser/OS combo well enough to give real, clickable-in-spirit steps instead
 // of a generic "check your settings" — the exact menu path differs a lot by platform and
 // getting it wrong just sends the user hunting.
-function openLocHelpModal(){
+let _locHelpSource='weather';
+function openLocHelpModal(source){
+  _locHelpSource=source||'weather';
   const ua=navigator.userAgent||'';
   const isIOS=/iPhone|iPad|iPod/.test(ua);
   const isAndroid=/Android/.test(ua);
@@ -8475,7 +8486,12 @@ function azanRequestLocation(){
     azanFetchTimings();
     toast('📍 Location updated','s');
   },err=>{
-    toast('❌ Could not get location: '+(err.message||'permission denied'),'w');
+    // Same root cause as the weather widget's "Location blocked" case: once a browser denies
+    // a site's location permission, it won't ask again — no retry from JS can fix that, the
+    // user has to flip it back on in their browser/OS settings. Reuse the same step-by-step
+    // help modal instead of a toast that just tells them "no" with no path forward.
+    if(err&&err.code===1){openLocHelpModal('azan');return;}
+    toast('❌ Could not get location: '+(err.message||'unavailable — check GPS/network and try again'),'w');
   },{timeout:10000});
 }
 function azanSetMethod(v){
