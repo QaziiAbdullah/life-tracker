@@ -2703,13 +2703,15 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
 
 <!-- LOCATION BLOCKED HELP -->
 <div class="overlay" id="loc-help-modal">
-  <div class="modal" style="max-width:400px">
+  <div class="modal" style="max-width:420px">
     <div class="modal-t">📍 Location Access is Blocked</div>
     <div class="set-hint" style="margin-bottom:12px">Your browser won't ask again automatically once you've said no — you have to turn it back on yourself. Follow the steps for your device:</div>
     <div id="loc-help-steps" style="background:var(--card2);border-radius:10px;padding:12px 14px;font-size:12px;line-height:1.9;color:var(--text)"></div>
+    <div id="loc-help-pwa-note" style="display:none;margin-top:10px;font-size:11px;color:var(--muted);background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);border-radius:8px;padding:10px 12px"></div>
+    <button class="btn btn-g btn-sm" id="loc-help-copy-btn" style="display:none;margin-top:10px;width:100%">📋 Copy Settings Link</button>
     <div class="mbtn">
       <button class="btn btn-g" id="loc-help-off">Don't ask again</button>
-      <button class="btn btn-p" id="loc-help-retry">🔄 I fixed it — Try Again</button>
+      <button class="btn btn-p" id="loc-help-retry">🔄 I fixed it — Reload &amp; Try Again</button>
     </div>
   </div>
 </div>
@@ -4218,8 +4220,14 @@ document.addEventListener('click',function(e){
   }
   if(id==='loc-help-retry'){
     closeM('loc-help-modal');
-    if(_locHelpSource==='azan'){azanRequestLocation();}
-    else{_weatherPref=null;S.set('weatherPref',null);fetchWeather();}
+    // A plain in-page retry (re-calling getCurrentPosition without reloading) was the actual
+    // bug behind "I fixed it in settings but it keeps saying blocked" — some browsers/WebViews
+    // cache the Permissions read for the lifetime of the page and only pick up a settings
+    // change on a fresh navigation, not a JS-level retry.
+    if(_locHelpSource==='azan'){sessionStorage.setItem('azanAutoRetry','1');}
+    else{_weatherPref=null;S.set('weatherPref',null);}
+    toast('🔄 Reloading so the browser rechecks your permission...','s');
+    setTimeout(()=>location.reload(),700);
     return;
   }
   // Edit transaction
@@ -6483,6 +6491,12 @@ _loggedIn=!!_syncToken;
     screen.classList.add('hide');
     const sr=document.getElementById('sb-sync-row');if(sr)sr.style.display='flex';
     updateWelcome();initWeather();
+    // If the user just came back from fixing a location permission and hit "reload", pick the
+    // azan retry back up automatically instead of making them find the button again.
+    if(sessionStorage.getItem('azanAutoRetry')){
+      sessionStorage.removeItem('azanAutoRetry');
+      setTimeout(()=>{if(typeof azanRequestLocation==='function')azanRequestLocation();},1200);
+    }
     _pullSync().then(()=>_maybeAutoBackup());
     return;
   }
@@ -6631,17 +6645,39 @@ function openLocHelpModal(source){
   const isAndroid=/Android/.test(ua);
   const isSafari=/^((?!chrome|android).)*safari/i.test(ua);
   const isChrome=/Chrome/.test(ua)&&!/Edg|OPR/.test(ua);
-  let steps;
+  const isFirefox=/Firefox/.test(ua);
+  const isEdge=/Edg/.test(ua);
+  // Installed as a home-screen app (standalone display) has NO address bar at all, so the
+  // "tap the lock icon" instructions are physically impossible to follow there — this is the
+  // most likely reason the same steps "always" fail for someone who already tried them once.
+  const isStandalone=window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+  let steps,settingsUrl=null;
   if(isIOS&&isSafari){
-    steps=['Open the iPhone <b>Settings</b> app','Scroll down to <b>Safari</b> → <b>Location</b>','Set it to <b>Allow</b> (or <b>Ask Next Time</b>)','If you added this app to your Home Screen, also check <b>Settings → Privacy & Security → Location Services</b> is turned on for Safari'];
+    steps=['Open the iPhone <b>Settings</b> app','Scroll down to <b>Safari</b> → <b>Location</b>','Set it to <b>Allow</b> (or <b>Ask Next Time</b>)','Also check <b>Settings → Privacy & Security → Location Services</b> is ON (both the master switch and Safari\'s entry)'];
   }else if(isIOS&&isChrome){
     steps=['Open the iPhone <b>Settings</b> app','Scroll down to <b>Chrome</b> → <b>Location</b>','Set it to <b>Allow</b> (or <b>Ask Next Time</b>)'];
   }else if(isAndroid){
-    steps=['Tap the <b>🔒 lock icon</b> next to the address bar at the top','Tap <b>Permissions</b> → <b>Location</b>','Set it to <b>Allow</b>','If that doesn\'t work: Android <b>Settings → Apps → Chrome → Permissions → Location</b> → Allow'];
+    // Android app-level permission first — this works whether it's a normal Chrome tab or an
+    // installed/home-screen app, unlike the address-bar lock icon which only exists in a tab.
+    steps=['Open Android <b>Settings → Apps</b>','Find <b>Chrome</b> (or this app\'s icon, if you installed it to your home screen)','Tap <b>Permissions → Location</b> → set to <b>Allow</b>','Fully close and reopen the app/tab (not just switch away and back)'];
   }else{
-    steps=['Click the <b>🔒 lock / info icon</b> at the left of the address bar','Find <b>Location</b> in the site permissions list','Change it to <b>Allow</b>','Reload the page'];
+    const browser=isFirefox?'Firefox':isEdge?'Edge':'Chrome';
+    settingsUrl=isFirefox?'about:preferences#privacy':isEdge?'edge://settings/content/location':'chrome://settings/content/location';
+    steps=[`Click the <b>🔒 lock / info icon</b> at the left of the address bar`,'Find <b>Location</b> in the site permissions list and change it to <b>Allow</b>',`Or paste this into a new tab's address bar: <b>${settingsUrl}</b> → remove alijtaba.online from the blocked list`,'Reload the page (not just click "Try Again" — a full reload)'];
   }
   document.getElementById('loc-help-steps').innerHTML='<ol style="margin:0;padding-left:18px">'+steps.map(s=>`<li style="margin-bottom:4px">${s}</li>`).join('')+'</ol>';
+  const pwaNote=document.getElementById('loc-help-pwa-note');
+  if(pwaNote){
+    if(isStandalone){pwaNote.style.display='block';pwaNote.innerHTML='⚠️ You\'re using the installed app (no address bar) — the lock-icon method won\'t apply here. Use the <b>Settings → Apps</b> path above instead.';}
+    else pwaNote.style.display='none';
+  }
+  const copyBtn=document.getElementById('loc-help-copy-btn');
+  if(copyBtn){
+    if(settingsUrl){
+      copyBtn.style.display='block';
+      copyBtn.onclick=()=>{navigator.clipboard?.writeText(settingsUrl).then(()=>toast('📋 Copied — paste into a new tab','s')).catch(()=>toast('❌ Could not copy — select the text above manually','w'));};
+    }else copyBtn.style.display='none';
+  }
   openM('loc-help-modal');
 }
 function initWeather(){
