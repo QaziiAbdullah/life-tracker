@@ -1420,9 +1420,11 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
         <div id="cyber-folder-list" style="display:flex;flex-direction:column;gap:6px;margin-top:6px"></div>
       </div>
       <div style="flex:1;display:flex;flex-direction:column;padding:14px;overflow-y:auto;min-width:0">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px">
-          <div id="cyber-active-folder-name" style="font-weight:700;font-size:13px;color:var(--text)">Select a folder to view its documents</div>
+        <div id="cyber-breadcrumb" style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-bottom:8px"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap">
+          <div id="cyber-active-folder-name" style="font-weight:700;font-size:13px;color:var(--text)">Select a folder to view its contents</div>
           <div style="display:flex;gap:6px;flex-shrink:0">
+            <button class="btn btn-g btn-sm" id="cyber-new-subfolder-btn" style="display:none">📁 New Subfolder</button>
             <button class="btn btn-g btn-sm" id="cyber-add-photo-btn" style="display:none">🖼️ Add Photo</button>
             <input type="file" id="cyber-photo-file" accept="image/*" style="display:none">
             <button class="btn btn-p btn-sm" id="cyber-new-doc-btn" style="display:none">📄 New Document</button>
@@ -2906,7 +2908,7 @@ let monthlySalary=S.get('monthlySalary',{amount:0,enabled:false});
 // top-level statement in the script.
 let _lightMode=S.get('lightMode',false);
 let cyberVault=S.get('cyberVault',{folders:[],docs:[]});
-let _cyberActiveFolder=null,_cyberActiveDoc=null;
+let _cyberPath=[],_cyberActiveDoc=null;
 const FBL_SRC_META={facebook:{icon:'📦',label:'Facebook Marketplace'},amazon:{icon:'🛒',label:'Amazon'},trading:{icon:'📈',label:'Money Trading'},other:{icon:'🗂️',label:'Other Business'}};
 let visionItems=S.get('visionItems',[]);
 let _ttWeekOff=0,_ttView='day',_selTTColor='#7c3aed',_selVBColor='#7c3aed',_selVBCat='career',_vbEditId=null,_ttEditId=null,_vbFileData=null;
@@ -3803,11 +3805,16 @@ document.addEventListener('click',function(e){
   if(t.id==='cyber-close-btn'||t.closest('#cyber-close-btn')){closeM('cyber-modal');return;}
   if(t.id==='cyber-new-folder-btn'||t.closest('#cyber-new-folder-btn')){cyberNewFolder();return;}
   if(t.id==='cyber-new-doc-btn'||t.closest('#cyber-new-doc-btn')){cyberNewDoc();return;}
+  if(t.id==='cyber-new-subfolder-btn'||t.closest('#cyber-new-subfolder-btn')){cyberNewSubfolder();return;}
   if(t.id==='cyber-add-photo-btn'||t.closest('#cyber-add-photo-btn')){document.getElementById('cyber-photo-file').click();return;}
   const cyberFolderDel=t.closest('[data-cyber-folder-del]');
   if(cyberFolderDel){cyberDeleteFolder(cyberFolderDel.dataset.cyberFolderDel);return;}
+  const cyberCrumb=t.closest('[data-cyber-crumb]');
+  if(cyberCrumb){cyberBreadcrumbNav(parseInt(cyberCrumb.dataset.cyberCrumb,10));return;}
   const cyberFolder=t.closest('[data-cyber-folder]');
-  if(cyberFolder){_cyberActiveFolder=cyberFolder.dataset.cyberFolder;cyberRenderFolders();cyberRenderDocs();return;}
+  if(cyberFolder){cyberOpenFolder(cyberFolder.dataset.cyberFolder);return;}
+  const cyberSubfolder=t.closest('[data-cyber-subfolder]');
+  if(cyberSubfolder){cyberOpenFolder(cyberSubfolder.dataset.cyberSubfolder);return;}
   const cyberDoc=t.closest('[data-cyber-doc]');
   if(cyberDoc){
     const item=cyberVault.docs.find(x=>x.id===cyberDoc.dataset.cyberDoc);
@@ -7983,48 +7990,87 @@ function cyberUpdateBadge(){
   const b=document.getElementById('sb-cyber-count-badge');
   if(b)b.textContent=cyberVault.docs.length;
 }
+function cyberCurrentFolderId(){return _cyberPath.length?_cyberPath[_cyberPath.length-1]:null;}
+// All folder ids under (and including) id, so deleting a folder cascades through every
+// nested subfolder and its documents instead of orphaning them.
+function cyberDescendantFolderIds(id){
+  const out=[id];
+  let added=true;
+  while(added){
+    added=false;
+    cyberVault.folders.forEach(f=>{
+      if(f.parentId&&out.includes(f.parentId)&&!out.includes(f.id)){out.push(f.id);added=true;}
+    });
+  }
+  return out;
+}
 function openCyberVault(){
   document.getElementById('cyber-modal')?.classList.add('open');
-  if(!_cyberActiveFolder&&cyberVault.folders.length)_cyberActiveFolder=cyberVault.folders[0].id;
   cyberRenderFolders();
   cyberRenderDocs();
 }
 function cyberRenderFolders(){
   const wrap=document.getElementById('cyber-folder-list');
   if(!wrap)return;
-  if(!cyberVault.folders.length){wrap.innerHTML='<div class="bk-empty" style="font-size:11px">No folders yet.</div>';return;}
-  wrap.innerHTML=cyberVault.folders.map(f=>{
-    const n=cyberVault.docs.filter(d=>d.folderId===f.id).length;
-    const on=f.id===_cyberActiveFolder;
+  const roots=cyberVault.folders.filter(f=>!f.parentId);
+  if(!roots.length){wrap.innerHTML='<div class="bk-empty" style="font-size:11px">No folders yet.</div>';return;}
+  wrap.innerHTML=roots.map(f=>{
+    const on=_cyberPath[0]===f.id;
     return `<div class="bk-item${on?' on':''}" data-cyber-folder="${f.id}" style="cursor:pointer;justify-content:space-between${on?';border-color:var(--primary)':''}">
       <div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:700">📁 ${escapeHtml(f.name)}</div>
-      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-        <span style="font-size:10px;color:var(--muted)">${n}</span>
-        <button class="bk-btn" data-cyber-folder-del="${f.id}" title="Delete folder">🗑</button>
-      </div>
+      <button class="bk-btn" data-cyber-folder-del="${f.id}" title="Delete folder">🗑</button>
     </div>`;
   }).join('');
+}
+function cyberRenderBreadcrumb(){
+  const wrap=document.getElementById('cyber-breadcrumb');
+  if(!wrap)return;
+  const crumbs=['<span data-cyber-crumb="-1" style="cursor:pointer;text-decoration:underline">🏠 Root</span>'];
+  _cyberPath.forEach((id,i)=>{
+    const f=cyberVault.folders.find(x=>x.id===id);
+    if(!f)return;
+    crumbs.push('<span>›</span>');
+    crumbs.push(`<span data-cyber-crumb="${i}" style="cursor:pointer;text-decoration:underline">${escapeHtml(f.name)}</span>`);
+  });
+  wrap.innerHTML=crumbs.join(' ');
 }
 function cyberRenderDocs(){
   const list=document.getElementById('cyber-doc-list');
   const nameEl=document.getElementById('cyber-active-folder-name');
   const newBtn=document.getElementById('cyber-new-doc-btn');
   const photoBtn=document.getElementById('cyber-add-photo-btn');
+  const subBtn=document.getElementById('cyber-new-subfolder-btn');
   if(!list)return;
-  const folder=cyberVault.folders.find(f=>f.id===_cyberActiveFolder);
+  cyberRenderBreadcrumb();
+  const folderId=cyberCurrentFolderId();
+  const folder=cyberVault.folders.find(f=>f.id===folderId);
   if(!folder){
-    if(nameEl)nameEl.textContent='Select a folder to view its documents';
+    if(nameEl)nameEl.textContent='Select a folder to view its contents';
     if(newBtn)newBtn.style.display='none';
     if(photoBtn)photoBtn.style.display='none';
+    if(subBtn)subBtn.style.display='none';
     list.innerHTML='';
     return;
   }
   if(nameEl)nameEl.textContent='📁 '+folder.name;
   if(newBtn)newBtn.style.display='';
   if(photoBtn)photoBtn.style.display='';
+  if(subBtn)subBtn.style.display='';
+  const subfolders=cyberVault.folders.filter(f=>f.parentId===folder.id);
   const items=cyberVault.docs.filter(d=>d.folderId===folder.id).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
-  if(!items.length){list.innerHTML='<div class="bk-empty">Nothing here yet. Add a document or a photo.</div>';return;}
-  list.innerHTML=items.map(d=>{
+  if(!subfolders.length&&!items.length){list.innerHTML='<div class="bk-empty">Nothing here yet. Add a subfolder, document, or photo.</div>';return;}
+  const subfolderHtml=subfolders.map(f=>{
+    const docCount=cyberVault.docs.filter(d=>d.folderId===f.id).length;
+    const subCount=cyberVault.folders.filter(x=>x.parentId===f.id).length;
+    return `<div class="bk-item" data-cyber-subfolder="${f.id}" style="cursor:pointer;justify-content:space-between">
+      <div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:700">📁 ${escapeHtml(f.name)}</div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+        <span style="font-size:10px;color:var(--muted)">${subCount?subCount+' folder'+(subCount!==1?'s':'')+(docCount?', ':''):''}${docCount?docCount+' item'+(docCount!==1?'s':''):''}</span>
+        <button class="bk-btn" data-cyber-folder-del="${f.id}" title="Delete folder">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+  const itemHtml=items.map(d=>{
     const dt=d.updatedAt?new Date(d.updatedAt).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}):'';
     if(d.type==='image'){
       return `<div class="bk-item" data-cyber-doc="${d.id}" style="cursor:pointer">
@@ -8044,36 +8090,70 @@ function cyberRenderDocs(){
       <div style="font-size:9px;color:var(--muted);flex-shrink:0">${dt}</div>
     </div>`;
   }).join('');
+  list.innerHTML=subfolderHtml+itemHtml;
 }
 function cyberNewFolder(){
   const name=prompt('Folder name (e.g. "Bug Bounty", "CTF Writeups", "Client X Pentest"):');
   if(!name||!name.trim())return;
-  const f={id:'cf_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),name:name.trim(),createdAt:Date.now()};
+  const f={id:'cf_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),name:name.trim(),parentId:null,createdAt:Date.now()};
   cyberVault.folders.push(f);
-  _cyberActiveFolder=f.id;
+  _cyberPath=[f.id];
   cyberSave();cyberRenderFolders();cyberRenderDocs();
   toast('📁 Folder created','s');
+}
+function cyberNewSubfolder(){
+  const parentId=cyberCurrentFolderId();
+  if(!parentId)return;
+  const name=prompt('Subfolder name:');
+  if(!name||!name.trim())return;
+  const f={id:'cf_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),name:name.trim(),parentId,createdAt:Date.now()};
+  cyberVault.folders.push(f);
+  _cyberPath.push(f.id);
+  cyberSave();cyberRenderFolders();cyberRenderDocs();
+  toast('📁 Subfolder created','s');
+}
+function cyberOpenFolder(id){
+  const idx=_cyberPath.indexOf(id);
+  if(idx!==-1){_cyberPath=_cyberPath.slice(0,idx+1);}
+  else{
+    // Root sidebar click starts a fresh path; a subfolder card click descends from wherever we are.
+    const f=cyberVault.folders.find(x=>x.id===id);
+    if(f&&!f.parentId)_cyberPath=[id];else _cyberPath.push(id);
+  }
+  cyberRenderFolders();cyberRenderDocs();
+}
+function cyberBreadcrumbNav(idx){
+  _cyberPath=idx<0?[]:_cyberPath.slice(0,idx+1);
+  cyberRenderFolders();cyberRenderDocs();
 }
 function cyberDeleteFolder(id){
   const f=cyberVault.folders.find(x=>x.id===id);
   if(!f)return;
-  const n=cyberVault.docs.filter(d=>d.folderId===id).length;
-  if(!confirm(`Delete folder "${f.name}"${n?` and its ${n} document(s)`:''}? This cannot be undone.`))return;
-  cyberVault.folders=cyberVault.folders.filter(x=>x.id!==id);
-  cyberVault.docs=cyberVault.docs.filter(d=>d.folderId!==id);
-  if(_cyberActiveFolder===id)_cyberActiveFolder=cyberVault.folders[0]?.id||null;
+  const ids=cyberDescendantFolderIds(id);
+  const subCount=ids.length-1;
+  const docCount=cyberVault.docs.filter(d=>ids.includes(d.folderId)).length;
+  const parts=[];
+  if(subCount)parts.push(`${subCount} subfolder(s)`);
+  if(docCount)parts.push(`${docCount} document/photo(s)`);
+  if(!confirm(`Delete folder "${f.name}"${parts.length?` and its ${parts.join(' + ')}`:''}? This cannot be undone.`))return;
+  cyberVault.folders=cyberVault.folders.filter(x=>!ids.includes(x.id));
+  cyberVault.docs=cyberVault.docs.filter(d=>!ids.includes(d.folderId));
+  const cut=_cyberPath.findIndex(pid=>ids.includes(pid));
+  if(cut!==-1)_cyberPath=_cyberPath.slice(0,cut);
   cyberSave();cyberRenderFolders();cyberRenderDocs();cyberUpdateBadge();
   toast('🗑 Folder deleted','w');
 }
 function cyberNewDoc(){
-  if(!_cyberActiveFolder)return;
-  const d={id:'cd_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),folderId:_cyberActiveFolder,type:'doc',title:'',content:'',updatedAt:Date.now()};
+  const folderId=cyberCurrentFolderId();
+  if(!folderId)return;
+  const d={id:'cd_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),folderId,type:'doc',title:'',content:'',updatedAt:Date.now()};
   cyberVault.docs.push(d);
   cyberOpenDocEditor(d.id);
 }
 function cyberAddPhoto(dataUrl,filename){
-  if(!_cyberActiveFolder)return;
-  const d={id:'cd_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),folderId:_cyberActiveFolder,type:'image',title:(filename||'').replace(/\.[a-z0-9]+$/i,''),img:dataUrl,updatedAt:Date.now()};
+  const folderId=cyberCurrentFolderId();
+  if(!folderId)return;
+  const d={id:'cd_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),folderId,type:'image',title:(filename||'').replace(/\.[a-z0-9]+$/i,''),img:dataUrl,updatedAt:Date.now()};
   cyberVault.docs.push(d);
   cyberSave();
   cyberRenderDocs();cyberUpdateBadge();
