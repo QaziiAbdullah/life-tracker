@@ -1264,6 +1264,11 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
       <span class="sb-notepad-open-lbl">Books</span>
       <span class="sb-notepad-count-badge" id="sb-books-count-badge">0</span>
     </button>
+    <button class="sb-notepad-open-btn" id="sb-cyber-open" style="margin-top:5px">
+      <span class="sb-notepad-open-icon">🛡️</span>
+      <span class="sb-notepad-open-lbl">Cyber &amp; Hacking</span>
+      <span class="sb-notepad-count-badge" id="sb-cyber-count-badge">0</span>
+    </button>
   </div>
 
   <nav class="sb-nav">
@@ -1399,6 +1404,47 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- CYBER & HACKING VAULT -->
+<div class="overlay" id="cyber-modal">
+  <div class="modal" style="max-width:920px;width:95vw;max-height:88vh;display:flex;flex-direction:column;padding:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px">🛡️ Cyber &amp; Hacking</div>
+      <button class="np-close-wall" id="cyber-close-btn" title="Close">✕</button>
+    </div>
+    <div style="display:flex;flex:1;min-height:0;overflow:hidden">
+      <div style="width:220px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;padding:12px;gap:6px;overflow-y:auto">
+        <button class="btn btn-p btn-sm" id="cyber-new-folder-btn">📁 New Folder</button>
+        <div id="cyber-folder-list" style="display:flex;flex-direction:column;gap:6px;margin-top:6px"></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;padding:14px;overflow-y:auto;min-width:0">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px">
+          <div id="cyber-active-folder-name" style="font-weight:700;font-size:13px;color:var(--text)">Select a folder to view its documents</div>
+          <button class="btn btn-p btn-sm" id="cyber-new-doc-btn" style="display:none;flex-shrink:0">📄 New Document</button>
+        </div>
+        <div id="cyber-doc-list" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CYBER & HACKING DOCUMENT EDITOR -->
+<div class="overlay" id="cyber-doc-modal">
+  <div class="modal" style="max-width:720px;width:92vw">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="font-weight:800;font-size:14px">📄 Document</div>
+      <button class="np-close-wall" id="cyber-doc-close-btn" title="Close">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <input type="text" id="cyber-doc-title" placeholder="Document title (e.g. Target Recon, Exploit Notes, CTF Writeup)" class="fi">
+      <textarea id="cyber-doc-body" placeholder="Notes, findings, commands, payloads, steps taken..." class="fi" style="min-height:320px;font-family:Consolas,'Courier New',monospace;font-size:12.5px;line-height:1.55;resize:vertical"></textarea>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-g btn-sm" id="cyber-doc-delete-btn" style="color:#ef4444;border-color:rgba(239,68,68,.3)">🗑 Delete</button>
+        <button class="btn btn-p btn-sm" id="cyber-doc-save-btn">💾 Save</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -2730,6 +2776,7 @@ function _applyRemoteChanges(changedKeys){
     else if(k==='monthlySalary'){monthlySalary=S.get('monthlySalary',{amount:0,enabled:false});if(document.getElementById('view-finance')?.classList.contains('on')&&typeof renderFinance==='function')renderFinance();if(document.getElementById('view-settings')?.classList.contains('on')&&typeof renderSettings==='function')renderSettings();}
     else if(k==='theme'){currentTheme=S.get('theme','professional');if(typeof applyTheme==='function')applyTheme(currentTheme,true,true);}
     else if(k==='lightMode'){if(typeof applyMode==='function')applyMode(S.get('lightMode',false));}
+    else if(k==='cyberVault'){cyberVault=S.get('cyberVault',{folders:[],docs:[]});if(document.getElementById('cyber-modal')?.classList.contains('open')&&typeof cyberRenderFolders==='function'){cyberRenderFolders();cyberRenderDocs();}if(typeof cyberUpdateBadge==='function')cyberUpdateBadge();}
     else if(k==='autoTheme'){autoOn=S.get('autoTheme',false);}
     else if(k==='wallBg'){_wallBg=S.get('wallBg','#eee8dc');if(document.getElementById('notepad-modal')?.classList.contains('open')&&typeof applyWallBg==='function')applyWallBg(_wallBg);}
     else if(k==='appName'||k==='appSub'){
@@ -2756,7 +2803,7 @@ setInterval(_pullSync,25000);
 setInterval(()=>{if(_syncToken)_flushSync();},5*60*1000);
 
 // ===== MANUAL "SAVE & SYNC" BUTTON =====
-const ALL_SYNC_KEYS=['habits','tasks','goals','logs','birthdays','events','finance','customIncSrc','customExpCat','profile','sectionNames','timetable','visionItems','stickyNotes','stickyConnections','libBooks','currencyData','theme','autoTheme','wallBg','appName','appSub','dashOrder','weatherPref','aiPatterns','ttWakeStart','ttWakeEnd','fbListings','monthlySalary','lightMode'];
+const ALL_SYNC_KEYS=['habits','tasks','goals','logs','birthdays','events','finance','customIncSrc','customExpCat','profile','sectionNames','timetable','visionItems','stickyNotes','stickyConnections','libBooks','currencyData','theme','autoTheme','wallBg','appName','appSub','dashOrder','weatherPref','aiPatterns','ttWakeStart','ttWakeEnd','fbListings','monthlySalary','lightMode','cyberVault'];
 // Zulqey AI assistant's learned phrase->action mappings — declared here (early, before any code
 // path can reference it) to avoid the TDZ ordering crash class documented elsewhere in this file.
 let aiPatterns=S.get('aiPatterns',[]);
@@ -2836,6 +2883,8 @@ let monthlySalary=S.get('monthlySalary',{amount:0,enabled:false});
 // executed throws "Cannot access before initialization", silently aborting every later
 // top-level statement in the script.
 let _lightMode=S.get('lightMode',false);
+let cyberVault=S.get('cyberVault',{folders:[],docs:[]});
+let _cyberActiveFolder=null,_cyberActiveDoc=null;
 const FBL_SRC_META={facebook:{icon:'📦',label:'Facebook Marketplace'},amazon:{icon:'🛒',label:'Amazon'},trading:{icon:'📈',label:'Money Trading'},other:{icon:'🗂️',label:'Other Business'}};
 let visionItems=S.get('visionItems',[]);
 let _ttWeekOff=0,_ttView='day',_selTTColor='#7c3aed',_selVBColor='#7c3aed',_selVBCat='career',_vbEditId=null,_ttEditId=null,_vbFileData=null;
@@ -3727,6 +3776,20 @@ document.addEventListener('click',function(e){
   if(t.closest('#sb-library-open')){openLibrary();return;}
   if(t.id==='lib-close-btn'||t.closest('#lib-close-btn')){libCloseModal();return;}
   if(t.id==='lib-shelf-back-btn'||t.closest('#lib-shelf-back-btn')){libCloseModal();return;}
+  // --- CYBER & HACKING VAULT ---
+  if(t.closest('#sb-cyber-open')){openCyberVault();return;}
+  if(t.id==='cyber-close-btn'||t.closest('#cyber-close-btn')){closeM('cyber-modal');return;}
+  if(t.id==='cyber-new-folder-btn'||t.closest('#cyber-new-folder-btn')){cyberNewFolder();return;}
+  if(t.id==='cyber-new-doc-btn'||t.closest('#cyber-new-doc-btn')){cyberNewDoc();return;}
+  const cyberFolderDel=t.closest('[data-cyber-folder-del]');
+  if(cyberFolderDel){cyberDeleteFolder(cyberFolderDel.dataset.cyberFolderDel);return;}
+  const cyberFolder=t.closest('[data-cyber-folder]');
+  if(cyberFolder){_cyberActiveFolder=cyberFolder.dataset.cyberFolder;cyberRenderFolders();cyberRenderDocs();return;}
+  const cyberDoc=t.closest('[data-cyber-doc]');
+  if(cyberDoc){cyberOpenDocEditor(cyberDoc.dataset.cyberDoc);return;}
+  if(t.id==='cyber-doc-close-btn'||t.closest('#cyber-doc-close-btn')){closeM('cyber-doc-modal');return;}
+  if(t.id==='cyber-doc-save-btn'||t.closest('#cyber-doc-save-btn')){cyberSaveDoc();return;}
+  if(t.id==='cyber-doc-delete-btn'||t.closest('#cyber-doc-delete-btn')){cyberDeleteDoc();return;}
   // --- STICKY NOTES ---
   if(t.closest('#sb-notepad-open')){openNotepad();return;}
   if(t.id==='np-close-btn'||t.closest('#np-close-btn')){flushStickyNotesNow();closeM('notepad-modal');return;}
@@ -7861,6 +7924,118 @@ function updateNotesBadge(){
   if(l)l.textContent=_stickyNotes.length+' note'+(_stickyNotes.length!==1?'s':'');
 }
 
+// ===== CYBER & HACKING VAULT — folders of freeform documents for pentest/CTF/project notes =====
+function cyberSave(){S.set('cyberVault',cyberVault);}
+function cyberUpdateBadge(){
+  const b=document.getElementById('sb-cyber-count-badge');
+  if(b)b.textContent=cyberVault.docs.length;
+}
+function openCyberVault(){
+  document.getElementById('cyber-modal')?.classList.add('open');
+  if(!_cyberActiveFolder&&cyberVault.folders.length)_cyberActiveFolder=cyberVault.folders[0].id;
+  cyberRenderFolders();
+  cyberRenderDocs();
+}
+function cyberRenderFolders(){
+  const wrap=document.getElementById('cyber-folder-list');
+  if(!wrap)return;
+  if(!cyberVault.folders.length){wrap.innerHTML='<div class="bk-empty" style="font-size:11px">No folders yet.</div>';return;}
+  wrap.innerHTML=cyberVault.folders.map(f=>{
+    const n=cyberVault.docs.filter(d=>d.folderId===f.id).length;
+    const on=f.id===_cyberActiveFolder;
+    return `<div class="bk-item${on?' on':''}" data-cyber-folder="${f.id}" style="cursor:pointer;justify-content:space-between${on?';border-color:var(--primary)':''}">
+      <div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:700">📁 ${escapeHtml(f.name)}</div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+        <span style="font-size:10px;color:var(--muted)">${n}</span>
+        <button class="bk-btn" data-cyber-folder-del="${f.id}" title="Delete folder">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function cyberRenderDocs(){
+  const list=document.getElementById('cyber-doc-list');
+  const nameEl=document.getElementById('cyber-active-folder-name');
+  const newBtn=document.getElementById('cyber-new-doc-btn');
+  if(!list)return;
+  const folder=cyberVault.folders.find(f=>f.id===_cyberActiveFolder);
+  if(!folder){
+    if(nameEl)nameEl.textContent='Select a folder to view its documents';
+    if(newBtn)newBtn.style.display='none';
+    list.innerHTML='';
+    return;
+  }
+  if(nameEl)nameEl.textContent='📁 '+folder.name;
+  if(newBtn)newBtn.style.display='';
+  const docs=cyberVault.docs.filter(d=>d.folderId===folder.id).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+  if(!docs.length){list.innerHTML='<div class="bk-empty">No documents yet. Click "New Document" to add your first one.</div>';return;}
+  list.innerHTML=docs.map(d=>{
+    const dt=d.updatedAt?new Date(d.updatedAt).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}):'';
+    const preview=(d.content||'').slice(0,80).replace(/\n/g,' ');
+    return `<div class="bk-item" data-cyber-doc="${d.id}" style="cursor:pointer">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:700;color:var(--text)">📄 ${escapeHtml(d.title||'Untitled')}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(preview)}${preview?'…':''}</div>
+      </div>
+      <div style="font-size:9px;color:var(--muted);flex-shrink:0">${dt}</div>
+    </div>`;
+  }).join('');
+}
+function cyberNewFolder(){
+  const name=prompt('Folder name (e.g. "Bug Bounty", "CTF Writeups", "Client X Pentest"):');
+  if(!name||!name.trim())return;
+  const f={id:'cf_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),name:name.trim(),createdAt:Date.now()};
+  cyberVault.folders.push(f);
+  _cyberActiveFolder=f.id;
+  cyberSave();cyberRenderFolders();cyberRenderDocs();
+  toast('📁 Folder created','s');
+}
+function cyberDeleteFolder(id){
+  const f=cyberVault.folders.find(x=>x.id===id);
+  if(!f)return;
+  const n=cyberVault.docs.filter(d=>d.folderId===id).length;
+  if(!confirm(`Delete folder "${f.name}"${n?` and its ${n} document(s)`:''}? This cannot be undone.`))return;
+  cyberVault.folders=cyberVault.folders.filter(x=>x.id!==id);
+  cyberVault.docs=cyberVault.docs.filter(d=>d.folderId!==id);
+  if(_cyberActiveFolder===id)_cyberActiveFolder=cyberVault.folders[0]?.id||null;
+  cyberSave();cyberRenderFolders();cyberRenderDocs();cyberUpdateBadge();
+  toast('🗑 Folder deleted','w');
+}
+function cyberNewDoc(){
+  if(!_cyberActiveFolder)return;
+  const d={id:'cd_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),folderId:_cyberActiveFolder,title:'',content:'',updatedAt:Date.now()};
+  cyberVault.docs.push(d);
+  cyberOpenDocEditor(d.id);
+}
+function cyberOpenDocEditor(id){
+  const d=cyberVault.docs.find(x=>x.id===id);
+  if(!d)return;
+  _cyberActiveDoc=id;
+  document.getElementById('cyber-doc-title').value=d.title||'';
+  document.getElementById('cyber-doc-body').value=d.content||'';
+  document.getElementById('cyber-doc-modal')?.classList.add('open');
+}
+function cyberSaveDoc(){
+  const d=cyberVault.docs.find(x=>x.id===_cyberActiveDoc);
+  if(!d)return;
+  d.title=document.getElementById('cyber-doc-title').value.trim();
+  d.content=document.getElementById('cyber-doc-body').value;
+  d.updatedAt=Date.now();
+  cyberSave();
+  document.getElementById('cyber-doc-modal')?.classList.remove('open');
+  cyberRenderDocs();cyberUpdateBadge();
+  toast('💾 Document saved','s');
+}
+function cyberDeleteDoc(){
+  const d=cyberVault.docs.find(x=>x.id===_cyberActiveDoc);
+  if(!d)return;
+  if(!confirm(`Delete document "${d.title||'Untitled'}"? This cannot be undone.`))return;
+  cyberVault.docs=cyberVault.docs.filter(x=>x.id!==_cyberActiveDoc);
+  cyberSave();
+  document.getElementById('cyber-doc-modal')?.classList.remove('open');
+  cyberRenderDocs();cyberUpdateBadge();
+  toast('🗑 Document deleted','w');
+}
+
 function snRot(id){
   const seed=id.split('').reduce((a,c)=>a+c.charCodeAt(0),0);
   return SN_ROTS[seed%SN_ROTS.length];
@@ -8278,6 +8453,7 @@ function openNotepad(){
 
 updateNotesBadge();
 libUpdateBadge();
+cyberUpdateBadge();
 
 // Init drag zone after page ready
 initDragZone();
