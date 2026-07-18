@@ -1422,7 +1422,11 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
       <div style="flex:1;display:flex;flex-direction:column;padding:14px;overflow-y:auto;min-width:0">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px">
           <div id="cyber-active-folder-name" style="font-weight:700;font-size:13px;color:var(--text)">Select a folder to view its documents</div>
-          <button class="btn btn-p btn-sm" id="cyber-new-doc-btn" style="display:none;flex-shrink:0">📄 New Document</button>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            <button class="btn btn-g btn-sm" id="cyber-add-photo-btn" style="display:none">🖼️ Add Photo</button>
+            <input type="file" id="cyber-photo-file" accept="image/*" style="display:none">
+            <button class="btn btn-p btn-sm" id="cyber-new-doc-btn" style="display:none">📄 New Document</button>
+          </div>
         </div>
         <div id="cyber-doc-list" style="display:flex;flex-direction:column;gap:6px"></div>
       </div>
@@ -1443,6 +1447,24 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
       <div style="display:flex;gap:8px;justify-content:flex-end">
         <button class="btn btn-g btn-sm" id="cyber-doc-delete-btn" style="color:#ef4444;border-color:rgba(239,68,68,.3)">🗑 Delete</button>
         <button class="btn btn-p btn-sm" id="cyber-doc-save-btn">💾 Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CYBER & HACKING IMAGE VIEWER -->
+<div class="overlay" id="cyber-img-modal">
+  <div class="modal" style="max-width:720px;width:92vw">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="font-weight:800;font-size:14px">🖼️ Photo</div>
+      <button class="np-close-wall" id="cyber-img-close-btn" title="Close">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <img id="cyber-img-preview" style="width:100%;max-height:60vh;object-fit:contain;border-radius:10px;background:rgba(0,0,0,.2)">
+      <input type="text" id="cyber-img-title" placeholder="Caption / title" class="fi">
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-g btn-sm" id="cyber-img-delete-btn" style="color:#ef4444;border-color:rgba(239,68,68,.3)">🗑 Delete</button>
+        <button class="btn btn-p btn-sm" id="cyber-img-save-btn">💾 Save</button>
       </div>
     </div>
   </div>
@@ -3781,15 +3803,23 @@ document.addEventListener('click',function(e){
   if(t.id==='cyber-close-btn'||t.closest('#cyber-close-btn')){closeM('cyber-modal');return;}
   if(t.id==='cyber-new-folder-btn'||t.closest('#cyber-new-folder-btn')){cyberNewFolder();return;}
   if(t.id==='cyber-new-doc-btn'||t.closest('#cyber-new-doc-btn')){cyberNewDoc();return;}
+  if(t.id==='cyber-add-photo-btn'||t.closest('#cyber-add-photo-btn')){document.getElementById('cyber-photo-file').click();return;}
   const cyberFolderDel=t.closest('[data-cyber-folder-del]');
   if(cyberFolderDel){cyberDeleteFolder(cyberFolderDel.dataset.cyberFolderDel);return;}
   const cyberFolder=t.closest('[data-cyber-folder]');
   if(cyberFolder){_cyberActiveFolder=cyberFolder.dataset.cyberFolder;cyberRenderFolders();cyberRenderDocs();return;}
   const cyberDoc=t.closest('[data-cyber-doc]');
-  if(cyberDoc){cyberOpenDocEditor(cyberDoc.dataset.cyberDoc);return;}
+  if(cyberDoc){
+    const item=cyberVault.docs.find(x=>x.id===cyberDoc.dataset.cyberDoc);
+    if(item&&item.type==='image')cyberOpenImageViewer(item.id);else cyberOpenDocEditor(cyberDoc.dataset.cyberDoc);
+    return;
+  }
   if(t.id==='cyber-doc-close-btn'||t.closest('#cyber-doc-close-btn')){closeM('cyber-doc-modal');return;}
   if(t.id==='cyber-doc-save-btn'||t.closest('#cyber-doc-save-btn')){cyberSaveDoc();return;}
   if(t.id==='cyber-doc-delete-btn'||t.closest('#cyber-doc-delete-btn')){cyberDeleteDoc();return;}
+  if(t.id==='cyber-img-close-btn'||t.closest('#cyber-img-close-btn')){closeM('cyber-img-modal');return;}
+  if(t.id==='cyber-img-save-btn'||t.closest('#cyber-img-save-btn')){cyberSaveImage();return;}
+  if(t.id==='cyber-img-delete-btn'||t.closest('#cyber-img-delete-btn')){cyberDeleteImage();return;}
   // --- STICKY NOTES ---
   if(t.closest('#sb-notepad-open')){openNotepad();return;}
   if(t.id==='np-close-btn'||t.closest('#np-close-btn')){flushStickyNotesNow();closeM('notepad-modal');return;}
@@ -7244,6 +7274,29 @@ document.addEventListener('change',function(e){
   reader.readAsDataURL(file);
 });
 
+// Cyber & Hacking vault — photo upload (larger max dimension than sticky-note photos since
+// these are usually screenshots/evidence that need to stay readable, not decorative pins).
+document.addEventListener('change',function(e){
+  if(e.target.id!=='cyber-photo-file')return;
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const img=new Image();
+    img.onload=function(){
+      const MAX=1400;
+      let w=img.width,h=img.height;
+      if(w>MAX||h>MAX){const r=Math.min(MAX/w,MAX/h);w=Math.round(w*r);h=Math.round(h*r);}
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      cyberAddPhoto(c.toDataURL('image/jpeg',0.75),file.name);
+      e.target.value='';
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
 // Library — PDF upload handler (read as base64 data URL). Supports picking several PDFs at
 // once: with one file, it fills the normal add/edit form same as before; with several, each
 // becomes its own book immediately (title = filename) since asking for a title per file would
@@ -7956,20 +8009,32 @@ function cyberRenderDocs(){
   const list=document.getElementById('cyber-doc-list');
   const nameEl=document.getElementById('cyber-active-folder-name');
   const newBtn=document.getElementById('cyber-new-doc-btn');
+  const photoBtn=document.getElementById('cyber-add-photo-btn');
   if(!list)return;
   const folder=cyberVault.folders.find(f=>f.id===_cyberActiveFolder);
   if(!folder){
     if(nameEl)nameEl.textContent='Select a folder to view its documents';
     if(newBtn)newBtn.style.display='none';
+    if(photoBtn)photoBtn.style.display='none';
     list.innerHTML='';
     return;
   }
   if(nameEl)nameEl.textContent='📁 '+folder.name;
   if(newBtn)newBtn.style.display='';
-  const docs=cyberVault.docs.filter(d=>d.folderId===folder.id).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
-  if(!docs.length){list.innerHTML='<div class="bk-empty">No documents yet. Click "New Document" to add your first one.</div>';return;}
-  list.innerHTML=docs.map(d=>{
+  if(photoBtn)photoBtn.style.display='';
+  const items=cyberVault.docs.filter(d=>d.folderId===folder.id).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+  if(!items.length){list.innerHTML='<div class="bk-empty">Nothing here yet. Add a document or a photo.</div>';return;}
+  list.innerHTML=items.map(d=>{
     const dt=d.updatedAt?new Date(d.updatedAt).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}):'';
+    if(d.type==='image'){
+      return `<div class="bk-item" data-cyber-doc="${d.id}" style="cursor:pointer">
+        <img src="${d.img}" style="width:38px;height:38px;object-fit:cover;border-radius:6px;flex-shrink:0" alt="">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:700;color:var(--text)">🖼️ ${escapeHtml(d.title||'Untitled photo')}</div>
+        </div>
+        <div style="font-size:9px;color:var(--muted);flex-shrink:0">${dt}</div>
+      </div>`;
+    }
     const preview=(d.content||'').slice(0,80).replace(/\n/g,' ');
     return `<div class="bk-item" data-cyber-doc="${d.id}" style="cursor:pointer">
       <div style="flex:1;min-width:0">
@@ -8002,9 +8067,45 @@ function cyberDeleteFolder(id){
 }
 function cyberNewDoc(){
   if(!_cyberActiveFolder)return;
-  const d={id:'cd_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),folderId:_cyberActiveFolder,title:'',content:'',updatedAt:Date.now()};
+  const d={id:'cd_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),folderId:_cyberActiveFolder,type:'doc',title:'',content:'',updatedAt:Date.now()};
   cyberVault.docs.push(d);
   cyberOpenDocEditor(d.id);
+}
+function cyberAddPhoto(dataUrl,filename){
+  if(!_cyberActiveFolder)return;
+  const d={id:'cd_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),folderId:_cyberActiveFolder,type:'image',title:(filename||'').replace(/\.[a-z0-9]+$/i,''),img:dataUrl,updatedAt:Date.now()};
+  cyberVault.docs.push(d);
+  cyberSave();
+  cyberRenderDocs();cyberUpdateBadge();
+  toast('🖼️ Photo added','s');
+}
+function cyberOpenImageViewer(id){
+  const d=cyberVault.docs.find(x=>x.id===id);
+  if(!d)return;
+  _cyberActiveDoc=id;
+  document.getElementById('cyber-img-preview').src=d.img;
+  document.getElementById('cyber-img-title').value=d.title||'';
+  document.getElementById('cyber-img-modal')?.classList.add('open');
+}
+function cyberSaveImage(){
+  const d=cyberVault.docs.find(x=>x.id===_cyberActiveDoc);
+  if(!d)return;
+  d.title=document.getElementById('cyber-img-title').value.trim();
+  d.updatedAt=Date.now();
+  cyberSave();
+  document.getElementById('cyber-img-modal')?.classList.remove('open');
+  cyberRenderDocs();cyberUpdateBadge();
+  toast('💾 Photo saved','s');
+}
+function cyberDeleteImage(){
+  const d=cyberVault.docs.find(x=>x.id===_cyberActiveDoc);
+  if(!d)return;
+  if(!confirm('Delete this photo? This cannot be undone.'))return;
+  cyberVault.docs=cyberVault.docs.filter(x=>x.id!==_cyberActiveDoc);
+  cyberSave();
+  document.getElementById('cyber-img-modal')?.classList.remove('open');
+  cyberRenderDocs();cyberUpdateBadge();
+  toast('🗑 Photo deleted','w');
 }
 function cyberOpenDocEditor(id){
   const d=cyberVault.docs.find(x=>x.id===id);
