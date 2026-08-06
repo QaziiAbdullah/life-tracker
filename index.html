@@ -1004,7 +1004,16 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
 .sn-shape-diamond{clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%)}
 .sn-shape-hexagon{clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)}
 .sn-shape-star{clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.sn-shape-triangle{clip-path:polygon(50% 0%,0% 100%,100% 100%)}
+.sn-shape-pentagon{clip-path:polygon(50% 0%,100% 38%,82% 100%,18% 100%,0% 38%)}
+.sn-shape-octagon{clip-path:polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%)}
+.sn-shape-heart{clip-path:polygon(50% 15%,61% 4%,75% 0%,87% 4%,95% 15%,98% 28%,95% 42%,50% 100%,5% 42%,2% 28%,5% 15%,13% 4%,25% 0%,39% 4%)}
+.sn-shape-parallelogram{clip-path:polygon(20% 0%,100% 0%,80% 100%,0% 100%)}
+.sn-shape-trapezoid{clip-path:polygon(20% 0%,80% 0%,100% 100%,0% 100%)}
+.sn-shape-cross{clip-path:polygon(35% 0%,65% 0%,65% 35%,100% 35%,100% 65%,65% 65%,65% 100%,35% 100%,35% 65%,0% 65%,0% 35%,35% 35%)}
+.sn-shape-arrow{clip-path:polygon(0% 20%,60% 20%,60% 0%,100% 50%,60% 100%,60% 80%,0% 80%)}
 .sn-card.sn-shape-pad{padding:20px 22px 34px}
+.sn-card.sn-shape-triangle,.sn-card.sn-shape-arrow,.sn-card.sn-shape-cross{padding-top:34px}
 .sn-shape-pick{width:28px;height:28px;border-radius:6px;cursor:pointer;border:2px solid transparent;
   background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
 .sn-shape-pick:hover{transform:scale(1.12)}
@@ -9185,7 +9194,13 @@ function toggleNpColors(){
   if(btn)btn.classList.toggle('on',_npColorsOpen);
 }
 
-const SN_SHAPES=[{id:'rect',icon:'▭',label:'Rectangle'},{id:'round',icon:'▢',label:'Rounded'},{id:'circle',icon:'⬤',label:'Circle'},{id:'diamond',icon:'◆',label:'Diamond'},{id:'hexagon',icon:'⬡',label:'Hexagon'},{id:'star',icon:'★',label:'Star'}];
+const SN_SHAPES=[
+  {id:'rect',icon:'▭',label:'Rectangle'},{id:'round',icon:'▢',label:'Rounded'},{id:'circle',icon:'⬤',label:'Circle'},
+  {id:'triangle',icon:'▲',label:'Triangle'},{id:'diamond',icon:'◆',label:'Diamond'},{id:'pentagon',icon:'⬟',label:'Pentagon'},
+  {id:'hexagon',icon:'⬡',label:'Hexagon'},{id:'octagon',icon:'⯃',label:'Octagon'},{id:'star',icon:'★',label:'Star'},
+  {id:'heart',icon:'♥',label:'Heart'},{id:'parallelogram',icon:'▱',label:'Parallelogram'},{id:'trapezoid',icon:'⏢',label:'Trapezoid'},
+  {id:'cross',icon:'✚',label:'Cross'},{id:'arrow',icon:'➤',label:'Arrow'},
+];
 function renderNpShapeDots(){
   const wrap=document.getElementById('np-shapes-scroll');
   if(!wrap)return;
