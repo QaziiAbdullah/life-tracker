@@ -997,8 +997,14 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
   box-shadow:3px 5px 16px rgba(0,0,0,.24),0 1px 3px rgba(0,0,0,.1);
   transition:box-shadow .12s}
 .sn-card.sn-new{animation:snPop .28s cubic-bezier(.34,1.56,.64,1) forwards}
-/* Sticky note shapes — clip-path reshapes the card; non-rect shapes get extra inner padding
-   (via the .sn-shape-pad modifier) so text isn't clipped right at the corners. */
+/* Sticky note shapes — clip-path is applied to this inner background layer (or the photo <img>
+   directly), never to .sn-card itself: clip-path also clips hit-testing, which was making the
+   delete button and resize handle unreachable whenever they landed in a clipped-away corner. */
+/* z-index:-1 (not 0) is required here: the textarea is a normal in-flow (non-positioned) child,
+   which paints in an EARLIER stacking step than any z-index:auto/0 positioned sibling — so a
+   z-index:0 background layer would render ON TOP of the text instead of behind it. Negative
+   z-index paints before in-flow content, which is what actually puts it behind. */
+.sn-shape-bg{position:absolute;inset:0;z-index:-1;pointer-events:none;border-radius:2px}
 .sn-shape-round{border-radius:20px}
 .sn-shape-circle{border-radius:50%}
 .sn-shape-diamond{clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%)}
@@ -1012,8 +1018,6 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
 .sn-shape-trapezoid{clip-path:polygon(20% 0%,80% 0%,100% 100%,0% 100%)}
 .sn-shape-cross{clip-path:polygon(35% 0%,65% 0%,65% 35%,100% 35%,100% 65%,65% 65%,65% 100%,35% 100%,35% 65%,0% 65%,0% 35%,35% 35%)}
 .sn-shape-arrow{clip-path:polygon(0% 20%,60% 20%,60% 0%,100% 50%,60% 100%,60% 80%,0% 80%)}
-.sn-card.sn-shape-pad{padding:20px 22px 34px}
-.sn-card.sn-shape-triangle,.sn-card.sn-shape-arrow,.sn-card.sn-shape-cross{padding-top:34px}
 .sn-shape-pick{width:28px;height:28px;border-radius:6px;cursor:pointer;border:2px solid transparent;
   background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
 .sn-shape-pick:hover{transform:scale(1.12)}
@@ -1047,6 +1051,10 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
   background:none;border:none;font-size:13px;line-height:1;color:rgba(0,0,0,.3);
   cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;pointer-events:all}
 .sn-next:hover{background:rgba(0,0,0,.12);color:rgba(0,0,0,.7)}
+.sn-shape-btn{position:absolute;top:2px;right:41px;width:17px;height:17px;border-radius:50%;
+  background:none;border:none;font-size:11px;line-height:1;color:rgba(0,0,0,.3);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;pointer-events:all}
+.sn-shape-btn:hover{background:rgba(0,0,0,.12);color:rgba(0,0,0,.7)}
 .sn-c-dot{width:10px;height:10px;border-radius:50%;cursor:pointer;border:1.5px solid rgba(0,0,0,.18);transition:transform .1s;flex-shrink:0}
 .sn-c-dot:hover{transform:scale(1.45)}
 .sn-c-dot.on{border-color:rgba(0,0,0,.55);transform:scale(1.3)}
@@ -2511,6 +2519,19 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
         </div>
       </div>
     </div>
+    <!-- Sidebar Background -->
+    <div class="set-section">
+      <div class="set-sh">📚 Sidebar Background</div>
+      <div class="set-row" style="display:block">
+        <div class="set-hint">Change just the left sidebar's background — separate from the main page background above.</div>
+        <div id="sbbg-gallery" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <button class="btn btn-g btn-sm" id="sbbg-upload-btn">📁 Upload Image</button>
+          <input type="file" id="sbbg-file" accept="image/*" style="display:none">
+          <button class="btn btn-g btn-sm" id="sbbg-reset-btn">↺ Reset to Default</button>
+        </div>
+      </div>
+    </div>
     <!-- Template Gallery -->
     <div class="set-section">
       <div class="set-sh">🖼️ Interface Templates</div>
@@ -2944,6 +2965,7 @@ function _applyRemoteChanges(changedKeys){
     else if(k==='azanSettings'){azanSettings=S.get('azanSettings',{enabled:false,lat:null,lon:null,method:2,sound:null,soundName:''});_azanTimings=null;_azanTimingsDate=null;if(document.getElementById('azan-modal')?.classList.contains('open')&&typeof azanRenderPanel==='function')azanRenderPanel();}
     else if(k==='appFont'){appFont=S.get('appFont',"'Segoe UI',system-ui,sans-serif");if(typeof applyAppFont==='function')applyAppFont(appFont);}
     else if(k==='appBg'){appBg=S.get('appBg',null);if(typeof applyAppBg==='function')applyAppBg(appBg);}
+    else if(k==='sbBg'){sbBg=S.get('sbBg',null);if(typeof applySbBg==='function')applySbBg(sbBg);}
     else if(k==='autoTheme'){autoOn=S.get('autoTheme',false);}
     else if(k==='wallBg'){_wallBg=S.get('wallBg','#eee8dc');if(document.getElementById('notepad-modal')?.classList.contains('open')&&typeof applyWallBg==='function')applyWallBg(_wallBg);}
     else if(k==='appName'||k==='appSub'){
@@ -2970,7 +2992,7 @@ setInterval(_pullSync,25000);
 setInterval(()=>{if(_syncToken)_flushSync();},5*60*1000);
 
 // ===== MANUAL "SAVE & SYNC" BUTTON =====
-const ALL_SYNC_KEYS=['habits','tasks','goals','logs','birthdays','events','finance','customIncSrc','customExpCat','profile','sectionNames','timetable','visionItems','stickyNotes','stickyConnections','libBooks','currencyData','theme','autoTheme','wallBg','appName','appSub','dashOrder','weatherPref','aiPatterns','ttWakeStart','ttWakeEnd','fbListings','monthlySalary','lightMode','cyberVault','azanSettings','appFont','appBg'];
+const ALL_SYNC_KEYS=['habits','tasks','goals','logs','birthdays','events','finance','customIncSrc','customExpCat','profile','sectionNames','timetable','visionItems','stickyNotes','stickyConnections','libBooks','currencyData','theme','autoTheme','wallBg','appName','appSub','dashOrder','weatherPref','aiPatterns','ttWakeStart','ttWakeEnd','fbListings','monthlySalary','lightMode','cyberVault','azanSettings','appFont','appBg','sbBg'];
 // Zulqey AI assistant's learned phrase->action mappings — declared here (early, before any code
 // path can reference it) to avoid the TDZ ordering crash class documented elsewhere in this file.
 let aiPatterns=S.get('aiPatterns',[]);
@@ -3052,6 +3074,7 @@ let monthlySalary=S.get('monthlySalary',{amount:0,enabled:false});
 let _lightMode=S.get('lightMode',false);
 let appFont=S.get('appFont',"'Segoe UI',system-ui,sans-serif");
 let appBg=S.get('appBg',null);
+let sbBg=S.get('sbBg',null);
 let cyberVault=S.get('cyberVault',{folders:[],docs:[]});
 let _cyberPath=[],_cyberActiveDoc=null;
 let azanSettings=S.get('azanSettings',{enabled:false,lat:null,lon:null,method:2,sound:null,soundName:''});
@@ -4096,6 +4119,18 @@ document.addEventListener('click',function(e){
   }
   const snNxt=t.closest('.sn-next');
   if(snNxt){addStickyNote();return;}
+  const snShapeBtn=t.closest('.sn-shape-btn');
+  if(snShapeBtn&&snShapeBtn.dataset.snid){
+    const n=_stickyNotes.find(x=>x.id===snShapeBtn.dataset.snid);
+    if(n){
+      const idx=SN_SHAPES.findIndex(s=>s.id===(n.shape||'rect'));
+      n.shape=SN_SHAPES[(idx+1)%SN_SHAPES.length].id;
+      S.set('stickyNotes',_stickyNotes);
+      renderStickyNotes();
+      toast('🔷 Shape: '+SN_SHAPES.find(s=>s.id===n.shape).label,'s');
+    }
+    return;
+  }
   const snCol=t.closest('.sn-c-dot');
   if(snCol&&snCol.dataset.snid){const n=_stickyNotes.find(x=>x.id===snCol.dataset.snid);if(n){n.color=snCol.dataset.snc;S.set('stickyNotes',_stickyNotes);renderStickyNotes();}return;}
 
@@ -4394,6 +4429,12 @@ document.addEventListener('click',function(e){
   // Font picker
   const fontPick=t.closest('.font-pick[data-font]');
   if(fontPick){applyAppFont(fontPick.dataset.font);toast('🔤 Font applied','s');return;}
+  // Sidebar background picker (checked before the generic app-bg picker below, since sbbg
+  // swatches also carry .appbg-pick for shared styling and would otherwise match that first)
+  const sbbgPick=t.closest('.sbbg-pick[data-bg]');
+  if(sbbgPick){applySbBg(sbbgPick.dataset.bg);toast('📚 Sidebar background applied','s');return;}
+  if(id==='sbbg-upload-btn'){document.getElementById('sbbg-file').click();return;}
+  if(id==='sbbg-reset-btn'){applySbBg(null);renderSbBgGallery();toast('↺ Sidebar background reset','s');return;}
   // App background picker
   const appbgPick=t.closest('.appbg-pick[data-bg]');
   if(appbgPick){applyAppBg(appbgPick.dataset.bg);toast('🖼️ Background applied','s');return;}
@@ -5664,6 +5705,11 @@ function renderAppBgGallery(){
   if(!wrap)return;
   wrap.innerHTML=APP_BG_PRESETS.map(v=>`<div class="appbg-pick${v===appBg?' on':''}" data-bg="${escapeHtml(v)}" style="background:${v}" title="App background"></div>`).join('');
 }
+function renderSbBgGallery(){
+  const wrap=document.getElementById('sbbg-gallery');
+  if(!wrap)return;
+  wrap.innerHTML=APP_BG_PRESETS.map(v=>`<div class="appbg-pick sbbg-pick${v===sbBg?' on':''}" data-bg="${escapeHtml(v)}" style="background:${v}" title="Sidebar background"></div>`).join('');
+}
 
 // ===== BACKUP & RESTORE (WhatsApp-style) =====
 function _collectAllLocalData(){
@@ -6870,6 +6916,7 @@ function renderSettings(){
   renderLuxuryGallery();
   renderFontGallery();
   renderAppBgGallery();
+  renderSbBgGallery();
   bkRenderList();
   // Keep the dark/light switch in sync in case it changed via a sync pull from another
   // device while this page wasn't open.
@@ -7698,6 +7745,30 @@ document.addEventListener('change',function(e){
   reader.readAsDataURL(file);
 });
 
+// Sidebar background image upload — same resize-then-base64 approach as the app background.
+document.addEventListener('change',function(e){
+  if(e.target.id!=='sbbg-file')return;
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const img=new Image();
+    img.onload=function(){
+      const MAX=800;
+      let w=img.width,h=img.height;
+      if(w>MAX||h>MAX){const r=Math.min(MAX/w,MAX/h);w=Math.round(w*r);h=Math.round(h*r);}
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      applySbBg(c.toDataURL('image/jpeg',0.75));
+      renderSbBgGallery();
+      toast('📚 Sidebar background image set','s');
+      e.target.value='';
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
 // Library — PDF upload handler (read as base64 data URL). Supports picking several PDFs at
 // once: with one file, it fills the normal add/edit form same as before; with several, each
 // becomes its own book immediately (title = filename) since asking for a title per file would
@@ -7865,9 +7936,16 @@ applyAppFont(appFont);
 // ===== APP-WIDE BACKGROUND =====
 // Independent of the accent-color theme system — lets the whole app's page background be a
 // flat color, a gradient, or a custom uploaded image, on top of whichever theme/accent is active.
-const APP_BG_PRESETS=['#0b1120','#07061a','#020b18','#030c06','#120703','#110609','#0e0a01','#020e0d',
+const APP_BG_PRESETS=[
+  '#0b1120','#07061a','#020b18','#030c06','#120703','#110609','#0e0a01','#020e0d','#07020f','#000000','#0a0a0a','#111111',
   'linear-gradient(135deg,#0f172a,#1e293b)','linear-gradient(135deg,#1e1b4b,#312e81)','linear-gradient(135deg,#1a2e05,#365314)',
-  'linear-gradient(135deg,#1e0a1a,#4a044e)','linear-gradient(135deg,#0c1e1e,#134e4a)','linear-gradient(135deg,#1c1917,#292524)'];
+  'linear-gradient(135deg,#1e0a1a,#4a044e)','linear-gradient(135deg,#0c1e1e,#134e4a)','linear-gradient(135deg,#1c1917,#292524)',
+  'linear-gradient(135deg,#000428,#004e92)','linear-gradient(135deg,#232526,#414345)','linear-gradient(135deg,#0f2027,#203a43,#2c5364)',
+  'linear-gradient(135deg,#8e0e00,#1f1c18)','linear-gradient(135deg,#1a2980,#26d0ce)','linear-gradient(135deg,#e65c00,#3a0000)',
+  'linear-gradient(135deg,#360033,#0b8793)','linear-gradient(135deg,#000000,#434343)',
+  '#ffffff','#f8fafc','#f0f4ff','#fef3c7','#dcfce7','#fce7f3',
+  'linear-gradient(135deg,#fdfbfb,#ebedee)','linear-gradient(135deg,#e0eafc,#cfdef3)','linear-gradient(135deg,#fff1eb,#ace0f9)',
+];
 function applyAppBg(v){
   appBg=v;
   S.set('appBg',v);
@@ -7880,6 +7958,25 @@ function applyAppBg(v){
   document.querySelectorAll('.appbg-pick').forEach(el=>el.classList.toggle('on',el.dataset.bg===v));
 }
 if(appBg)applyAppBg(appBg);
+
+// Sidebar background — applied directly to the .sb element's inline style rather than the
+// shared --sb CSS variable, since applyTheme()/applyLuxuryTheme() overwrite --sb on every
+// theme switch and would otherwise wipe out a custom sidebar background immediately.
+function applySbBg(v){
+  sbBg=v;
+  S.set('sbBg',v);
+  const sb=document.querySelector('.sb');
+  if(sb){
+    if(v){
+      if(v.startsWith('data:')||v.startsWith('http')){sb.style.backgroundImage=`url(${v})`;sb.style.backgroundSize='cover';sb.style.backgroundPosition='center';}
+      else{sb.style.backgroundImage='none';sb.style.background=v;}
+    }else{
+      sb.style.backgroundImage='';sb.style.background='';
+    }
+  }
+  document.querySelectorAll('.sbbg-pick').forEach(el=>el.classList.toggle('on',el.dataset.bg===v));
+}
+if(sbBg)applySbBg(sbBg);
 
 // Congrats close
 document.getElementById('congrats-close')?.addEventListener('click',hideCongrats);
@@ -8830,23 +8927,30 @@ function renderStickyNotes(){
   layer.innerHTML=_stickyNotes.map(n=>{
     const pin=`<div class="sn-pin"></div>`;
     const shape=n.shape||'rect';
+    // The shape's clip-path is applied to an inner .sn-shape-bg layer (or the <img> itself for
+    // photos) instead of the outer .sn-card — clip-path also clips hit-testing, so putting it on
+    // the card itself made the delete button and resize handle (which sit in the clipped-away
+    // corners for shapes like triangle/star) invisible AND unclickable. Keeping the outer card a
+    // plain unclipped rectangle means those controls are always reachable regardless of shape.
     const shapeCls=shape!=='rect'?' sn-shape-'+shape:'';
-    const padCls=(shape!=='rect'&&shape!=='round')?' sn-shape-pad':'';
     if(n.type==='photo'){
-      return `<div class="sn-card sn-photo-card${shapeCls}${n.id===_snNewId?' sn-new':''}${_snWireFrom===n.id?' sn-connect-src':''}" data-snid="${n.id}"
-        style="left:${n.x}px;top:${n.y}px;z-index:${n.z};background:#fff;transform:rotate(${n.rot}deg);--sn-r:${n.rot}deg;width:${n.w||160}px;height:${n.h||160}px;min-height:unset">
+      return `<div class="sn-card sn-photo-card${n.id===_snNewId?' sn-new':''}${_snWireFrom===n.id?' sn-connect-src':''}" data-snid="${n.id}"
+        style="left:${n.x}px;top:${n.y}px;z-index:${n.z};background:transparent;transform:rotate(${n.rot}deg);--sn-r:${n.rot}deg;width:${n.w||160}px;height:${n.h||160}px;min-height:unset">
         ${pin}
         <button class="sn-x" data-snid="${n.id}" title="Delete">✕</button>
-        <img src="${n.img}" draggable="false">
+        <button class="sn-shape-btn" data-snid="${n.id}" title="Change shape (${shape})">🔷</button>
+        <img class="sn-photo-img${shapeCls}" src="${n.img}" draggable="false">
         <div class="sn-resize" data-snid="${n.id}"></div>
       </div>`;
     }
     const strip=SN_COLORS.map(c=>`<div class="sn-c-dot${n.color===c?' on':''}" data-snid="${n.id}" data-snc="${c}" style="background:${c}"></div>`).join('');
-    return `<div class="sn-card${shapeCls}${padCls}${n.id===_snNewId?' sn-new':''}${_snWireFrom===n.id?' sn-connect-src':''}" data-snid="${n.id}"
-      style="left:${n.x}px;top:${n.y}px;z-index:${n.z};background:${n.color};transform:rotate(${n.rot}deg);--sn-r:${n.rot}deg;width:${n.w||150}px;${n.h?'height:'+n.h+'px;min-height:unset':'min-height:65px'}">
+    return `<div class="sn-card${n.id===_snNewId?' sn-new':''}${_snWireFrom===n.id?' sn-connect-src':''}" data-snid="${n.id}"
+      style="left:${n.x}px;top:${n.y}px;z-index:${n.z};background:transparent;transform:rotate(${n.rot}deg);--sn-r:${n.rot}deg;width:${n.w||150}px;${n.h?'height:'+n.h+'px;min-height:unset':'min-height:65px'}">
+      <div class="sn-shape-bg${shapeCls}" style="background:${n.color}"></div>
       ${pin}
       <div class="sn-tape"></div>
       <button class="sn-x" data-snid="${n.id}" title="Delete">✕</button>
+      <button class="sn-shape-btn" data-snid="${n.id}" title="Change shape (${shape})">🔷</button>
       <button class="sn-next" data-snid="${n.id}" title="Add next note">＋</button>
       <textarea class="sn-ta" data-snid="${n.id}" placeholder="Type here...">${escapeHtml(n.text||'')}</textarea>
       <div class="sn-c-strip">${strip}</div>
