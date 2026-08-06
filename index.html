@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 115'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='20%25' y1='0%25' x2='80%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%235ba3ff'/%3E%3Cstop offset='100%25' stop-color='%231a56db'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M50 3 L93 22 L93 62 Q93 98 50 114 Q7 98 7 62 L7 22 Z' fill='%23c0d4f0'/%3E%3Cpath d='M50 8 L88 25 L88 62 Q88 94 50 110 Q12 94 12 62 L12 25 Z' fill='url(%23g1)'/%3E%3Cellipse cx='50' cy='44' rx='9' ry='8' fill='%231c2240'/%3E%3Cline x1='44' y1='38' x2='35' y2='28' stroke='%231c2240' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='56' y1='38' x2='65' y2='28' stroke='%231c2240' stroke-width='2.5' stroke-linecap='round'/%3E%3Cellipse cx='50' cy='63' rx='15' ry='17' fill='%231c2240'/%3E%3Cline x1='35' y1='53' x2='19' y2='47' stroke='%231c2240' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='35' y1='62' x2='17' y2='62' stroke='%231c2240' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='36' y1='71' x2='20' y2='78' stroke='%231c2240' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='65' y1='53' x2='81' y2='47' stroke='%231c2240' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='65' y1='62' x2='83' y2='62' stroke='%231c2240' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='64' y1='71' x2='80' y2='78' stroke='%231c2240' stroke-width='2.5' stroke-linecap='round'/%3E%3Ccircle cx='50' cy='65' r='11' fill='%23e53935'/%3E%3Crect x='48' y='57' width='4' height='8' rx='2' fill='white'/%3E%3Ccircle cx='50' cy='70' r='2.5' fill='white'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Share+Tech+Mono&family=VT323&family=Orbitron:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Share+Tech+Mono&family=VT323&family=Orbitron:wght@400;700&family=Press+Start+2P&family=Poppins:wght@400;600;700&family=Roboto:wght@400;500;700&family=Open+Sans:wght@400;600;700&family=Lato:wght@400;700&family=Montserrat:wght@400;600;700&family=Nunito:wght@400;700&family=Inter:wght@400;600;700&family=Merriweather:wght@400;700&family=Playfair+Display:wght@400;700&family=Courier+Prime&family=Comic+Neue:wght@400;700&family=Dancing+Script:wght@600&family=Pacifico&display=swap" rel="stylesheet">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#0a0a14">
 <link rel="apple-touch-icon" href="/icons/icon-180.png">
@@ -22,9 +22,10 @@
   --primary:#2563eb;--pl:#93c5fd;--success:#10b981;--warn:#f59e0b;
   --danger:#ef4444;--info:#3b82f6;--text:#f1f5f9;--muted:#64748b;
   --border:rgba(255,255,255,.07);--hi:#ef4444;--me:#f59e0b;--lo:#10b981;
+  --app-font:'Segoe UI',system-ui,sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;font-size:13px}
+body{font-family:var(--app-font);background:var(--bg);color:var(--text);display:flex;min-height:100vh;font-size:13px}
 
 /* SIDEBAR */
 .sb{width:240px;background:var(--sb);border-right:1px solid rgba(255,255,255,.07);position:fixed;left:0;top:0;bottom:0;display:flex;flex-direction:column;z-index:50;box-shadow:4px 0 24px rgba(0,0,0,.25)}
@@ -514,6 +515,12 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px 20px;min-height:100vh
 .lux-swatch{width:30px;height:30px;border-radius:9px;cursor:pointer;border:2px solid transparent;transition:transform .15s;flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
 .lux-swatch:hover{transform:scale(1.15)}
 .lux-swatch.on{border-color:#fff;transform:scale(1.1);box-shadow:0 0 0 2px var(--card),0 0 10px rgba(255,255,255,.4)}
+.font-pick{padding:8px 14px;border-radius:10px;border:1.5px solid var(--border);background:var(--card2);color:var(--text);cursor:pointer;font-size:13px;transition:all .15s}
+.font-pick:hover{border-color:rgba(var(--pa),.5)}
+.font-pick.on{border-color:var(--primary);background:rgba(var(--pa),.15);box-shadow:0 0 0 1px var(--primary)}
+.appbg-pick{width:56px;height:36px;border-radius:8px;cursor:pointer;border:2px solid transparent;flex-shrink:0;transition:transform .15s}
+.appbg-pick:hover{transform:scale(1.08)}
+.appbg-pick.on{border-color:#fff;box-shadow:0 0 0 2px var(--primary)}
 /* Template Gallery Cards */
 .tt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
 @media(max-width:600px){.tt-grid{grid-template-columns:repeat(2,1fr)}}
@@ -990,6 +997,18 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
   box-shadow:3px 5px 16px rgba(0,0,0,.24),0 1px 3px rgba(0,0,0,.1);
   transition:box-shadow .12s}
 .sn-card.sn-new{animation:snPop .28s cubic-bezier(.34,1.56,.64,1) forwards}
+/* Sticky note shapes — clip-path reshapes the card; non-rect shapes get extra inner padding
+   (via the .sn-shape-pad modifier) so text isn't clipped right at the corners. */
+.sn-shape-round{border-radius:20px}
+.sn-shape-circle{border-radius:50%}
+.sn-shape-diamond{clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%)}
+.sn-shape-hexagon{clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)}
+.sn-shape-star{clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.sn-card.sn-shape-pad{padding:20px 22px 34px}
+.sn-shape-pick{width:28px;height:28px;border-radius:6px;cursor:pointer;border:2px solid transparent;
+  background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.sn-shape-pick:hover{transform:scale(1.12)}
+.sn-shape-pick.on{border-color:#fff;background:rgba(255,255,255,.22)}
 .sn-card.is-dragging{cursor:grabbing!important;
   box-shadow:8px 14px 36px rgba(0,0,0,.38),0 2px 8px rgba(0,0,0,.2)!important;
   pointer-events:none}
@@ -1312,6 +1331,8 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
       <div class="np-hd-r">
         <button class="np-header-btn" id="np-colors-toggle" onclick="toggleNpColors()" style="background:#334155;padding:6px 10px" title="Note colors">🎨</button>
         <div class="np-dots-scroll" id="np-dots-scroll" style="display:none"></div>
+        <button class="np-header-btn" id="np-shapes-toggle" onclick="toggleNpShapes()" style="background:#334155;padding:6px 10px" title="Note shapes">🔷</button>
+        <div class="np-dots-scroll" id="np-shapes-scroll" style="display:none;gap:6px"></div>
         <span style="font-size:9px;color:rgba(0,0,0,.35);font-weight:600;letter-spacing:.5px;flex-shrink:0">WALL</span>
         <div id="np-wall-bg-dots" style="display:flex;align-items:center;gap:4px;flex-shrink:0"></div>
         <button class="np-add-btn-wall" id="np-add-btn">＋ New Note</button>
@@ -2460,6 +2481,27 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
         </div>
       </div>
     </div>
+    <!-- Font -->
+    <div class="set-section">
+      <div class="set-sh">🔤 App Font</div>
+      <div class="set-row" style="display:block">
+        <div class="set-hint">Pick any font to use across the whole app — applies everywhere, syncs across your devices.</div>
+        <div id="font-gallery" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
+      </div>
+    </div>
+    <!-- Background -->
+    <div class="set-section">
+      <div class="set-sh">🖼️ App Background</div>
+      <div class="set-row" style="display:block">
+        <div class="set-hint">Choose a background color/gradient, or upload your own image — independent of the theme colors below.</div>
+        <div id="appbg-gallery" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <button class="btn btn-g btn-sm" id="appbg-upload-btn">📁 Upload Image</button>
+          <input type="file" id="appbg-file" accept="image/*" style="display:none">
+          <button class="btn btn-g btn-sm" id="appbg-reset-btn">↺ Reset to Default</button>
+        </div>
+      </div>
+    </div>
     <!-- Template Gallery -->
     <div class="set-section">
       <div class="set-sh">🖼️ Interface Templates</div>
@@ -2891,6 +2933,8 @@ function _applyRemoteChanges(changedKeys){
     else if(k==='lightMode'){if(typeof applyMode==='function')applyMode(S.get('lightMode',false));}
     else if(k==='cyberVault'){cyberVault=S.get('cyberVault',{folders:[],docs:[]});if(document.getElementById('cyber-modal')?.classList.contains('open')&&typeof cyberRenderFolders==='function'){cyberRenderFolders();cyberRenderDocs();}if(typeof cyberUpdateBadge==='function')cyberUpdateBadge();}
     else if(k==='azanSettings'){azanSettings=S.get('azanSettings',{enabled:false,lat:null,lon:null,method:2,sound:null,soundName:''});_azanTimings=null;_azanTimingsDate=null;if(document.getElementById('azan-modal')?.classList.contains('open')&&typeof azanRenderPanel==='function')azanRenderPanel();}
+    else if(k==='appFont'){appFont=S.get('appFont',"'Segoe UI',system-ui,sans-serif");if(typeof applyAppFont==='function')applyAppFont(appFont);}
+    else if(k==='appBg'){appBg=S.get('appBg',null);if(typeof applyAppBg==='function')applyAppBg(appBg);}
     else if(k==='autoTheme'){autoOn=S.get('autoTheme',false);}
     else if(k==='wallBg'){_wallBg=S.get('wallBg','#eee8dc');if(document.getElementById('notepad-modal')?.classList.contains('open')&&typeof applyWallBg==='function')applyWallBg(_wallBg);}
     else if(k==='appName'||k==='appSub'){
@@ -2917,7 +2961,7 @@ setInterval(_pullSync,25000);
 setInterval(()=>{if(_syncToken)_flushSync();},5*60*1000);
 
 // ===== MANUAL "SAVE & SYNC" BUTTON =====
-const ALL_SYNC_KEYS=['habits','tasks','goals','logs','birthdays','events','finance','customIncSrc','customExpCat','profile','sectionNames','timetable','visionItems','stickyNotes','stickyConnections','libBooks','currencyData','theme','autoTheme','wallBg','appName','appSub','dashOrder','weatherPref','aiPatterns','ttWakeStart','ttWakeEnd','fbListings','monthlySalary','lightMode','cyberVault','azanSettings'];
+const ALL_SYNC_KEYS=['habits','tasks','goals','logs','birthdays','events','finance','customIncSrc','customExpCat','profile','sectionNames','timetable','visionItems','stickyNotes','stickyConnections','libBooks','currencyData','theme','autoTheme','wallBg','appName','appSub','dashOrder','weatherPref','aiPatterns','ttWakeStart','ttWakeEnd','fbListings','monthlySalary','lightMode','cyberVault','azanSettings','appFont','appBg'];
 // Zulqey AI assistant's learned phrase->action mappings — declared here (early, before any code
 // path can reference it) to avoid the TDZ ordering crash class documented elsewhere in this file.
 let aiPatterns=S.get('aiPatterns',[]);
@@ -2997,6 +3041,8 @@ let monthlySalary=S.get('monthlySalary',{amount:0,enabled:false});
 // executed throws "Cannot access before initialization", silently aborting every later
 // top-level statement in the script.
 let _lightMode=S.get('lightMode',false);
+let appFont=S.get('appFont',"'Segoe UI',system-ui,sans-serif");
+let appBg=S.get('appBg',null);
 let cyberVault=S.get('cyberVault',{folders:[],docs:[]});
 let _cyberPath=[],_cyberActiveDoc=null;
 let azanSettings=S.get('azanSettings',{enabled:false,lat:null,lon:null,method:2,sound:null,soundName:''});
@@ -4015,6 +4061,8 @@ document.addEventListener('click',function(e){
   if(t.id==='np-add-btn'||t.closest('.np-add-btn-wall')){addStickyNote();return;}
   const npDot=t.closest('.np-cdot');
   if(npDot&&npDot.dataset.nc){_snColor=npDot.dataset.nc;document.querySelectorAll('.np-cdot').forEach(d=>d.classList.toggle('on',d.dataset.nc===_snColor));return;}
+  const npShapePick=t.closest('.sn-shape-pick[data-ns]');
+  if(npShapePick){_snShape=npShapePick.dataset.ns;renderNpShapeDots();return;}
   const wallBgBtn=t.closest('.np-wall-bg-btn');
   if(wallBgBtn&&wallBgBtn.dataset.wb){applyWallBg(wallBgBtn.dataset.wb);return;}
   if(t.id==='np-zoom-in'){snSetZoom(_snZoom+0.15);return;}
@@ -4334,6 +4382,14 @@ document.addEventListener('click',function(e){
   // Luxury theme swatch click
   const luxSw=t.closest('.lux-swatch[data-lux]');
   if(luxSw){applyLuxuryTheme(luxSw.dataset.lux);renderLuxuryGallery();renderTemplateGallery();return;}
+  // Font picker
+  const fontPick=t.closest('.font-pick[data-font]');
+  if(fontPick){applyAppFont(fontPick.dataset.font);toast('🔤 Font applied','s');return;}
+  // App background picker
+  const appbgPick=t.closest('.appbg-pick[data-bg]');
+  if(appbgPick){applyAppBg(appbgPick.dataset.bg);toast('🖼️ Background applied','s');return;}
+  if(id==='appbg-upload-btn'){document.getElementById('appbg-file').click();return;}
+  if(id==='appbg-reset-btn'){applyAppBg(null);renderAppBgGallery();toast('↺ Background reset','s');return;}
   // Smart Breakdown toggle on the Finance page
   if(id==='fin-smart-toggle'){_finSmartView=!_finSmartView;S.set('financeSmartView',_finSmartView);renderFinance();return;}
   // Manual "Update" button on the Finance page — force a fresh push+pull then re-render this view
@@ -5589,6 +5645,17 @@ function renderLuxuryGallery(){
   }).join('');
 }
 
+function renderFontGallery(){
+  const wrap=document.getElementById('font-gallery');
+  if(!wrap)return;
+  wrap.innerHTML=FONT_LIST.map(f=>`<div class="font-pick${f.css===appFont?' on':''}" data-font="${escapeHtml(f.css)}" style="font-family:${f.css}">${escapeHtml(f.name)}</div>`).join('');
+}
+function renderAppBgGallery(){
+  const wrap=document.getElementById('appbg-gallery');
+  if(!wrap)return;
+  wrap.innerHTML=APP_BG_PRESETS.map(v=>`<div class="appbg-pick${v===appBg?' on':''}" data-bg="${escapeHtml(v)}" style="background:${v}" title="App background"></div>`).join('');
+}
+
 // ===== BACKUP & RESTORE (WhatsApp-style) =====
 function _collectAllLocalData(){
   const out={};
@@ -6792,6 +6859,8 @@ function applySectionNames(){
 function renderSettings(){
   renderTemplateGallery();
   renderLuxuryGallery();
+  renderFontGallery();
+  renderAppBgGallery();
   bkRenderList();
   // Keep the dark/light switch in sync in case it changed via a sync pull from another
   // device while this page wasn't open.
@@ -7595,6 +7664,31 @@ document.addEventListener('change',function(e){
   reader.readAsDataURL(file);
 });
 
+// App-wide background image upload — resized down like other image uploads in this app so a
+// full-resolution photo doesn't eat the localStorage budget on its own.
+document.addEventListener('change',function(e){
+  if(e.target.id!=='appbg-file')return;
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const img=new Image();
+    img.onload=function(){
+      const MAX=1600;
+      let w=img.width,h=img.height;
+      if(w>MAX||h>MAX){const r=Math.min(MAX/w,MAX/h);w=Math.round(w*r);h=Math.round(h*r);}
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      applyAppBg(c.toDataURL('image/jpeg',0.75));
+      renderAppBgGallery();
+      toast('🖼️ Background image set','s');
+      e.target.value='';
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
 // Library — PDF upload handler (read as base64 data URL). Supports picking several PDFs at
 // once: with one file, it fills the normal add/edit form same as before; with several, each
 // becomes its own book immediately (title = filename) since asking for a title per file would
@@ -7724,6 +7818,60 @@ function applyMode(light){
 }
 applyMode(_lightMode);
 
+// ===== APP-WIDE FONT =====
+const FONT_LIST=[
+  {name:'Default (Segoe UI)',css:"'Segoe UI',system-ui,sans-serif"},
+  {name:'Poppins',css:"'Poppins',sans-serif"},
+  {name:'Roboto',css:"'Roboto',sans-serif"},
+  {name:'Open Sans',css:"'Open Sans',sans-serif"},
+  {name:'Lato',css:"'Lato',sans-serif"},
+  {name:'Montserrat',css:"'Montserrat',sans-serif"},
+  {name:'Nunito',css:"'Nunito',sans-serif"},
+  {name:'Inter',css:"'Inter',sans-serif"},
+  {name:'Merriweather (Serif)',css:"'Merriweather',serif"},
+  {name:'Playfair Display (Serif)',css:"'Playfair Display',serif"},
+  {name:'Georgia (Serif)',css:"Georgia,'Times New Roman',serif"},
+  {name:'Times New Roman',css:"'Times New Roman',Times,serif"},
+  {name:'Courier Prime (Mono)',css:"'Courier Prime',monospace"},
+  {name:'Courier New (Mono)',css:"'Courier New',Courier,monospace"},
+  {name:'Share Tech Mono',css:"'Share Tech Mono',monospace"},
+  {name:'VT323 (Retro)',css:"'VT323',monospace"},
+  {name:'Orbitron (Futuristic)',css:"'Orbitron',sans-serif"},
+  {name:'Press Start 2P (8-bit)',css:"'Press Start 2P',cursive"},
+  {name:'Comic Neue',css:"'Comic Neue','Comic Sans MS',cursive"},
+  {name:'Dancing Script (Handwriting)',css:"'Dancing Script',cursive"},
+  {name:'Pacifico (Handwriting)',css:"'Pacifico',cursive"},
+  {name:'Verdana',css:"Verdana,Geneva,sans-serif"},
+  {name:'Trebuchet MS',css:"'Trebuchet MS',sans-serif"},
+  {name:'Arial',css:"Arial,Helvetica,sans-serif"},
+];
+function applyAppFont(css){
+  appFont=css;
+  document.documentElement.style.setProperty('--app-font',css);
+  S.set('appFont',css);
+  document.querySelectorAll('.font-pick').forEach(el=>el.classList.toggle('on',el.dataset.font===css));
+}
+applyAppFont(appFont);
+
+// ===== APP-WIDE BACKGROUND =====
+// Independent of the accent-color theme system — lets the whole app's page background be a
+// flat color, a gradient, or a custom uploaded image, on top of whichever theme/accent is active.
+const APP_BG_PRESETS=['#0b1120','#07061a','#020b18','#030c06','#120703','#110609','#0e0a01','#020e0d',
+  'linear-gradient(135deg,#0f172a,#1e293b)','linear-gradient(135deg,#1e1b4b,#312e81)','linear-gradient(135deg,#1a2e05,#365314)',
+  'linear-gradient(135deg,#1e0a1a,#4a044e)','linear-gradient(135deg,#0c1e1e,#134e4a)','linear-gradient(135deg,#1c1917,#292524)'];
+function applyAppBg(v){
+  appBg=v;
+  S.set('appBg',v);
+  if(v){
+    if(v.startsWith('data:')||v.startsWith('http')){document.body.style.backgroundImage=`url(${v})`;document.body.style.backgroundSize='cover';document.body.style.backgroundPosition='center';document.body.style.backgroundAttachment='fixed';document.body.style.backgroundColor='';}
+    else{document.body.style.backgroundImage='none';document.body.style.background=v;}
+  }else{
+    document.body.style.backgroundImage='';document.body.style.background='';
+  }
+  document.querySelectorAll('.appbg-pick').forEach(el=>el.classList.toggle('on',el.dataset.bg===v));
+}
+if(appBg)applyAppBg(appBg);
+
 // Congrats close
 document.getElementById('congrats-close')?.addEventListener('click',hideCongrats);
 document.getElementById('congrats-overlay')?.addEventListener('click',hideCongrats);
@@ -7734,6 +7882,7 @@ let _stickyConnections=S.get('stickyConnections',[]);
 let _snWireFrom=null;
 let _snLastCardClick={id:null,t:0};
 let _snColor='#fef08a';
+let _snShape='rect';
 const SN_COLORS=['#fef08a','#fde68a','#bbf7d0','#6ee7b7','#fbcfe8','#f9a8d4','#bfdbfe','#93c5fd','#e9d5ff','#c4b5fd','#fed7aa','#fdba74','#fecaca','#fca5a5','#99f6e4','#67e8f9','#d9f99d','#a3e635','#f1f5f9','#e2e8f0',
   '#f43f5e','#ec4899','#d946ef','#a855f7','#6366f1','#3b82f6','#0ea5e9','#06b6d4','#14b8a6','#10b981','#22c55e','#84cc16','#eab308','#f59e0b','#f97316','#ef4444','#78350f','#374151','#1e293b','#000000'];
 const SN_ROTS=[-8,-5,-3,-2,-1,0,1,2,3,5,8];
@@ -8513,6 +8662,11 @@ function cyberDeleteDoc(){
 // token needed, CORS-enabled. Times are fetched once per calendar day per location and cached
 // in memory; azanCheckTimes() polls every 30s for a minute-exact match against the clock.
 const AZAN_PRAYERS=['Fajr','Dhuhr','Asr','Maghrib','Isha'];
+// Streamed directly from Aladhan's own CDN (the same trusted, CSP-allowlisted provider already
+// used for prayer times) instead of downloading/rehosting a copy — this is Mishary Rashid
+// Alafasy's widely-used Dubai One TV adhan recording, the same one virtually every prayer app
+// defaults to. Users can still upload their own to override it.
+const DEFAULT_AZAN_SOUND='https://cdn.aladhan.com/audio/adhans/a4.mp3';
 function azanSave(){S.set('azanSettings',azanSettings);}
 function openAzanPanel(){
   document.getElementById('azan-modal')?.classList.add('open');
@@ -8527,7 +8681,7 @@ function azanRenderPanel(){
   const methodSel=document.getElementById('azan-method-select');
   if(methodSel)methodSel.value=String(azanSettings.method||2);
   const soundLbl=document.getElementById('azan-sound-lbl');
-  if(soundLbl)soundLbl.textContent=azanSettings.soundName?('🔊 '+azanSettings.soundName):'No custom azan sound uploaded (silent alert only)';
+  if(soundLbl)soundLbl.textContent=azanSettings.soundName?('🔊 '+azanSettings.soundName+' (custom)'):'🕌 Default Azan (Mishary Alafasy) — upload your own to override';
   azanRenderTimingsList();
 }
 function azanToggleEnable(){
@@ -8599,8 +8753,7 @@ function azanRenderTimingsList(){
   }).join('');
 }
 function azanTestPlay(){
-  if(!azanSettings.sound){toast('❌ Upload an azan sound first','w');return;}
-  const a=new Audio(azanSettings.sound);
+  const a=new Audio(azanSettings.sound||DEFAULT_AZAN_SOUND);
   a.play().catch(()=>toast('❌ Could not play audio — tap somewhere on the page first, then try again','w'));
 }
 function azanCheckTimes(){
@@ -8614,10 +8767,8 @@ function azanCheckTimes(){
     if(t===hm&&!_azanFiredToday[p]){
       _azanFiredToday[p]=true;
       showFloatNotif('azan-'+p,'🕌',p+' — Prayer Time',"It's time for "+p+' prayer','fn-blue','Azan');
-      if(azanSettings.sound){
-        const a=new Audio(azanSettings.sound);
-        a.play().catch(()=>{});
-      }
+      const a=new Audio(azanSettings.sound||DEFAULT_AZAN_SOUND);
+      a.play().catch(()=>{});
     }
   });
 }
@@ -8669,8 +8820,11 @@ function renderStickyNotes(){
   S.set('stickyNotes',_stickyNotes);
   layer.innerHTML=_stickyNotes.map(n=>{
     const pin=`<div class="sn-pin"></div>`;
+    const shape=n.shape||'rect';
+    const shapeCls=shape!=='rect'?' sn-shape-'+shape:'';
+    const padCls=(shape!=='rect'&&shape!=='round')?' sn-shape-pad':'';
     if(n.type==='photo'){
-      return `<div class="sn-card sn-photo-card${n.id===_snNewId?' sn-new':''}${_snWireFrom===n.id?' sn-connect-src':''}" data-snid="${n.id}"
+      return `<div class="sn-card sn-photo-card${shapeCls}${n.id===_snNewId?' sn-new':''}${_snWireFrom===n.id?' sn-connect-src':''}" data-snid="${n.id}"
         style="left:${n.x}px;top:${n.y}px;z-index:${n.z};background:#fff;transform:rotate(${n.rot}deg);--sn-r:${n.rot}deg;width:${n.w||160}px;height:${n.h||160}px;min-height:unset">
         ${pin}
         <button class="sn-x" data-snid="${n.id}" title="Delete">✕</button>
@@ -8679,7 +8833,7 @@ function renderStickyNotes(){
       </div>`;
     }
     const strip=SN_COLORS.map(c=>`<div class="sn-c-dot${n.color===c?' on':''}" data-snid="${n.id}" data-snc="${c}" style="background:${c}"></div>`).join('');
-    return `<div class="sn-card${n.id===_snNewId?' sn-new':''}${_snWireFrom===n.id?' sn-connect-src':''}" data-snid="${n.id}"
+    return `<div class="sn-card${shapeCls}${padCls}${n.id===_snNewId?' sn-new':''}${_snWireFrom===n.id?' sn-connect-src':''}" data-snid="${n.id}"
       style="left:${n.x}px;top:${n.y}px;z-index:${n.z};background:${n.color};transform:rotate(${n.rot}deg);--sn-r:${n.rot}deg;width:${n.w||150}px;${n.h?'height:'+n.h+'px;min-height:unset':'min-height:65px'}">
       ${pin}
       <div class="sn-tape"></div>
@@ -8983,7 +9137,7 @@ function snSpawnPoint(w,h){
 function addStickyNote(){
   const rot=SN_ROTS[Math.floor(Math.random()*SN_ROTS.length)];
   const{x,y}=snSpawnPoint(150,65);
-  const n={id:'sn_'+Date.now(),type:'note',text:'',color:_snColor,x,y,rot,z:++_snZMax};
+  const n={id:'sn_'+Date.now(),type:'note',text:'',color:_snColor,shape:_snShape,x,y,rot,z:++_snZMax};
   _snNewId=n.id;_stickyNotes.unshift(n);S.set('stickyNotes',_stickyNotes);
   renderStickyNotes();
   setTimeout(()=>{const ta=document.querySelector(`.sn-ta[data-snid="${n.id}"]`);if(ta)ta.focus();},80);
@@ -8991,7 +9145,7 @@ function addStickyNote(){
 function addStickyPhoto(dataUrl){
   const rot=SN_ROTS[Math.floor(Math.random()*SN_ROTS.length)];
   const{x,y}=snSpawnPoint(160,160);
-  const n={id:'sn_'+Date.now(),type:'photo',img:dataUrl,x,y,rot,w:160,h:160,z:++_snZMax};
+  const n={id:'sn_'+Date.now(),type:'photo',img:dataUrl,shape:_snShape,x,y,rot,w:160,h:160,z:++_snZMax};
   _snNewId=n.id;_stickyNotes.unshift(n);S.set('stickyNotes',_stickyNotes);
   renderStickyNotes();
   toast('📷 Photo pinned to the wall!','s');
@@ -9031,6 +9185,21 @@ function toggleNpColors(){
   if(btn)btn.classList.toggle('on',_npColorsOpen);
 }
 
+const SN_SHAPES=[{id:'rect',icon:'▭',label:'Rectangle'},{id:'round',icon:'▢',label:'Rounded'},{id:'circle',icon:'⬤',label:'Circle'},{id:'diamond',icon:'◆',label:'Diamond'},{id:'hexagon',icon:'⬡',label:'Hexagon'},{id:'star',icon:'★',label:'Star'}];
+function renderNpShapeDots(){
+  const wrap=document.getElementById('np-shapes-scroll');
+  if(!wrap)return;
+  wrap.innerHTML=SN_SHAPES.map(s=>`<div class="sn-shape-pick${s.id===_snShape?' on':''}" data-ns="${s.id}" title="${s.label}">${s.icon}</div>`).join('');
+}
+let _npShapesOpen=false;
+function toggleNpShapes(){
+  _npShapesOpen=!_npShapesOpen;
+  const wrap=document.getElementById('np-shapes-scroll');
+  const btn=document.getElementById('np-shapes-toggle');
+  if(wrap)wrap.style.display=_npShapesOpen?'flex':'none';
+  if(btn)btn.classList.toggle('on',_npShapesOpen);
+}
+
 function openNotepad(){
   document.getElementById('notepad-modal')?.classList.add('open');
   snResetView();
@@ -9039,6 +9208,7 @@ function openNotepad(){
     renderStickyNotes();
     renderWallBgDots();
     renderNpColorDots();
+    renderNpShapeDots();
     applyWallBg(_wallBg);
     applyZoomPan();
     document.querySelectorAll('.np-cdot').forEach(d=>d.classList.toggle('on',d.dataset.nc===_snColor));
