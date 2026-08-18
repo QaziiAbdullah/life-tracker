@@ -1005,6 +1005,14 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
    z-index:0 background layer would render ON TOP of the text instead of behind it. Negative
    z-index paints before in-flow content, which is what actually puts it behind. */
 .sn-shape-bg{position:absolute;inset:0;z-index:-1;pointer-events:none;border-radius:2px}
+/* box-shadow on .sn-card always follows the full rectangle regardless of the clipped shape
+   inside it, so a triangle/star note showed a visible rectangular glow around its unused
+   corners — looked like a hidden background box. Suppress the card's own shadow for non-rect
+   shapes and use filter:drop-shadow on the shape layer instead, which follows the actual
+   clipped silhouette. */
+.sn-card.sn-nonrect{box-shadow:none}
+.sn-card.sn-nonrect .sn-shape-bg{filter:drop-shadow(3px 5px 10px rgba(0,0,0,.35))}
+.sn-card.sn-nonrect .sn-photo-img{filter:drop-shadow(3px 5px 10px rgba(0,0,0,.35))}
 .sn-shape-round{border-radius:20px}
 .sn-shape-circle{border-radius:50%}
 .sn-shape-diamond{clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%)}
@@ -1312,7 +1320,7 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
     <button class="sb-notepad-open-btn" id="sb-learn-open" style="margin-top:5px">
       <span class="sb-notepad-open-icon">🎓</span>
       <span class="sb-notepad-open-lbl">Learning Platform</span>
-      <span class="sb-notepad-count-badge" id="sb-learn-count-badge">0%</span>
+      <span class="sb-notepad-count-badge" id="sb-learn-count-badge">0</span>
     </button>
   </div>
 
@@ -1568,7 +1576,7 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
   </div>
 </div>
 
-<!-- LEARNING PLATFORM -->
+<!-- LEARNING PLATFORM (folders + documents + photos, same engine as Cyber & Hacking) -->
 <div class="overlay" id="learn-modal">
   <div class="modal" style="max-width:none;width:100vw;height:100vh;max-height:100vh;border-radius:0;display:flex;flex-direction:column;padding:0">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0">
@@ -1576,8 +1584,59 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
       <button class="np-close-wall" id="learn-close-btn" title="Close">✕</button>
     </div>
     <div style="display:flex;flex:1;min-height:0;overflow:hidden">
-      <div style="width:260px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;padding:12px;gap:8px;overflow-y:auto" id="learn-cat-list"></div>
-      <div style="flex:1;display:flex;flex-direction:column;padding:16px;overflow-y:auto;min-width:0" id="learn-content"></div>
+      <div style="width:220px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;padding:12px;gap:6px;overflow-y:auto">
+        <button class="btn btn-p btn-sm" id="learn-new-folder-btn">📁 New Folder</button>
+        <div id="learn-folder-list" style="display:flex;flex-direction:column;gap:6px;margin-top:6px"></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;padding:14px;overflow-y:auto;min-width:0">
+        <div id="learn-breadcrumb" style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-bottom:8px"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap">
+          <div id="learn-active-folder-name" style="font-weight:700;font-size:13px;color:var(--text)">Select a folder to view its contents</div>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            <button class="btn btn-g btn-sm" id="learn-new-subfolder-btn" style="display:none">📁 New Subfolder</button>
+            <button class="btn btn-g btn-sm" id="learn-add-photo-btn" style="display:none">🖼️ Add Photo</button>
+            <input type="file" id="learn-photo-file" accept="image/*" style="display:none">
+            <button class="btn btn-p btn-sm" id="learn-new-doc-btn" style="display:none">📄 New Document</button>
+          </div>
+        </div>
+        <div id="learn-doc-list" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LEARNING PLATFORM DOCUMENT EDITOR -->
+<div class="overlay" id="learn-doc-modal">
+  <div class="modal" style="max-width:720px;width:92vw">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="font-weight:800;font-size:14px">📄 Document</div>
+      <button class="np-close-wall" id="learn-doc-close-btn" title="Close">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <input type="text" id="learn-doc-title" placeholder="Document title (e.g. Nmap Notes, Candlestick Patterns, Client Proposal Template)" class="fi">
+      <textarea id="learn-doc-body" placeholder="What you're learning, notes, links, steps..." class="fi" style="min-height:320px;font-family:Consolas,'Courier New',monospace;font-size:12.5px;line-height:1.55;resize:vertical"></textarea>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-g btn-sm" id="learn-doc-delete-btn" style="color:#ef4444;border-color:rgba(239,68,68,.3)">🗑 Delete</button>
+        <button class="btn btn-p btn-sm" id="learn-doc-save-btn">💾 Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LEARNING PLATFORM IMAGE VIEWER -->
+<div class="overlay" id="learn-img-modal">
+  <div class="modal" style="max-width:720px;width:92vw">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="font-weight:800;font-size:14px">🖼️ Photo</div>
+      <button class="np-close-wall" id="learn-img-close-btn" title="Close">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <img id="learn-img-preview" style="width:100%;max-height:60vh;object-fit:contain;border-radius:10px;background:rgba(0,0,0,.2)">
+      <input type="text" id="learn-img-title" placeholder="Caption / title" class="fi">
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-g btn-sm" id="learn-img-delete-btn" style="color:#ef4444;border-color:rgba(239,68,68,.3)">🗑 Delete</button>
+        <button class="btn btn-p btn-sm" id="learn-img-save-btn">💾 Save</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2986,7 +3045,7 @@ function _applyRemoteChanges(changedKeys){
     else if(k==='appFont'){appFont=S.get('appFont',"'Segoe UI',system-ui,sans-serif");if(typeof applyAppFont==='function')applyAppFont(appFont);}
     else if(k==='appBg'){appBg=S.get('appBg',null);if(typeof applyAppBg==='function')applyAppBg(appBg);}
     else if(k==='sbBg'){sbBg=S.get('sbBg',null);if(typeof applySbBg==='function')applySbBg(sbBg);}
-    else if(k==='learningProgress'){learningProgress=S.get('learningProgress',{});if(document.getElementById('learn-modal')?.classList.contains('open')&&typeof learnRenderCats==='function'){learnRenderCats();learnRenderContent();}if(typeof learnUpdateBadge==='function')learnUpdateBadge();}
+    else if(k==='learningVault'){learningVault=S.get('learningVault',{folders:[],docs:[]});if(document.getElementById('learn-modal')?.classList.contains('open')&&typeof learnRenderFolders==='function'){learnRenderFolders();learnRenderDocs();}if(typeof learnUpdateBadge==='function')learnUpdateBadge();}
     else if(k==='autoTheme'){autoOn=S.get('autoTheme',false);}
     else if(k==='wallBg'){_wallBg=S.get('wallBg','#eee8dc');if(document.getElementById('notepad-modal')?.classList.contains('open')&&typeof applyWallBg==='function')applyWallBg(_wallBg);}
     else if(k==='appName'||k==='appSub'){
@@ -3013,7 +3072,7 @@ setInterval(_pullSync,25000);
 setInterval(()=>{if(_syncToken)_flushSync();},5*60*1000);
 
 // ===== MANUAL "SAVE & SYNC" BUTTON =====
-const ALL_SYNC_KEYS=['habits','tasks','goals','logs','birthdays','events','finance','customIncSrc','customExpCat','profile','sectionNames','timetable','visionItems','stickyNotes','stickyConnections','libBooks','currencyData','theme','autoTheme','wallBg','appName','appSub','dashOrder','weatherPref','aiPatterns','ttWakeStart','ttWakeEnd','fbListings','monthlySalary','lightMode','cyberVault','azanSettings','appFont','appBg','sbBg','learningProgress'];
+const ALL_SYNC_KEYS=['habits','tasks','goals','logs','birthdays','events','finance','customIncSrc','customExpCat','profile','sectionNames','timetable','visionItems','stickyNotes','stickyConnections','libBooks','currencyData','theme','autoTheme','wallBg','appName','appSub','dashOrder','weatherPref','aiPatterns','ttWakeStart','ttWakeEnd','fbListings','monthlySalary','lightMode','cyberVault','azanSettings','appFont','appBg','sbBg','learningVault'];
 // Zulqey AI assistant's learned phrase->action mappings — declared here (early, before any code
 // path can reference it) to avoid the TDZ ordering crash class documented elsewhere in this file.
 let aiPatterns=S.get('aiPatterns',[]);
@@ -3096,7 +3155,7 @@ let _lightMode=S.get('lightMode',false);
 let appFont=S.get('appFont',"'Segoe UI',system-ui,sans-serif");
 let appBg=S.get('appBg',null);
 let sbBg=S.get('sbBg',null);
-let learningProgress=S.get('learningProgress',{});
+let learningVault=S.get('learningVault',{folders:[],docs:[]});
 let cyberVault=S.get('cyberVault',{folders:[],docs:[]});
 let _cyberPath=[],_cyberActiveDoc=null;
 let azanSettings=S.get('azanSettings',{enabled:false,lat:null,lon:null,method:2,voice:'default',sound:null,soundName:''});
@@ -4078,8 +4137,30 @@ document.addEventListener('click',function(e){
   // --- LEARNING PLATFORM ---
   if(t.closest('#sb-learn-open')){openLearnPlatform();return;}
   if(t.id==='learn-close-btn'||t.closest('#learn-close-btn')){closeM('learn-modal');return;}
-  const learnCat=t.closest('[data-learn-cat]');
-  if(learnCat){learnSetCat(learnCat.dataset.learnCat);return;}
+  if(t.id==='learn-new-folder-btn'||t.closest('#learn-new-folder-btn')){learnNewFolder();return;}
+  if(t.id==='learn-new-doc-btn'||t.closest('#learn-new-doc-btn')){learnNewDoc();return;}
+  if(t.id==='learn-new-subfolder-btn'||t.closest('#learn-new-subfolder-btn')){learnNewSubfolder();return;}
+  if(t.id==='learn-add-photo-btn'||t.closest('#learn-add-photo-btn')){document.getElementById('learn-photo-file').click();return;}
+  const learnFolderDel=t.closest('[data-learn-folder-del]');
+  if(learnFolderDel){learnDeleteFolder(learnFolderDel.dataset.learnFolderDel);return;}
+  const learnCrumb=t.closest('[data-learn-crumb]');
+  if(learnCrumb){learnBreadcrumbNav(parseInt(learnCrumb.dataset.learnCrumb,10));return;}
+  const learnFolder=t.closest('[data-learn-folder]');
+  if(learnFolder){learnOpenFolder(learnFolder.dataset.learnFolder);return;}
+  const learnSubfolder=t.closest('[data-learn-subfolder]');
+  if(learnSubfolder){learnOpenFolder(learnSubfolder.dataset.learnSubfolder);return;}
+  const learnDoc=t.closest('[data-learn-doc]');
+  if(learnDoc){
+    const item=learningVault.docs.find(x=>x.id===learnDoc.dataset.learnDoc);
+    if(item&&item.type==='image')learnOpenImageViewer(item.id);else learnOpenDocEditor(learnDoc.dataset.learnDoc);
+    return;
+  }
+  if(t.id==='learn-doc-close-btn'||t.closest('#learn-doc-close-btn')){closeM('learn-doc-modal');return;}
+  if(t.id==='learn-doc-save-btn'||t.closest('#learn-doc-save-btn')){learnSaveDoc();return;}
+  if(t.id==='learn-doc-delete-btn'||t.closest('#learn-doc-delete-btn')){learnDeleteDoc();return;}
+  if(t.id==='learn-img-close-btn'||t.closest('#learn-img-close-btn')){closeM('learn-img-modal');return;}
+  if(t.id==='learn-img-save-btn'||t.closest('#learn-img-save-btn')){learnSaveImage();return;}
+  if(t.id==='learn-img-delete-btn'||t.closest('#learn-img-delete-btn')){learnDeleteImage();return;}
   // --- AZAN TIMING ---
   if(t.closest('#sb-azan-open')){openAzanPanel();return;}
   if(t.id==='azan-close-btn'||t.closest('#azan-close-btn')){closeM('azan-modal');return;}
@@ -7725,14 +7806,31 @@ document.addEventListener('change',function(e){
   reader.readAsDataURL(file);
 });
 
+// Learning Platform — photo upload, same resize approach as Cyber & Hacking.
+document.addEventListener('change',function(e){
+  if(e.target.id!=='learn-photo-file')return;
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const img=new Image();
+    img.onload=function(){
+      const MAX=1400;
+      let w=img.width,h=img.height;
+      if(w>MAX||h>MAX){const r=Math.min(MAX/w,MAX/h);w=Math.round(w*r);h=Math.round(h*r);}
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      learnAddPhoto(c.toDataURL('image/jpeg',0.75),file.name);
+      e.target.value='';
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
 document.addEventListener('change',function(e){
   if(e.target.id!=='azan-method-select')return;
   azanSetMethod(e.target.value);
-});
-document.addEventListener('change',function(e){
-  const key=e.target.dataset&&e.target.dataset.learnMark;
-  if(!key)return;
-  learnToggleMark(key,e.target.checked);
 });
 
 // Azan sound upload — stored as base64 like everything else in this app; capped well under
@@ -8798,117 +8896,247 @@ function cyberDeleteDoc(){
   toast('🗑 Document deleted','w');
 }
 
-// ===== LEARNING PLATFORM =====
-// Curated starter curriculum written into the app itself so there's real content to read on
-// day one, instead of empty folders. Not exhaustive — a solid foundation + pointers to go
-// deeper, organized the way a structured course would be.
-const LEARNING_CATEGORIES={
-  hacking:{icon:'🛡️',name:'Ethical Hacking & Cybersecurity',color:'#ef4444',topics:[
-    {title:'Roadmap & Mindset',body:"Ethical hacking means finding security weaknesses with permission, so they can be fixed before a real attacker finds them first. Every legitimate engagement starts with written authorization — testing anything you don't own or don't have explicit permission to test is illegal, full stop.\n\nA realistic roadmap: 1) Learn how computers/networks actually work (OS internals, TCP/IP, DNS, HTTP). 2) Learn Linux and the command line fluently — it's the primary OS of security tooling. 3) Learn one scripting language (Python is the standard) to automate tasks and understand exploit code. 4) Learn web fundamentals (HTML/JS/how servers respond) since most real-world testing is web-application testing. 5) Practice constantly in legal environments (see the CTF/labs topic below). Depth beats breadth — most working pentesters are excellent at a narrower set of skills, not experts in everything."},
-    {title:'Networking Fundamentals',body:"You can't attack or defend what you don't understand. Core concepts to master: the OSI/TCP-IP model (why layers matter), IP addressing and subnetting, how DNS resolves names to addresses, TCP vs UDP and the three-way handshake, common ports and the services that live on them (21 FTP, 22 SSH, 23 Telnet, 25 SMTP, 53 DNS, 80/443 HTTP/S, 445 SMB, 3389 RDP), and how routers/switches/firewalls/NAT actually move and filter traffic.\n\nHands-on: install Wireshark and just watch your own normal browsing traffic for an hour — nothing teaches networking faster than seeing real packets. Then learn to read a traceroute and a basic firewall rule set."},
-    {title:'Linux & Command Line',body:"Nearly every security tool assumes you're comfortable in a Linux terminal. Start with a beginner-friendly distro (Kali Linux or Parrot OS come pre-loaded with security tools, but plain Ubuntu is fine for learning fundamentals first).\n\nMaster: file system navigation (cd/ls/pwd), file permissions (chmod/chown and what rwx actually means), process management (ps/top/kill), package management (apt), text processing (grep/sed/awk/cat/less — these are used constantly to filter tool output), piping and redirection (| > >>), and basic shell scripting (variables, loops, if statements in bash). Being fast in a terminal, without reaching for a GUI, is a genuine force multiplier."},
-    {title:'Reconnaissance & OSINT',body:"Recon (information gathering) is usually 50%+ of a real engagement's time — attackers who skip it get caught, and testers who skip it miss things. Passive recon (never touching the target directly): WHOIS lookups, DNS record enumeration (subdomains via crt.sh/certificate transparency logs), Google dorking (site:, filetype:, intitle: operators to find exposed files/pages), LinkedIn/company sites for employee names and tech stack clues, Shodan/Censys for internet-facing devices.\n\nActive recon (touches the target, needs authorization): port scanning, service/version detection, directory/file brute-forcing on web servers. The golden rule: map the full attack surface before you touch anything — you can't test what you don't know exists."},
-    {title:'Web App Security — OWASP Top 10',body:"Most real-world hacking today is web application hacking. The OWASP Top 10 is the industry-standard list of the most critical web risks — know these cold:\n\n1) Broken Access Control (users doing things they shouldn't be able to). 2) Cryptographic Failures (weak/missing encryption of sensitive data). 3) Injection (SQL injection, command injection — untrusted input executed as code). 4) Insecure Design (flaws baked into the architecture itself). 5) Security Misconfiguration (default passwords, verbose errors, open cloud storage). 6) Vulnerable Components (outdated libraries with known CVEs). 7) Auth Failures (weak login/session handling). 8) Software/Data Integrity Failures (unsigned updates, insecure deserialization). 9) Logging/Monitoring Failures (attacks nobody notices). 10) Server-Side Request Forgery (SSRF).\n\nPractice each of these hands-on in a legal lab (see below) — reading about SQL injection and actually exploiting one in a sandbox are very different levels of understanding."},
-    {title:'Essential Tools',body:"You don't need 100 tools — a handful, used well, cover most work:\n\nNmap — network/port scanning and service fingerprinting (`nmap -sV -sC target`). Wireshark — packet capture and traffic analysis. Burp Suite (Community edition is free) — the standard tool for intercepting, inspecting, and modifying web traffic; essential for web app testing. Metasploit Framework — an exploitation framework with a huge library of known exploits, mainly used in labs to understand how exploitation works end-to-end. John the Ripper / Hashcat — password cracking, used to understand why weak password policies fail. Gobuster/ffuf — directory and subdomain brute-forcing.\n\nInstall these once, then use them repeatedly on lab targets until the workflow (scan → enumerate → find a weakness → confirm it → document it) feels automatic."},
-    {title:'Practicing Legally — CTFs & Labs',body:"Never practice on systems you don't own or don't have written permission to test. Legal, purpose-built practice environments: TryHackMe and HackTheBox — guided, gamified labs ranging from total beginner to advanced, widely considered the best starting point today. PortSwigger Web Security Academy — free, excellent, laser-focused on web vulnerabilities with hands-on labs for every OWASP category. OverTheWire (Bandit wargame) — a great free intro to Linux command-line skills through a security lens. picoCTF — beginner-friendly Capture The Flag competition, free, aimed at students.\n\nSet up your own lab too: a VM running a deliberately vulnerable app like DVWA, Juice Shop, or Metasploitable, isolated on a local virtual network you control."},
-    {title:'Certifications & Career Path',body:"Certifications aren't required to get good, but they're commonly used as hiring signals. Rough progression: CompTIA Security+ (broad entry-level security fundamentals, good first cert). eJPT (eLearnSecurity Junior Penetration Tester — affordable, hands-on, genuinely tests practical skill). OSCP (Offensive Security Certified Professional — the gold-standard practical pentesting cert; notoriously hard, 24-hour hands-on exam, highly respected by employers). CEH (Certified Ethical Hacker — widely recognized name, more theory-heavy, useful for some HR filters even though practitioners often rate it below OSCP).\n\nCareer paths this skillset opens: penetration tester, security analyst/SOC analyst, bug bounty hunter (HackerOne/Bugcrowd — get paid for responsibly disclosed vulnerabilities), red teamer, security engineer. Building a public portfolio (write-ups of CTF solves, a GitHub with your tooling/scripts) matters as much as certs for early-career roles."},
-  ]},
-  trading:{icon:'📈',name:'Trading & Investing',color:'#22c55e',topics:[
-    {title:'Markets & Instruments',body:"Before risking money, understand what you're actually trading. Stocks — ownership shares in a company; you profit from price appreciation and/or dividends. Forex (FX) — trading currency pairs (e.g. EUR/USD); the largest, most liquid market in the world, open ~24/5. Crypto — digital assets like Bitcoin/Ethereum; highly volatile, trades 24/7, less regulated than stocks/forex. Commodities — gold, oil, agricultural products, often traded via futures or CFDs. Options/Futures — derivative contracts that let you bet on future price movement with leverage; powerful but significantly higher risk, not a beginner instrument.\n\nPick ONE market to specialize in first. Jumping between markets before mastering one is the single most common beginner mistake."},
-    {title:'Technical Analysis Fundamentals',body:"Technical analysis (TA) studies price charts to infer likely future movement, based on the idea that price reflects all known information and tends to move in trends/patterns. Core building blocks: candlestick charts (each candle shows open/high/low/close for a time period — learn to read the story a candle's shape tells: a long lower wick means buyers stepped in and pushed price back up). Support & resistance — price levels where buying/selling pressure has historically reversed the trend; the most fundamental TA concept there is. Trend — the general direction (up/down/sideways); the phrase \"the trend is your friend\" exists for a reason, trading against a strong trend is statistically harder. Timeframes — the same chart looks completely different on a 1-minute vs a daily candle; always confirm a signal on a higher timeframe before acting on a lower one."},
-    {title:'Chart Patterns & Indicators',body:"Common patterns: Head & Shoulders (reversal pattern, signals a trend change), Double Top/Bottom (reversal), Triangles and Flags (continuation patterns, price pausing before continuing the prior trend). None of these guarantee an outcome — they describe probabilities, not certainties.\n\nCommon indicators: Moving Averages (smooth out price to show trend direction; the 50 and 200-period MAs are widely watched). RSI (Relative Strength Index) — measures if an asset is \"overbought\" or \"oversold\" on a 0-100 scale. MACD — shows momentum and trend changes via the relationship between two moving averages. Bollinger Bands — show volatility, price touching the outer bands often signals an extreme.\n\nThe #1 mistake beginners make: stacking 6+ indicators that all say the same thing and calling it \"confirmation.\" Pick 2-3 that measure different things (trend + momentum + volatility) and learn them deeply instead."},
-    {title:'Risk Management & Position Sizing',body:"This is the single most important topic in trading — more important than any strategy. Rule of thumb used by most professional traders: never risk more than 1-2% of your total account on a single trade. If you have a $1,000 account and risk 1%, that's a maximum $10 loss per trade, which determines your position size based on where your stop-loss is.\n\nAlways use a stop-loss — a predetermined price where you exit if the trade goes against you, decided BEFORE entering the trade, not adjusted emotionally afterward. Risk-to-reward ratio — only take trades where the potential reward is meaningfully larger than the risk (a common minimum bar is 1:2 or better), so you can be wrong more than half the time and still be profitable overall. Leverage is a risk multiplier, not a profit guarantee — it magnifies losses exactly as much as gains, and is the single biggest reason beginner accounts get wiped out."},
-    {title:'Trading Psychology',body:"Most traders don't fail because of bad strategy — they fail because of bad discipline. Common psychological traps: revenge trading (trying to immediately win back a loss, usually by breaking your own rules and taking a bigger, riskier position). FOMO (Fear Of Missing Out) — chasing a move that's already happened instead of waiting for your own setup. Overtrading — taking trades out of boredom rather than because a real opportunity exists. Confirmation bias — only noticing information that agrees with a position you already opened, ignoring signs you're wrong.\n\nThe fix isn't willpower, it's structure: write a trading plan BEFORE the market is open (entry rules, exit rules, position size, max daily loss you'll stop at), and treat deviating from it as a failure regardless of whether that specific deviation happened to make money. A trader who follows a mediocre plan consistently outperforms one who follows a great plan inconsistently."},
-    {title:'Choosing a Broker/Platform',body:"What actually matters when picking a broker: regulation (is it licensed by a real regulator — SEC/FINRA in the US, FCA in the UK, ASIC in Australia — this is your main protection if the broker fails or acts badly), fees (spread, commission per trade, overnight/swap fees for holding positions — these compound over hundreds of trades), execution quality (does it fill orders at the price you see, or with excessive slippage), available markets (does it offer what you actually want to trade), and platform tools (charting quality, backtesting features, mobile app reliability).\n\nAlways start with a demo/paper trading account — every serious broker offers one, and it lets you learn the platform and test a strategy with zero financial risk before committing real money."},
-    {title:'Forex vs Stocks vs Crypto',body:"Forex: highest liquidity, tightest spreads on major pairs, open nearly 24 hours during the week, heavily influenced by macroeconomic news (interest rate decisions, employment data) — good for traders who want to follow economic events. Stocks: ownership in real businesses, influenced by company earnings/news as well as broader market sentiment, regulated markets with defined hours, generally considered more \"fundamentals-driven\" than forex for long-term positions. Crypto: extreme volatility (both a risk and an opportunity), trades 24/7 with no closing bell, much less regulatory protection, heavily sentiment/news-driven, higher risk of scams and exchange failures than regulated stock/forex brokers.\n\nA practical starting recommendation for most beginners: paper-trade stocks or major forex pairs first — the volatility is more forgiving to learn on than crypto."},
-    {title:'Building a Trading Plan',body:"A trading plan is a written document you follow mechanically, removing in-the-moment emotional decisions. It should specify: which market/instrument you trade and why, your exact entry criteria (what has to be true on the chart before you click buy — vague answers like \"it looks good\" are not a plan), your exit criteria for both a winning and a losing trade (stop-loss AND take-profit levels decided in advance), your position sizing rule (the 1-2% risk rule from earlier), your maximum daily/weekly loss limit (a hard stop that forces you to walk away and reassess instead of spiraling), and a trading journal where you log every trade with the reason you took it and the outcome.\n\nReview your journal weekly — the patterns in your own mistakes (not random market noise) are usually the fastest path to actually improving."},
-  ]},
-  freelancing:{icon:'💼',name:'Freelancing & Percentage-Based Work',color:'#a855f7',topics:[
-    {title:'Getting Started as a Freelancer',body:"Freelancing means selling a skill directly to clients instead of a single employer, usually project-by-project. Before your first gig: pick a specific, sellable skill (writing, design, development, video editing, virtual assistance, social media management, translation — specificity sells better than \"I can do a bit of everything\"), set up a professional presence (a simple portfolio, even 2-3 sample projects, beats none), and price conservatively at first — early reviews and a track record are worth more than a slightly higher rate when you have zero history.\n\nExpect the first few months to be the hardest: you're building reputation with no reviews yet. Many successful freelancers took below-market rates on their first handful of jobs specifically to build the review history that then lets them raise prices."},
-    {title:'Best Platforms',body:"Upwork — the largest general freelance marketplace, wide range of categories, has both hourly and fixed-price jobs, takes a sliding service fee (drops as you earn more from the same client). Fiverr — gig-based (you list fixed \"packages\" clients buy directly, rather than bidding on posted jobs), great for productized services with clear deliverables (e.g. \"I will design a logo\"). Freelancer.com — similar bidding model to Upwork, large volume of listings but often more price competition. Toptal — a vetted, exclusive network (rigorous screening) for top-tier developers/designers/finance experts, harder to get into but much higher-paying once accepted. PeoplePerHour, Guru — smaller alternatives worth checking once established on a main platform.\n\nMost freelancers eventually work multiple platforms, but mastering ONE platform's algorithm and buyer behavior first is more effective than spreading thin across all of them immediately."},
-    {title:'Choosing Your Niche/Skill',body:"\"Percentage-based\" or commission work usually shows up in a few specific forms: affiliate marketing (earning a % commission per sale you refer), sales/business-development roles (commission on deals closed), real-estate-style referral work, and revenue-share arrangements with agencies or platforms. Whichever direction you pick — a pure skill-for-hire freelance career or a percentage/commission-based one — niching down matters. \"I do graphic design\" is a weak pitch; \"I design Amazon product listing images that increase conversion rate\" is a strong one, because it signals specific, provable expertise clients can picture the outcome of hiring you for.\n\nPick a niche where you have either real experience, genuine interest (you'll actually study it), or an underserved angle you can credibly claim — ideally all three."},
-    {title:'Writing Winning Proposals',body:"On bid-based platforms (Upwork, Freelancer.com), the proposal is the entire sale. What works: open by referencing something SPECIFIC from their job post (proves you actually read it, not a copy-pasted template), briefly state how you'd approach their specific problem (not a generic \"I'm the best fit\" claim), show 1-2 relevant past examples if you have them, ask one smart clarifying question (shows engagement, often gets you a reply), and keep it short — clients skim, they don't read essays.\n\nWhat fails: generic templates that could apply to any job, leading with your rate before establishing value, walls of text about your general life story, and applying to dozens of mismatched jobs hoping volume wins (targeted, well-written proposals to fewer, better-fit jobs consistently outperform mass-applying)."},
-    {title:'Pricing: Hourly vs Fixed vs Percentage',body:"Hourly — you're paid for time worked, simple for both sides, but caps your income to hours available and can create a perverse incentive to work slower. Best for ongoing, unpredictable-scope work. Fixed-price — a set amount for a defined deliverable, rewards efficiency (finish faster, effectively earn more per hour), but requires clearly scoping the work upfront to avoid \"scope creep\" (client keeps adding asks without adjusting pay). Percentage/commission — your pay is a cut of a result (a sale, revenue generated, a deal closed) rather than time or a fixed deliverable; it aligns your incentive directly with the client's outcome, which can build strong trust, but income becomes unpredictable and depends on factors partly outside your control.\n\nMany experienced freelancers use fixed-price for well-defined deliverables and hourly for open-ended/maintenance work, reserving percentage-based deals for situations where they have real influence over the outcome (e.g. a marketer taking a % of ad-campaign revenue they directly manage)."},
-    {title:'Building a Portfolio & Client Trust',body:"A portfolio doesn't need to be huge — 3-5 strong, relevant examples beat 20 mediocre ones. If you have no paid work yet, create sample projects specifically to showcase the skill (a mock website redesign, a sample article on a topic in your niche, a spec logo concept) and clearly label them as self-initiated samples — clients respect honesty about this far more than a portfolio that quietly implies more experience than exists.\n\nTrust signals beyond the portfolio itself: responsive, professional communication (reply promptly, write clearly), client testimonials/reviews (ask happy clients directly — most won't leave one unprompted even if satisfied), a clear, simple process you can describe (\"here's exactly how I'll approach your project, step by step\"), and consistency (delivering what you promised, on the date you promised it, every single time — this compounds into reputation faster than almost anything else)."},
-    {title:'Managing Clients & Getting Paid Safely',body:"Always use the platform's built-in payment/escrow system rather than moving to off-platform payment early — it's your main protection if a client disputes payment, and most platforms' Terms of Service explicitly discourage or ban circumventing it (which can get your account banned). For fixed-price work, break large projects into milestones with payment released per milestone, rather than one lump sum at the very end — protects both you (partial payment secured along the way) and the client (they only pay for completed increments).\n\nSet clear expectations upfront in writing: exact deliverables, number of revision rounds included, and turnaround time. Scope creep (\"can you also just quickly add...\") is the most common source of freelancer burnout and underpaid work — it's fine to say yes to extra asks, but say yes with an adjusted price/timeline attached, every time, from the very first instance."},
-    {title:'Scaling: From Freelancer to Agency',body:"Once you have consistent client demand exceeding your own available hours, there are a few common paths: raise your rates (the simplest lever — if you're consistently fully booked, you're underpriced), subcontract overflow work to other freelancers and take a management cut (the first step toward becoming an agency), productize your service (turn a custom process into a fixed-price package with a defined scope, which sells faster and scales more predictably than fully custom quotes), or specialize further into a higher-paying sub-niche as your portfolio and case studies grow.\n\nThe transition from \"freelancer\" to \"small agency owner\" mainly changes your job from doing the work to managing the people and systems that do the work — a genuinely different skill set worth deliberately learning (project management, hiring, basic business ops) rather than assuming it happens automatically with growth."},
-  ]},
-};
-let _learnActiveCat=null;
-function learnSave(){S.set('learningProgress',learningProgress);}
-function learnTopicKey(catId,idx){return catId+'::'+idx;}
-function learnCatProgress(catId){
-  const topics=LEARNING_CATEGORIES[catId].topics;
-  const done=topics.filter((_,i)=>learningProgress[learnTopicKey(catId,i)]).length;
-  return{done,total:topics.length,pct:topics.length?Math.round(done/topics.length*100):0};
+// ===== LEARNING PLATFORM — folders/documents/photos, same engine as Cyber & Hacking =====
+// User explicitly wanted their OWN notes as they learn (folders + docs + photos to fill in
+// themselves), not a pre-written static curriculum — so this mirrors cyberVault's nested-folder
+// architecture exactly, just with its own state/DOM ids and three pre-seeded root folders.
+let _learnPath=[],_learnActiveDoc=null;
+function learnSave(){S.set('learningVault',learningVault);}
+function learnCurrentFolderId(){return _learnPath.length?_learnPath[_learnPath.length-1]:null;}
+function learnDescendantFolderIds(id){
+  const out=[id];
+  let added=true;
+  while(added){
+    added=false;
+    learningVault.folders.forEach(f=>{
+      if(f.parentId&&out.includes(f.parentId)&&!out.includes(f.id)){out.push(f.id);added=true;}
+    });
+  }
+  return out;
+}
+function learnEnsureSeedFolders(){
+  if(learningVault.folders.length)return;
+  const seeds=[['🛡️ Hacking','#ef4444'],['📈 Trading','#22c55e'],['💼 Freelancing / Other %-based work','#a855f7']];
+  seeds.forEach(([name],i)=>{
+    learningVault.folders.push({id:'lf_seed_'+i,name,parentId:null,createdAt:Date.now()+i});
+  });
+  learnSave();
 }
 function learnUpdateBadge(){
   const b=document.getElementById('sb-learn-count-badge');
-  if(!b)return;
-  let done=0,total=0;
-  Object.keys(LEARNING_CATEGORIES).forEach(id=>{const p=learnCatProgress(id);done+=p.done;total+=p.total;});
-  b.textContent=(total?Math.round(done/total*100):0)+'%';
+  if(b)b.textContent=learningVault.docs.length;
 }
 function openLearnPlatform(){
+  learnEnsureSeedFolders();
   document.getElementById('learn-modal')?.classList.add('open');
-  if(!_learnActiveCat)_learnActiveCat=Object.keys(LEARNING_CATEGORIES)[0];
-  learnRenderCats();
-  learnRenderContent();
+  learnRenderFolders();
+  learnRenderDocs();
 }
-function learnRenderCats(){
-  const wrap=document.getElementById('learn-cat-list');
+function learnRenderFolders(){
+  const wrap=document.getElementById('learn-folder-list');
   if(!wrap)return;
-  wrap.innerHTML=Object.entries(LEARNING_CATEGORIES).map(([id,cat])=>{
-    const p=learnCatProgress(id);
-    const on=id===_learnActiveCat;
-    return `<div class="bk-item" data-learn-cat="${id}" style="cursor:pointer;flex-direction:column;align-items:stretch;gap:6px${on?';border-color:var(--primary)':''}">
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <span style="font-size:13px;font-weight:700">${cat.icon} ${escapeHtml(cat.name)}</span>
-      </div>
-      <div style="height:5px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden">
-        <div style="height:100%;width:${p.pct}%;background:${cat.color};border-radius:3px"></div>
-      </div>
-      <div style="font-size:10px;color:var(--muted)">${p.done}/${p.total} topics read (${p.pct}%)</div>
+  const roots=learningVault.folders.filter(f=>!f.parentId);
+  if(!roots.length){wrap.innerHTML='<div class="bk-empty" style="font-size:11px">No folders yet.</div>';return;}
+  wrap.innerHTML=roots.map(f=>{
+    const on=_learnPath[0]===f.id;
+    return `<div class="bk-item${on?' on':''}" data-learn-folder="${f.id}" style="cursor:pointer;justify-content:space-between${on?';border-color:var(--primary)':''}">
+      <div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:700">📁 ${escapeHtml(f.name)}</div>
+      <button class="bk-btn" data-learn-folder-del="${f.id}" title="Delete folder">🗑</button>
     </div>`;
   }).join('');
 }
-function learnRenderContent(){
-  const wrap=document.getElementById('learn-content');
-  if(!wrap||!_learnActiveCat)return;
-  const cat=LEARNING_CATEGORIES[_learnActiveCat];
-  const p=learnCatProgress(_learnActiveCat);
-  wrap.innerHTML=`
-    <div style="margin-bottom:14px">
-      <div style="font-weight:800;font-size:16px;margin-bottom:4px">${cat.icon} ${escapeHtml(cat.name)}</div>
-      <div style="font-size:11px;color:var(--muted)">${p.done}/${p.total} topics read · ${p.pct}% complete</div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      ${cat.topics.map((t,i)=>{
-        const key=learnTopicKey(_learnActiveCat,i);
-        const done=!!learningProgress[key];
-        const bodyHtml=escapeHtml(t.body).replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
-        return `<div class="card" style="padding:14px">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px">
-            <div style="font-weight:700;font-size:13.5px;color:var(--text)">${i+1}. ${escapeHtml(t.title)}</div>
-            <label style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted);cursor:pointer;flex-shrink:0;white-space:nowrap">
-              <input type="checkbox" data-learn-mark="${key}" ${done?'checked':''} style="cursor:pointer">Read
-            </label>
-          </div>
-          <div style="font-size:12.5px;line-height:1.7;color:var(--text);opacity:.92">${bodyHtml}</div>
-        </div>`;
-      }).join('')}
+function learnRenderBreadcrumb(){
+  const wrap=document.getElementById('learn-breadcrumb');
+  if(!wrap)return;
+  const crumbs=['<span data-learn-crumb="-1" style="cursor:pointer;text-decoration:underline">🏠 Root</span>'];
+  _learnPath.forEach((id,i)=>{
+    const f=learningVault.folders.find(x=>x.id===id);
+    if(!f)return;
+    crumbs.push('<span>›</span>');
+    crumbs.push(`<span data-learn-crumb="${i}" style="cursor:pointer;text-decoration:underline">${escapeHtml(f.name)}</span>`);
+  });
+  wrap.innerHTML=crumbs.join(' ');
+}
+function learnRenderDocs(){
+  const list=document.getElementById('learn-doc-list');
+  const nameEl=document.getElementById('learn-active-folder-name');
+  const newBtn=document.getElementById('learn-new-doc-btn');
+  const photoBtn=document.getElementById('learn-add-photo-btn');
+  const subBtn=document.getElementById('learn-new-subfolder-btn');
+  if(!list)return;
+  learnRenderBreadcrumb();
+  const folderId=learnCurrentFolderId();
+  const folder=learningVault.folders.find(f=>f.id===folderId);
+  if(!folder){
+    if(nameEl)nameEl.textContent='Select a folder to view its contents';
+    if(newBtn)newBtn.style.display='none';
+    if(photoBtn)photoBtn.style.display='none';
+    if(subBtn)subBtn.style.display='none';
+    list.innerHTML='';
+    return;
+  }
+  if(nameEl)nameEl.textContent='📁 '+folder.name;
+  if(newBtn)newBtn.style.display='';
+  if(photoBtn)photoBtn.style.display='';
+  if(subBtn)subBtn.style.display='';
+  const subfolders=learningVault.folders.filter(f=>f.parentId===folder.id);
+  const items=learningVault.docs.filter(d=>d.folderId===folder.id).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+  if(!subfolders.length&&!items.length){list.innerHTML='<div class="bk-empty">Nothing here yet. Add a subfolder, document, or photo as you learn.</div>';return;}
+  const subfolderHtml=subfolders.map(f=>{
+    const docCount=learningVault.docs.filter(d=>d.folderId===f.id).length;
+    const subCount=learningVault.folders.filter(x=>x.parentId===f.id).length;
+    return `<div class="bk-item" data-learn-subfolder="${f.id}" style="cursor:pointer;justify-content:space-between">
+      <div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:700">📁 ${escapeHtml(f.name)}</div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+        <span style="font-size:10px;color:var(--muted)">${subCount?subCount+' folder'+(subCount!==1?'s':'')+(docCount?', ':''):''}${docCount?docCount+' item'+(docCount!==1?'s':''):''}</span>
+        <button class="bk-btn" data-learn-folder-del="${f.id}" title="Delete folder">🗑</button>
+      </div>
     </div>`;
+  }).join('');
+  const itemHtml=items.map(d=>{
+    const dt=d.updatedAt?new Date(d.updatedAt).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}):'';
+    if(d.type==='image'){
+      return `<div class="bk-item" data-learn-doc="${d.id}" style="cursor:pointer">
+        <img src="${d.img}" style="width:38px;height:38px;object-fit:cover;border-radius:6px;flex-shrink:0" alt="">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:700;color:var(--text)">🖼️ ${escapeHtml(d.title||'Untitled photo')}</div>
+        </div>
+        <div style="font-size:9px;color:var(--muted);flex-shrink:0">${dt}</div>
+      </div>`;
+    }
+    const preview=(d.content||'').slice(0,80).replace(/\n/g,' ');
+    return `<div class="bk-item" data-learn-doc="${d.id}" style="cursor:pointer">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:700;color:var(--text)">📄 ${escapeHtml(d.title||'Untitled')}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(preview)}${preview?'…':''}</div>
+      </div>
+      <div style="font-size:9px;color:var(--muted);flex-shrink:0">${dt}</div>
+    </div>`;
+  }).join('');
+  list.innerHTML=subfolderHtml+itemHtml;
 }
-function learnSetCat(id){
-  _learnActiveCat=id;
-  learnRenderCats();
-  learnRenderContent();
+function learnNewFolder(){
+  const name=prompt('Folder name:');
+  if(!name||!name.trim())return;
+  const f={id:'lf_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),name:name.trim(),parentId:null,createdAt:Date.now()};
+  learningVault.folders.push(f);
+  _learnPath=[f.id];
+  learnSave();learnRenderFolders();learnRenderDocs();
+  toast('📁 Folder created','s');
 }
-function learnToggleMark(key,checked){
-  if(checked)learningProgress[key]=true;else delete learningProgress[key];
+function learnNewSubfolder(){
+  const parentId=learnCurrentFolderId();
+  if(!parentId)return;
+  const name=prompt('Subfolder name:');
+  if(!name||!name.trim())return;
+  const f={id:'lf_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),name:name.trim(),parentId,createdAt:Date.now()};
+  learningVault.folders.push(f);
+  _learnPath.push(f.id);
+  learnSave();learnRenderFolders();learnRenderDocs();
+  toast('📁 Subfolder created','s');
+}
+function learnOpenFolder(id){
+  const idx=_learnPath.indexOf(id);
+  if(idx!==-1){_learnPath=_learnPath.slice(0,idx+1);}
+  else{
+    const f=learningVault.folders.find(x=>x.id===id);
+    if(f&&!f.parentId)_learnPath=[id];else _learnPath.push(id);
+  }
+  learnRenderFolders();learnRenderDocs();
+}
+function learnBreadcrumbNav(idx){
+  _learnPath=idx<0?[]:_learnPath.slice(0,idx+1);
+  learnRenderFolders();learnRenderDocs();
+}
+function learnDeleteFolder(id){
+  const f=learningVault.folders.find(x=>x.id===id);
+  if(!f)return;
+  const ids=learnDescendantFolderIds(id);
+  const subCount=ids.length-1;
+  const docCount=learningVault.docs.filter(d=>ids.includes(d.folderId)).length;
+  const parts=[];
+  if(subCount)parts.push(`${subCount} subfolder(s)`);
+  if(docCount)parts.push(`${docCount} document/photo(s)`);
+  if(!confirm(`Delete folder "${f.name}"${parts.length?` and its ${parts.join(' + ')}`:''}? This cannot be undone.`))return;
+  learningVault.folders=learningVault.folders.filter(x=>!ids.includes(x.id));
+  learningVault.docs=learningVault.docs.filter(d=>!ids.includes(d.folderId));
+  const cut=_learnPath.findIndex(pid=>ids.includes(pid));
+  if(cut!==-1)_learnPath=_learnPath.slice(0,cut);
+  learnSave();learnRenderFolders();learnRenderDocs();learnUpdateBadge();
+  toast('🗑 Folder deleted','w');
+}
+function learnNewDoc(){
+  const folderId=learnCurrentFolderId();
+  if(!folderId)return;
+  const d={id:'ld_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),folderId,type:'doc',title:'',content:'',updatedAt:Date.now()};
+  learningVault.docs.push(d);
+  learnOpenDocEditor(d.id);
+}
+function learnAddPhoto(dataUrl,filename){
+  const folderId=learnCurrentFolderId();
+  if(!folderId)return;
+  const d={id:'ld_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),folderId,type:'image',title:(filename||'').replace(/\.[a-z0-9]+$/i,''),img:dataUrl,updatedAt:Date.now()};
+  learningVault.docs.push(d);
   learnSave();
-  learnRenderCats();
-  learnUpdateBadge();
+  learnRenderDocs();learnUpdateBadge();
+  toast('🖼️ Photo added','s');
+}
+function learnOpenImageViewer(id){
+  const d=learningVault.docs.find(x=>x.id===id);
+  if(!d)return;
+  _learnActiveDoc=id;
+  document.getElementById('learn-img-preview').src=d.img;
+  document.getElementById('learn-img-title').value=d.title||'';
+  document.getElementById('learn-img-modal')?.classList.add('open');
+}
+function learnSaveImage(){
+  const d=learningVault.docs.find(x=>x.id===_learnActiveDoc);
+  if(!d)return;
+  d.title=document.getElementById('learn-img-title').value.trim();
+  d.updatedAt=Date.now();
+  learnSave();
+  document.getElementById('learn-img-modal')?.classList.remove('open');
+  learnRenderDocs();learnUpdateBadge();
+  toast('💾 Photo saved','s');
+}
+function learnDeleteImage(){
+  const d=learningVault.docs.find(x=>x.id===_learnActiveDoc);
+  if(!d)return;
+  if(!confirm('Delete this photo? This cannot be undone.'))return;
+  learningVault.docs=learningVault.docs.filter(x=>x.id!==_learnActiveDoc);
+  learnSave();
+  document.getElementById('learn-img-modal')?.classList.remove('open');
+  learnRenderDocs();learnUpdateBadge();
+  toast('🗑 Photo deleted','w');
+}
+function learnOpenDocEditor(id){
+  const d=learningVault.docs.find(x=>x.id===id);
+  if(!d)return;
+  _learnActiveDoc=id;
+  document.getElementById('learn-doc-title').value=d.title||'';
+  document.getElementById('learn-doc-body').value=d.content||'';
+  document.getElementById('learn-doc-modal')?.classList.add('open');
+}
+function learnSaveDoc(){
+  const d=learningVault.docs.find(x=>x.id===_learnActiveDoc);
+  if(!d)return;
+  d.title=document.getElementById('learn-doc-title').value.trim();
+  d.content=document.getElementById('learn-doc-body').value;
+  d.updatedAt=Date.now();
+  learnSave();
+  document.getElementById('learn-doc-modal')?.classList.remove('open');
+  learnRenderDocs();learnUpdateBadge();
+  toast('💾 Document saved','s');
+}
+function learnDeleteDoc(){
+  const d=learningVault.docs.find(x=>x.id===_learnActiveDoc);
+  if(!d)return;
+  if(!confirm(`Delete document "${d.title||'Untitled'}"? This cannot be undone.`))return;
+  learningVault.docs=learningVault.docs.filter(x=>x.id!==_learnActiveDoc);
+  learnSave();
+  document.getElementById('learn-doc-modal')?.classList.remove('open');
+  learnRenderDocs();learnUpdateBadge();
+  toast('🗑 Document deleted','w');
 }
 
 // ===== AZAN (PRAYER TIME) NOTIFICATIONS =====
@@ -9045,7 +9273,12 @@ function azanRenderTimingsList(){
 function azanTestPlay(){
   const a=new Audio(azanResolveSound());
   a.volume=1;
-  a.play().catch(()=>toast('❌ Could not play audio — tap somewhere on the page first, then try again','w'));
+  a.addEventListener('error',()=>{
+    const codes={1:'aborted',2:'network error',3:'decode/format error',4:'source not supported'};
+    const code=a.error&&a.error.code;
+    toast('❌ Audio failed to load'+(code?' ('+(codes[code]||'error '+code)+')':'')+' — try a different voice or upload your own','w');
+  });
+  a.play().catch(err=>toast('❌ Could not play: '+(err&&err.name||'unknown error'),'w'));
 }
 function azanCheckTimes(){
   if(!azanSettings.enabled)return;
@@ -9119,8 +9352,9 @@ function renderStickyNotes(){
     // corners for shapes like triangle/star) invisible AND unclickable. Keeping the outer card a
     // plain unclipped rectangle means those controls are always reachable regardless of shape.
     const shapeCls=shape!=='rect'?' sn-shape-'+shape:'';
+    const nonRectCls=(shape!=='rect'&&shape!=='round')?' sn-nonrect':'';
     if(n.type==='photo'){
-      return `<div class="sn-card sn-photo-card${n.id===_snNewId?' sn-new':''}${_snWireFrom===n.id?' sn-connect-src':''}" data-snid="${n.id}"
+      return `<div class="sn-card sn-photo-card${nonRectCls}${n.id===_snNewId?' sn-new':''}${_snWireFrom===n.id?' sn-connect-src':''}" data-snid="${n.id}"
         style="left:${n.x}px;top:${n.y}px;z-index:${n.z};background:transparent;transform:rotate(${n.rot}deg);--sn-r:${n.rot}deg;width:${n.w||160}px;height:${n.h||160}px;min-height:unset">
         ${pin}
         <button class="sn-x" data-snid="${n.id}" title="Delete">✕</button>
@@ -9130,7 +9364,7 @@ function renderStickyNotes(){
       </div>`;
     }
     const strip=SN_COLORS.map(c=>`<div class="sn-c-dot${n.color===c?' on':''}" data-snid="${n.id}" data-snc="${c}" style="background:${c}"></div>`).join('');
-    return `<div class="sn-card${n.id===_snNewId?' sn-new':''}${_snWireFrom===n.id?' sn-connect-src':''}" data-snid="${n.id}"
+    return `<div class="sn-card${nonRectCls}${n.id===_snNewId?' sn-new':''}${_snWireFrom===n.id?' sn-connect-src':''}" data-snid="${n.id}"
       style="left:${n.x}px;top:${n.y}px;z-index:${n.z};background:transparent;transform:rotate(${n.rot}deg);--sn-r:${n.rot}deg;width:${n.w||150}px;${n.h?'height:'+n.h+'px;min-height:unset':'min-height:65px'}">
       <div class="sn-shape-bg${shapeCls}" style="background:${n.color}"></div>
       ${pin}
