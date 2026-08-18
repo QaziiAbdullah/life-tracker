@@ -1296,30 +1296,30 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
   <div class="sb-notepad">
     <button class="sb-notepad-open-btn" id="sb-notepad-open">
       <span class="sb-notepad-open-icon">📝</span>
-      <span class="sb-notepad-open-lbl">Sticky Notes</span>
+      <span class="sb-notepad-open-lbl" id="sb-lbl-notes">Sticky Notes</span>
       <span class="sb-notepad-count-badge" id="sb-notes-count-badge">0</span>
     </button>
     <button class="sb-notepad-open-btn" id="sb-notebook-open" style="margin-top:5px">
       <span class="sb-notepad-open-icon">📓</span>
-      <span class="sb-notepad-open-lbl">Notebook</span>
+      <span class="sb-notepad-open-lbl" id="sb-lbl-notebook">Notebook</span>
     </button>
     <button class="sb-notepad-open-btn" id="sb-library-open" style="margin-top:5px">
       <span class="sb-notepad-open-icon">📚</span>
-      <span class="sb-notepad-open-lbl">Books</span>
+      <span class="sb-notepad-open-lbl" id="sb-lbl-books">Books</span>
       <span class="sb-notepad-count-badge" id="sb-books-count-badge">0</span>
     </button>
     <button class="sb-notepad-open-btn" id="sb-cyber-open" style="margin-top:5px">
       <span class="sb-notepad-open-icon">🛡️</span>
-      <span class="sb-notepad-open-lbl">Cyber &amp; Hacking</span>
+      <span class="sb-notepad-open-lbl" id="sb-lbl-cyber">Hacking Data</span>
       <span class="sb-notepad-count-badge" id="sb-cyber-count-badge">0</span>
     </button>
     <button class="sb-notepad-open-btn" id="sb-azan-open" style="margin-top:5px">
       <span class="sb-notepad-open-icon">🕌</span>
-      <span class="sb-notepad-open-lbl">Azan Timing</span>
+      <span class="sb-notepad-open-lbl" id="sb-lbl-azan">Azan Timing</span>
     </button>
     <button class="sb-notepad-open-btn" id="sb-learn-open" style="margin-top:5px">
       <span class="sb-notepad-open-icon">🎓</span>
-      <span class="sb-notepad-open-lbl">Learning Platform</span>
+      <span class="sb-notepad-open-lbl" id="sb-lbl-learn">Learning Platform</span>
       <span class="sb-notepad-count-badge" id="sb-learn-count-badge">0</span>
     </button>
   </div>
@@ -2671,6 +2671,40 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
         <button class="btn btn-p btn-sm" data-sn="evbday">Save</button>
       </div>
     </div>
+    <!-- Sidebar Quick-Access Labels -->
+    <div class="set-section">
+      <div class="set-sh">🏷️ Sidebar Quick-Access Labels</div>
+      <div class="set-row">
+        <div><div class="set-lbl">Sticky Notes Label</div></div>
+        <input class="fi" id="sn-notes" style="width:140px" placeholder="Sticky Notes">
+        <button class="btn btn-p btn-sm" data-sn="notes">Save</button>
+      </div>
+      <div class="set-row">
+        <div><div class="set-lbl">Notebook Label</div></div>
+        <input class="fi" id="sn-notebook" style="width:140px" placeholder="Notebook">
+        <button class="btn btn-p btn-sm" data-sn="notebook">Save</button>
+      </div>
+      <div class="set-row">
+        <div><div class="set-lbl">Books Label</div></div>
+        <input class="fi" id="sn-books" style="width:140px" placeholder="Books">
+        <button class="btn btn-p btn-sm" data-sn="books">Save</button>
+      </div>
+      <div class="set-row">
+        <div><div class="set-lbl">Cyber &amp; Hacking Label</div></div>
+        <input class="fi" id="sn-cyber" style="width:140px" placeholder="Hacking Data">
+        <button class="btn btn-p btn-sm" data-sn="cyber">Save</button>
+      </div>
+      <div class="set-row">
+        <div><div class="set-lbl">Azan Timing Label</div></div>
+        <input class="fi" id="sn-azan" style="width:140px" placeholder="Azan Timing">
+        <button class="btn btn-p btn-sm" data-sn="azan">Save</button>
+      </div>
+      <div class="set-row">
+        <div><div class="set-lbl">Learning Platform Label</div></div>
+        <input class="fi" id="sn-learn" style="width:140px" placeholder="Learning Platform">
+        <button class="btn btn-p btn-sm" data-sn="learn">Save</button>
+      </div>
+    </div>
     <!-- Finance Categories -->
     <div class="set-section">
       <div class="set-sh">💰 Custom Income Sources</div>
@@ -3138,7 +3172,10 @@ const LOGO_SVG=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 115" wi
 let customIncSrc=S.get('customIncSrc',[]);
 let customExpCat=S.get('customExpCat',[]);
 let profileData=S.get('profile',{displayName:'Admin'});
-let sectionNames=S.get('sectionNames',{habits:'Habits',tasks:'Tasks',goals:'Goals',evbday:'Events & Birthday'});
+// Merged (not passed as S.get's default) so existing users whose saved sectionNames predates
+// the newer sidebar-label keys still get sensible defaults for those, instead of "undefined"
+// showing up in the sidebar for anyone who already had this key saved.
+let sectionNames=Object.assign({habits:'Habits',tasks:'Tasks',goals:'Goals',evbday:'Events & Birthday',notes:'Sticky Notes',notebook:'Notebook',books:'Books',cyber:'Hacking Data',azan:'Azan Timing',learn:'Learning Platform'},S.get('sectionNames',{}));
 let timetable=S.get('timetable',[]);
 let ttWakeStart=S.get('ttWakeStart',6);
 let ttWakeEnd=S.get('ttWakeEnd',22);
@@ -4325,7 +4362,7 @@ document.addEventListener('click',function(e){
   }
   // Section name save buttons (data-sn attribute)
   const snKey=t.closest('[data-sn]')?.dataset?.sn||t.dataset?.sn;
-  if(snKey&&['habits','tasks','goals','evbday'].includes(snKey)){
+  if(snKey&&['habits','tasks','goals','evbday','notes','notebook','books','cyber','azan','learn'].includes(snKey)){
     const val=document.getElementById('sn-'+snKey)?.value.trim();
     if(!val){toast('Enter a name','w');return;}
     sectionNames[snKey]=val;S.set('sectionNames',sectionNames);
@@ -7018,6 +7055,11 @@ function applySectionNames(){
   const sHlbl=document.querySelector('#s-h');
   const sTlbl=document.querySelector('#s-t');
   // Ring labels update on next renderDaily
+  // Sidebar quick-access button labels (Sticky Notes, Notebook, Books, Cyber & Hacking, Azan, Learning)
+  ['notes','notebook','books','cyber','azan','learn'].forEach(k=>{
+    const span=document.getElementById('sb-lbl-'+k);
+    if(span&&sectionNames[k])span.textContent=sectionNames[k];
+  });
 }
 
 // ===== SETTINGS =====
@@ -7063,7 +7105,7 @@ function renderSettings(){
   const curIcon=profileData.sbIcon||'initials';
   document.querySelectorAll('.si-opt').forEach(b=>b.classList.toggle('active',b.dataset.si===curIcon));
   // Section names
-  const snFields={habits:'sn-habits',tasks:'sn-tasks',goals:'sn-goals',evbday:'sn-evbday'};
+  const snFields={habits:'sn-habits',tasks:'sn-tasks',goals:'sn-goals',evbday:'sn-evbday',notes:'sn-notes',notebook:'sn-notebook',books:'sn-books',cyber:'sn-cyber',azan:'sn-azan',learn:'sn-learn'};
   Object.entries(snFields).forEach(([k,id])=>{const el=document.getElementById(id);if(el)el.value=sectionNames[k]||'';});
 }
 
