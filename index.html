@@ -2210,6 +2210,20 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
     </div>
   </div>
 
+  <!-- Business Listings — inline, foldable (Facebook/Amazon/Trading/Others). Same data/actions
+       as the "📦 Listings" modal button above, just visible directly on the page instead of
+       hidden behind a click. -->
+  <div class="card" id="fin-listings-inline-card">
+    <div class="card-h" id="fin-listings-fold-toggle" style="cursor:pointer">
+      <div class="card-t">📦 Business Listings <span id="fin-listings-count" style="font-size:10px;color:var(--muted);font-weight:400"></span></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn btn-p btn-sm" id="fin-listings-add-btn">+ Add Listing</button>
+        <span id="fin-listings-fold-icon" style="font-size:14px;color:var(--muted);transition:transform .15s">▾</span>
+      </div>
+    </div>
+    <div id="fin-listings-inline-body"></div>
+  </div>
+
   <!-- Stats row — Income/Expenses/Savings Rate follow the period tabs above (Today/Month/Year/All Time).
        Net Balance is different on purpose: it's your actual cash + bank holdings right now,
        not an income-minus-expense figure for the period, so it doesn't jump around as you
@@ -4514,7 +4528,10 @@ document.addEventListener('click',function(e){
   if(id==='bf-exp'||id==='bf-exp2'||id==='fw-exp-btn'){openFinanceModal('expense');return;}
   if(id==='bf-loan'){openFinanceModal('loan');return;}
   if(id==='bf-transfer'){openFinanceModal('transfer');return;}
-  if(id==='bf-fbl'){openM('fbl-modal');document.querySelectorAll('#fbl-src-tabs [data-fbl-src]').forEach(b=>b.classList.toggle('on',b.dataset.fblSrc===_fblSrc));_fblPM='cash';document.getElementById('fbl-pm-cash').classList.add('on');document.getElementById('fbl-pm-bank').classList.remove('on');renderFbListings();return;}
+  if(id==='bf-fbl'||id==='fin-listings-add-btn'){openM('fbl-modal');document.querySelectorAll('#fbl-src-tabs [data-fbl-src]').forEach(b=>b.classList.toggle('on',b.dataset.fblSrc===_fblSrc));_fblPM='cash';document.getElementById('fbl-pm-cash').classList.add('on');document.getElementById('fbl-pm-bank').classList.remove('on');renderFbListings();return;}
+  // (the add-listing button inside this same header is matched above and returns first, so
+  // reaching here means the click landed on the header/fold-icon itself)
+  if(t.id==='fin-listings-fold-toggle'||t.closest('#fin-listings-fold-toggle')){toggleFinListingsFold();return;}
   if(id==='fbl-close'){closeM('fbl-modal');return;}
   if(id==='fbl-add-btn'){addFbListing();return;}
   const fblSrcTab=t.closest('[data-fbl-src]');
@@ -5135,6 +5152,8 @@ function renderFinanceSmartPanel(){
 function renderFinance(){
   const{cash:_holdCash,bank:_holdBank}=renderFinanceSmartPanel();
   renderSalaryReminder();
+  renderFinanceListingsInline();
+  fmtFinListingsFold();
   const filter=finGetPeriod();
   const allTxs=finance.filter(filter);
   const loans=finance.filter(t=>t.type==='loan_given'||t.type==='loan_taken');
@@ -5625,7 +5644,47 @@ function toggleFbListingSold(id){
   const item=fbListings.find(x=>x.id===id);
   if(item){item.sold=!item.sold;S.set('fbListings',fbListings);renderFbListings();renderFinanceSmartPanel();}
 }
+let _finListingsFolded=false;
+function renderFinanceListingsInline(){
+  const body=document.getElementById('fin-listings-inline-body');
+  const countEl=document.getElementById('fin-listings-count');
+  if(!body)return;
+  if(countEl)countEl.textContent='('+fbListings.length+')';
+  if(!fbListings.length){body.innerHTML='<div class="f-empty">No listings yet. Click "+ Add Listing" to start tracking Facebook/Amazon/Trading/Other business items.</div>';return;}
+  const bySrc={};
+  fbListings.forEach(it=>{const s=it.source||'facebook';(bySrc[s]=bySrc[s]||[]).push(it);});
+  body.innerHTML=Object.entries(bySrc).map(([src,items])=>{
+    const meta=FBL_SRC_META[src]||FBL_SRC_META.facebook;
+    const sorted=[...items].sort((a,b)=>(a.sold===b.sold?0:a.sold?1:-1)||b.date.localeCompare(a.date));
+    return `<div style="margin-bottom:10px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px">${meta.icon} ${meta.label} (${items.length})</div>
+      ${sorted.map(it=>`<div class="f-tx-item" style="${it.sold?'opacity:.55':''}">
+        <div class="f-tx-icon" style="background:#3b82f618">${meta.icon}</div>
+        <div class="f-tx-info">
+          <div class="f-tx-name">${escapeHtml(it.name)}${it.note?' — '+escapeHtml(it.note):''}</div>
+          <div class="f-tx-meta">${it.date} · ${it.sold?'<span style="color:#34d399">✅ Sold</span>':'<span style="color:#fbbf24">🟢 Listed (in Investment)</span>'}</div>
+        </div>
+        <div class="f-tx-amt" style="color:#3b82f6">${currSym} ${fmtMoney(it.price)}</div>
+        ${it.sold?'':`<button class="f-tx-del" data-fbl-inc="${it.id}" title="Add sale as income" style="color:#34d399">💰</button>`}
+        <button class="f-tx-del" data-fbl-sold="${it.id}" title="${it.sold?'Mark as listed':'Mark as sold'}">${it.sold?'↩️':'✅'}</button>
+        <button class="f-tx-del" data-fbl-del="${it.id}" title="Delete">🗑</button>
+      </div>`).join('')}
+    </div>`;
+  }).join('');
+}
+function fmtFinListingsFold(){
+  const body=document.getElementById('fin-listings-inline-body');
+  const icon=document.getElementById('fin-listings-fold-icon');
+  if(body)body.style.display=_finListingsFolded?'none':'block';
+  if(icon)icon.style.transform=_finListingsFolded?'rotate(-90deg)':'rotate(0deg)';
+}
+function toggleFinListingsFold(){
+  _finListingsFolded=!_finListingsFolded;
+  fmtFinListingsFold();
+}
+
 function renderFbListings(){
+  renderFinanceListingsInline();
   const wrap=document.getElementById('fbl-list');
   const titleEl=document.getElementById('fbl-modal-title');
   if(!wrap)return;
