@@ -4047,6 +4047,10 @@ function _do(){
 
 // ===== NAVIGATION =====
 function goTo(name){
+  // Defensive: if anything (a modal, a wide widget) ever left the page horizontally/vertically
+  // scrolled, switching views should always land back at the top-left instead of carrying that
+  // scroll position into a page whose own content never asked to be scrolled that way.
+  window.scrollTo(0,0);
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
   document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
   const v=document.getElementById('view-'+name);if(v)v.classList.add('on');
