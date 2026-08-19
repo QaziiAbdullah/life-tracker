@@ -9375,15 +9375,37 @@ function azanRenderTimingsList(){
     </div>`;
   }).join('');
 }
+// Zero-network fallback chime — pure Web Audio API, no file to fetch, so it can never fail the
+// same way a streamed azan recording can (blocked network, dead CDN, format issue). Used so a
+// prayer-time alert is never completely silent even when the real azan audio can't load.
+function azanPlayFallbackChime(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const now=ctx.currentTime;
+    [0,0.35,0.7].forEach(offset=>{
+      const osc=ctx.createOscillator(),gain=ctx.createGain();
+      osc.type='sine';osc.frequency.value=880;
+      gain.gain.setValueAtTime(0,now+offset);
+      gain.gain.linearRampToValueAtTime(0.35,now+offset+0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001,now+offset+0.3);
+      osc.connect(gain);gain.connect(ctx.destination);
+      osc.start(now+offset);osc.stop(now+offset+0.32);
+    });
+  }catch(e){/* Web Audio unavailable — nothing more we can do */}
+}
 function azanTestPlay(){
   const a=new Audio(azanResolveSound());
   a.volume=1;
   a.addEventListener('error',()=>{
     const codes={1:'aborted',2:'network error',3:'decode/format error',4:'source not supported'};
     const code=a.error&&a.error.code;
-    toast('❌ Audio failed to load'+(code?' ('+(codes[code]||'error '+code)+')':'')+' — try a different voice or upload your own','w');
+    toast('❌ Audio failed to load'+(code?' ('+(codes[code]||'error '+code)+')':'')+' — playing a fallback chime instead. Try a different voice, or check your connection.','w');
+    azanPlayFallbackChime();
   });
-  a.play().catch(err=>toast('❌ Could not play: '+(err&&err.name||'unknown error'),'w'));
+  a.play().catch(err=>{
+    toast('❌ Could not play voice ('+(err&&err.name||'unknown')+') — playing a fallback chime instead','w');
+    azanPlayFallbackChime();
+  });
 }
 function azanCheckTimes(){
   if(!azanSettings.enabled)return;
@@ -9398,7 +9420,8 @@ function azanCheckTimes(){
       showFloatNotif('azan-'+p,'🕌',p+' — Prayer Time',"It's time for "+p+' prayer','fn-blue','Azan');
       const a=new Audio(azanResolveSound());
       a.volume=1;
-      a.play().catch(()=>{});
+      a.addEventListener('error',azanPlayFallbackChime);
+      a.play().catch(azanPlayFallbackChime);
     }
   });
 }
