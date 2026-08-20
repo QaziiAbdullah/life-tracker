@@ -143,4 +143,49 @@ if ($action === 'reset') {
   json_response(['ok' => true]);
 }
 
+// Mandatory login-time email verification — separate from the PIN's own "forgot" recovery
+// flow (same underlying OTP columns, reused rather than duplicated). Fires once per fresh
+// browser session right after a Google sign-in is confirmed, before any data is shown, the
+// same shape as Gmail's own "enter the code we emailed you" 2-step verification.
+if ($action === 'login_otp_send') {
+  $userId = require_user_id();
+  if ($userId === 0) json_response(['ok' => false, 'error' => 'unsupported_session'], 400);
+  if (applock_rate_limited($pdo, $ip)) json_response(['ok' => false, 'error' => 'rate_limited'], 429);
+  $stmt = $pdo->prepare('SELECT email FROM users WHERE id = ?');
+  $stmt->execute([$userId]);
+  $email = $stmt->fetch()['email'] ?? null;
+  if (!$email) json_response(['ok' => false, 'error' => 'no_email_on_file'], 400);
+
+  $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+  $hash = password_hash($code, PASSWORD_DEFAULT);
+  $expires = date('Y-m-d H:i:s', time() + 600); // 10 minutes
+  $pdo->prepare('UPDATE users SET app_otp_hash = ?, app_otp_expires = ? WHERE id = ?')->execute([$hash, $expires, $userId]);
+
+  $subject = 'RedBug Life Tracking — sign-in verification code';
+  $messageBody = "Your sign-in verification code is: $code\n\nThis code expires in 10 minutes. If you didn't try to sign in, you can ignore this email.";
+  $headers = "From: no-reply@" . preg_replace('/^www\./', '', $_SERVER['HTTP_HOST'] ?? 'alijtaba.online') . "\r\nContent-Type: text/plain; charset=UTF-8";
+  $sent = @mail($email, $subject, $messageBody, $headers);
+
+  json_response(['ok' => true, 'sent' => $sent, 'email' => $email]);
+}
+
+if ($action === 'login_otp_verify') {
+  $userId = require_user_id();
+  if ($userId === 0) json_response(['ok' => true, 'valid' => true]); // pseudo-sessions have no OTP support to check against
+  if (applock_rate_limited($pdo, $ip)) json_response(['ok' => false, 'error' => 'rate_limited'], 429);
+  $otp = (string) ($body['otp'] ?? '');
+  $stmt = $pdo->prepare('SELECT app_otp_hash, app_otp_expires FROM users WHERE id = ?');
+  $stmt->execute([$userId]);
+  $row = $stmt->fetch();
+  if (!$row || !$row['app_otp_hash'] || !$row['app_otp_expires'] || strtotime($row['app_otp_expires']) < time()) {
+    json_response(['ok' => false, 'error' => 'otp_expired'], 400);
+  }
+  $valid = password_verify($otp, $row['app_otp_hash']);
+  if ($valid) {
+    // One-time use — burn it immediately so the same code can't be replayed.
+    $pdo->prepare('UPDATE users SET app_otp_hash = NULL, app_otp_expires = NULL WHERE id = ?')->execute([$userId]);
+  }
+  json_response(['ok' => true, 'valid' => $valid]);
+}
+
 json_response(['ok' => false, 'error' => 'unknown_action'], 400);

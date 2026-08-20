@@ -2625,22 +2625,6 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
         </div>
       </div>
     </div>
-    <!-- Template Gallery -->
-    <div class="set-section">
-      <div class="set-sh">🖼️ Interface Templates</div>
-      <div class="set-row" style="display:block">
-        <div class="set-hint">Click any template to instantly transform the entire interface. Inspired by world-class finance & business designs.</div>
-        <div class="tt-grid" id="tt-gallery"></div>
-      </div>
-    </div>
-    <!-- Luxury Color Gallery -->
-    <div class="set-section">
-      <div class="set-sh">💎 Luxury Colors</div>
-      <div class="set-row" style="display:block">
-        <div class="set-hint">~98 curated luxury accent colors, grouped by mood. Click any swatch to recolor the whole app around it.</div>
-        <div id="lux-gallery" style="display:flex;flex-direction:column;gap:12px;margin-top:10px"></div>
-      </div>
-    </div>
     <!-- Currency -->
     <div class="set-section">
       <div class="set-sh">💱 Currency</div>
@@ -2823,6 +2807,23 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
     <div class="login-sub" id="login-syncing" style="display:none;margin-top:10px">Signing you in…</div>
     <div class="login-err" id="login-err" style="display:none">❌ Sign-in failed — please try again</div>
     <div class="login-err" id="login-config-warn" style="display:none">⚠️ Google Sign-In isn't set up yet — see GOOGLE_CLIENT_ID in index.html</div>
+  </div>
+</div>
+
+<!-- LOGIN EMAIL VERIFICATION — fires on every fresh browser session right after Google
+     sign-in is confirmed, before any data is shown. Same shape as Gmail's own 2-step
+     verification: a 6-digit code is emailed to the account address and must be entered here. -->
+<div class="login-screen" id="login-otp-screen" style="display:none;z-index:10003">
+  <div class="login-box">
+    <div style="font-size:40px;text-align:center;margin-bottom:6px">📧</div>
+    <div class="login-app-name" style="text-align:center">Verify It's You</div>
+    <div class="login-sub" style="text-align:center;margin-bottom:16px" id="login-otp-hint">Sending a code to your email…</div>
+    <input type="text" inputmode="numeric" id="login-otp-input" class="fi" placeholder="6-digit code" style="text-align:center;font-size:20px;letter-spacing:6px" maxlength="6">
+    <button class="btn btn-p" id="login-otp-verify-btn" style="width:100%;justify-content:center;margin-top:12px">✅ Verify</button>
+    <div class="login-err" id="login-otp-err" style="display:none;margin-top:10px"></div>
+    <div style="text-align:center;margin-top:14px">
+      <span id="login-otp-resend-link" style="font-size:11px;color:var(--muted);cursor:pointer;text-decoration:underline">Didn't get it? Resend code</span>
+    </div>
   </div>
 </div>
 
@@ -4227,6 +4228,8 @@ document.addEventListener('click',function(e){
   if(t.id==='lib-shelf-back-btn'||t.closest('#lib-shelf-back-btn')){libCloseModal();return;}
   if(t.id==='storage-refresh-btn'||t.closest('#storage-refresh-btn')){renderStorageWidget();toast('🔄 Storage refreshed','s');return;}
   // --- APP LOCK ---
+  if(t.id==='login-otp-verify-btn'||t.closest('#login-otp-verify-btn')){loginOtpVerify();return;}
+  if(t.id==='login-otp-resend-link'||t.closest('#login-otp-resend-link')){loginOtpResend(false);return;}
   if(t.id==='applock-unlock-btn'||t.closest('#applock-unlock-btn')){applockUnlock();return;}
   if(t.id==='applock-forgot-link'||t.closest('#applock-forgot-link')){applockForgot();return;}
   if(t.id==='applock-reset-btn'||t.closest('#applock-reset-btn')){applockReset();return;}
@@ -4631,12 +4634,6 @@ document.addEventListener('click',function(e){
   if(bkRestoreEl){bkRestoreBackup(bkRestoreEl.dataset.bkRestore);return;}
   const bkDeleteEl=t.closest('[data-bk-delete]');
   if(bkDeleteEl){bkDeleteBackup(bkDeleteEl.dataset.bkDelete);return;}
-  // Template gallery card click
-  const ttCard=t.closest('.tt-card[data-tt]');
-  if(ttCard){applyTheme(ttCard.dataset.tt);renderTemplateGallery();renderLuxuryGallery();return;}
-  // Luxury theme swatch click
-  const luxSw=t.closest('.lux-swatch[data-lux]');
-  if(luxSw){applyLuxuryTheme(luxSw.dataset.lux);renderLuxuryGallery();renderTemplateGallery();return;}
   // Font picker
   const fontPick=t.closest('.font-pick[data-font]');
   if(fontPick){applyAppFont(fontPick.dataset.font);toast('🔤 Font applied','s');return;}
@@ -5026,6 +5023,7 @@ document.addEventListener('keydown',function(e){
   const id=document.activeElement?.id;
   if(id==='set-new-inc')document.getElementById('set-add-inc')?.click();
   if(id==='set-new-exp')document.getElementById('set-add-exp')?.click();
+  if(id==='login-otp-input')document.getElementById('login-otp-verify-btn')?.click();
   if(id==='applock-pin-input')document.getElementById('applock-unlock-btn')?.click();
   if(id==='applock-newpin-input'||id==='applock-otp-input')document.getElementById('applock-reset-btn')?.click();
 });
@@ -6868,7 +6866,7 @@ _loggedIn=!!_syncToken;
     screen.classList.add('hide');
     const sr=document.getElementById('sb-sync-row');if(sr)sr.style.display='flex';
     updateWelcome();initWeather();
-    checkAppLock();
+    checkLoginOtp();
     // If the user just came back from fixing a location permission and hit "reload", pick the
     // azan retry back up automatically instead of making them find the button again.
     if(sessionStorage.getItem('azanAutoRetry')){
@@ -6927,13 +6925,67 @@ async function handleGoogleCredential(response){
     const sr=document.getElementById('sb-sync-row');if(sr)sr.style.display='flex';
     updateWelcome();
     initWeather();
-    checkAppLock();
+    checkLoginOtp();
     toast('👋 Welcome, '+(profileData.displayName||'')+'!','s');
   }catch(e){
     syncing.style.display='none';
     err.style.display='block';
     setTimeout(()=>err.style.display='none',4000);
   }
+}
+
+// ===== LOGIN EMAIL VERIFICATION (mandatory 2-step, every fresh browser session) =====
+// Fires right after Google sign-in is confirmed (both a brand-new login and a returning
+// session on page load) — a 6-digit code goes to the account's Gmail address and must be
+// entered before anything else runs, the same shape as Gmail's own 2-step verification.
+// Chains into checkAppLock() once verified, so PIN entry (if set) comes after this, not instead
+// of it. sessionStorage so it fires once per fresh browser session, not on every reload.
+async function checkLoginOtp(){
+  if(!_syncToken){checkAppLock();return;}
+  if(sessionStorage.getItem('lt4_otpVerified')==='1'){checkAppLock();return;}
+  const scr=document.getElementById('login-otp-screen');
+  if(!scr){checkAppLock();return;}
+  scr.style.display='flex';
+  await loginOtpResend(true);
+}
+async function loginOtpResend(isFirstSend){
+  const hint=document.getElementById('login-otp-hint');
+  const err=document.getElementById('login-otp-err');
+  if(err)err.style.display='none';
+  if(hint)hint.textContent=isFirstSend?'Sending a code to your email…':'Resending…';
+  try{
+    const r=await fetch('/api/applock.php',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_syncToken},body:JSON.stringify({action:'login_otp_send'})});
+    const d=await r.json();
+    if(d&&d.ok){
+      if(hint)hint.textContent=d.sent?('A 6-digit code was sent to '+(d.email||'your account email')+' — check spam too if it doesn\'t show up.'):'Could not send the email from the server. Try again shortly.';
+      setTimeout(()=>document.getElementById('login-otp-input')?.focus(),50);
+    }else{
+      if(hint)hint.textContent=(d&&d.error==='rate_limited')?'Too many attempts — wait a few minutes and try again.':'❌ Could not send a code right now.';
+    }
+  }catch(e){if(hint)hint.textContent='❌ Could not send a code — check your connection.';}
+}
+async function loginOtpVerify(){
+  const input=document.getElementById('login-otp-input');
+  const err=document.getElementById('login-otp-err');
+  const otp=(input?.value||'').trim();
+  if(!/^\d{6}$/.test(otp)){err.textContent='Enter the 6-digit code';err.style.display='block';return;}
+  err.style.display='none';
+  try{
+    const r=await fetch('/api/applock.php',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_syncToken},body:JSON.stringify({action:'login_otp_verify',otp})});
+    const d=await r.json();
+    if(d&&d.ok&&d.valid){
+      sessionStorage.setItem('lt4_otpVerified','1');
+      document.getElementById('login-otp-screen').style.display='none';
+      if(input)input.value='';
+      checkAppLock(); // chain to the PIN gate, if one is set
+    }else if(d&&d.error==='rate_limited'){
+      err.textContent='⏳ Too many attempts — wait a few minutes';err.style.display='block';
+    }else if(d&&d.error==='otp_expired'){
+      err.textContent='⌛ Code expired — tap "Resend code"';err.style.display='block';
+    }else{
+      err.textContent='❌ Wrong code';err.style.display='block';if(input){input.value='';input.focus();}
+    }
+  }catch(e){err.textContent='❌ Could not verify — check your connection';err.style.display='block';}
 }
 
 // ===== APP LOCK (PIN + email 2-step recovery) =====
@@ -7286,8 +7338,6 @@ function applySectionNames(){
 
 // ===== SETTINGS =====
 function renderSettings(){
-  renderTemplateGallery();
-  renderLuxuryGallery();
   renderFontGallery();
   renderAppBgGallery();
   renderSbBgGallery();
