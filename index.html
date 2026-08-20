@@ -2685,6 +2685,20 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
         <button class="btn btn-p btn-sm" data-sn="evbday">Save</button>
       </div>
     </div>
+    <!-- App Lock -->
+    <div class="set-section">
+      <div class="set-sh">🔒 App Lock (PIN)</div>
+      <div class="set-row">
+        <div><div class="set-lbl">Status</div><div class="set-hint" id="applock-status-hint">Loading…</div></div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="btn btn-p btn-sm" id="applock-setchange-btn">Set / Change PIN</button>
+          <button class="btn btn-g btn-sm" id="applock-remove-btn" style="display:none;color:#ef4444;border-color:rgba(239,68,68,.3)">Remove</button>
+        </div>
+      </div>
+      <div class="set-row">
+        <div><div class="set-lbl">2-Step Recovery</div><div class="set-hint">A second layer on top of Google Sign-In — a device needs both a valid session AND this PIN to see your data. If you forget it, a 6-digit code is emailed to your Google account address to reset it, the same way Gmail's own 2-step verification works.</div></div>
+      </div>
+    </div>
     <!-- Sidebar Quick-Access Labels -->
     <div class="set-section">
       <div class="set-sh">🏷️ Sidebar Quick-Access Labels</div>
@@ -2809,6 +2823,29 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
     <div class="login-sub" id="login-syncing" style="display:none;margin-top:10px">Signing you in…</div>
     <div class="login-err" id="login-err" style="display:none">❌ Sign-in failed — please try again</div>
     <div class="login-err" id="login-config-warn" style="display:none">⚠️ Google Sign-In isn't set up yet — see GOOGLE_CLIENT_ID in index.html</div>
+  </div>
+</div>
+
+<!-- APP LOCK — second factor on top of the Google session. Even a device with a still-valid
+     session token can't see any data without this PIN. -->
+<div class="login-screen" id="applock-screen" style="display:none;z-index:10003">
+  <div class="login-box">
+    <div style="font-size:40px;text-align:center;margin-bottom:6px">🔒</div>
+    <div class="login-app-name" style="text-align:center">App Locked</div>
+    <div class="login-sub" style="text-align:center;margin-bottom:16px">Enter your PIN to continue</div>
+    <input type="password" inputmode="numeric" pattern="[0-9]*" id="applock-pin-input" class="fi" placeholder="PIN" style="text-align:center;font-size:20px;letter-spacing:6px" maxlength="8">
+    <button class="btn btn-p" id="applock-unlock-btn" style="width:100%;justify-content:center;margin-top:12px">🔓 Unlock</button>
+    <div class="login-err" id="applock-err" style="display:none;margin-top:10px"></div>
+    <div style="text-align:center;margin-top:14px">
+      <span id="applock-forgot-link" style="font-size:11px;color:var(--muted);cursor:pointer;text-decoration:underline">Forgot PIN? Get a code by email</span>
+    </div>
+    <!-- Email-OTP recovery — shown only after "Forgot PIN?" is clicked -->
+    <div id="applock-otp-block" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+      <div class="login-sub" style="text-align:center;margin-bottom:8px" id="applock-otp-hint">A 6-digit code was sent to your account email.</div>
+      <input type="text" inputmode="numeric" id="applock-otp-input" class="fi" placeholder="6-digit code" style="text-align:center;letter-spacing:6px" maxlength="6">
+      <input type="password" inputmode="numeric" pattern="[0-9]*" id="applock-newpin-input" class="fi" placeholder="New PIN (4-8 digits)" style="text-align:center;letter-spacing:6px;margin-top:8px" maxlength="8">
+      <button class="btn btn-p" id="applock-reset-btn" style="width:100%;justify-content:center;margin-top:10px">✅ Reset PIN &amp; Unlock</button>
+    </div>
   </div>
 </div>
 
@@ -4189,6 +4226,12 @@ document.addEventListener('click',function(e){
   if(t.id==='lib-close-btn'||t.closest('#lib-close-btn')){libCloseModal();return;}
   if(t.id==='lib-shelf-back-btn'||t.closest('#lib-shelf-back-btn')){libCloseModal();return;}
   if(t.id==='storage-refresh-btn'||t.closest('#storage-refresh-btn')){renderStorageWidget();toast('🔄 Storage refreshed','s');return;}
+  // --- APP LOCK ---
+  if(t.id==='applock-unlock-btn'||t.closest('#applock-unlock-btn')){applockUnlock();return;}
+  if(t.id==='applock-forgot-link'||t.closest('#applock-forgot-link')){applockForgot();return;}
+  if(t.id==='applock-reset-btn'||t.closest('#applock-reset-btn')){applockReset();return;}
+  if(t.id==='applock-setchange-btn'||t.closest('#applock-setchange-btn')){applockSetOrChange();return;}
+  if(t.id==='applock-remove-btn'||t.closest('#applock-remove-btn')){applockRemovePin();return;}
   // --- LEARNING PLATFORM ---
   if(t.closest('#sb-learn-open')){openLearnPlatform();return;}
   if(t.id==='learn-close-btn'||t.closest('#learn-close-btn')){closeM('learn-modal');return;}
@@ -4983,6 +5026,8 @@ document.addEventListener('keydown',function(e){
   const id=document.activeElement?.id;
   if(id==='set-new-inc')document.getElementById('set-add-inc')?.click();
   if(id==='set-new-exp')document.getElementById('set-add-exp')?.click();
+  if(id==='applock-pin-input')document.getElementById('applock-unlock-btn')?.click();
+  if(id==='applock-newpin-input'||id==='applock-otp-input')document.getElementById('applock-reset-btn')?.click();
 });
 
 // First-time currency setup
@@ -6823,6 +6868,7 @@ _loggedIn=!!_syncToken;
     screen.classList.add('hide');
     const sr=document.getElementById('sb-sync-row');if(sr)sr.style.display='flex';
     updateWelcome();initWeather();
+    checkAppLock();
     // If the user just came back from fixing a location permission and hit "reload", pick the
     // azan retry back up automatically instead of making them find the button again.
     if(sessionStorage.getItem('azanAutoRetry')){
@@ -6881,12 +6927,125 @@ async function handleGoogleCredential(response){
     const sr=document.getElementById('sb-sync-row');if(sr)sr.style.display='flex';
     updateWelcome();
     initWeather();
+    checkAppLock();
     toast('👋 Welcome, '+(profileData.displayName||'')+'!','s');
   }catch(e){
     syncing.style.display='none';
     err.style.display='block';
     setTimeout(()=>err.style.display='none',4000);
   }
+}
+
+// ===== APP LOCK (PIN + email 2-step recovery) =====
+// A second gate on top of the Google session: even a device that still has a valid (unexpired)
+// session token can't see any data without this PIN. Verification always happens server-side
+// (api/applock.php) — the client never decides "unlocked" on its own, it just reflects what the
+// server said. sessionStorage (not localStorage) so it re-locks on a fresh browser session but
+// doesn't re-nag on every reload within the same one.
+async function checkAppLock(){
+  if(!_syncToken)return;
+  if(sessionStorage.getItem('lt4_pinVerified')==='1')return;
+  try{
+    const r=await fetch('/api/applock.php',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_syncToken},body:JSON.stringify({action:'status'})});
+    const d=await r.json();
+    if(d&&d.ok&&d.hasPin){
+      const scr=document.getElementById('applock-screen');
+      if(scr){scr.style.display='flex';setTimeout(()=>document.getElementById('applock-pin-input')?.focus(),50);}
+    }
+  }catch(e){/* Can't reach the server (offline) — fail open to the already-synced local data
+               rather than locking the user out of their own device entirely. */}
+}
+async function applockUnlock(){
+  const pinInput=document.getElementById('applock-pin-input');
+  const err=document.getElementById('applock-err');
+  const pin=(pinInput?.value||'').trim();
+  if(!pin){err.textContent='Enter your PIN';err.style.display='block';return;}
+  err.style.display='none';
+  try{
+    const r=await fetch('/api/applock.php',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_syncToken},body:JSON.stringify({action:'verify',pin})});
+    const d=await r.json();
+    if(d&&d.ok&&d.valid){
+      sessionStorage.setItem('lt4_pinVerified','1');
+      document.getElementById('applock-screen').style.display='none';
+      pinInput.value='';
+    }else if(d&&d.error==='rate_limited'){
+      err.textContent='⏳ Too many attempts — wait a few minutes';err.style.display='block';
+    }else{
+      err.textContent='❌ Wrong PIN';err.style.display='block';pinInput.value='';pinInput.focus();
+    }
+  }catch(e){err.textContent='❌ Could not verify — check your connection';err.style.display='block';}
+}
+async function applockForgot(){
+  document.getElementById('applock-forgot-link').style.display='none';
+  document.getElementById('applock-otp-block').style.display='block';
+  const hint=document.getElementById('applock-otp-hint');
+  hint.textContent='Sending…';
+  try{
+    const r=await fetch('/api/applock.php',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_syncToken},body:JSON.stringify({action:'forgot'})});
+    const d=await r.json();
+    hint.textContent=(d&&d.ok)?(d.sent?'A 6-digit code was sent to your account email — check spam too if it doesn\'t show up.':'Could not send the email from the server. Try again shortly.'):'❌ Could not request a code right now.';
+  }catch(e){hint.textContent='❌ Could not request a code — check your connection.';}
+}
+async function applockReset(){
+  const otp=(document.getElementById('applock-otp-input')?.value||'').trim();
+  const newPin=(document.getElementById('applock-newpin-input')?.value||'').trim();
+  const err=document.getElementById('applock-err');
+  if(!/^\d{4,8}$/.test(newPin)){err.textContent='New PIN must be 4-8 digits';err.style.display='block';return;}
+  try{
+    const r=await fetch('/api/applock.php',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_syncToken},body:JSON.stringify({action:'reset',otp,newPin})});
+    const d=await r.json();
+    if(d&&d.ok){
+      sessionStorage.setItem('lt4_pinVerified','1');
+      document.getElementById('applock-screen').style.display='none';
+      toast('🔓 PIN reset — you\'re unlocked','s');
+    }else{
+      err.style.display='block';
+      err.textContent='❌ '+(d&&d.error==='wrong_otp'?'Wrong code':d&&d.error==='otp_expired'?'Code expired — request a new one':d&&d.error==='rate_limited'?'Too many attempts — wait a few minutes':'Reset failed');
+    }
+  }catch(e){err.textContent='❌ Could not reset — check your connection';err.style.display='block';}
+}
+async function applockRenderSettingsStatus(){
+  const hint=document.getElementById('applock-status-hint');
+  const removeBtn=document.getElementById('applock-remove-btn');
+  if(!hint||!_syncToken)return;
+  hint.textContent='Loading…';
+  try{
+    const r=await fetch('/api/applock.php',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_syncToken},body:JSON.stringify({action:'status'})});
+    const d=await r.json();
+    if(d&&d.ok){
+      hint.textContent=d.hasPin?'🔒 A PIN is set — required each time the app opens in a new browser session.':'🔓 No PIN set yet — anyone with a valid session on this device can open the app.';
+      if(removeBtn)removeBtn.style.display=d.hasPin?'':'none';
+    }else{
+      hint.textContent='Could not load status.';
+    }
+  }catch(e){hint.textContent='Could not load status — check your connection.';}
+}
+async function applockSetOrChange(){
+  const hasPinNow=document.getElementById('applock-remove-btn')?.style.display!=='none';
+  let currentPin='';
+  if(hasPinNow){
+    currentPin=prompt('Enter your current PIN:');
+    if(currentPin===null)return;
+  }
+  const newPin=prompt('Enter a new PIN (4-8 digits):');
+  if(newPin===null)return;
+  if(!/^\d{4,8}$/.test(newPin)){toast('❌ PIN must be 4-8 digits','w');return;}
+  try{
+    const r=await fetch('/api/applock.php',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_syncToken},body:JSON.stringify({action:'set',pin:newPin,currentPin})});
+    const d=await r.json();
+    if(d&&d.ok){toast('🔒 PIN saved','s');applockRenderSettingsStatus();}
+    else toast('❌ '+(d&&d.error==='wrong_current_pin'?'Wrong current PIN':d&&d.error==='rate_limited'?'Too many attempts — wait a few minutes':'Could not save PIN'),'w');
+  }catch(e){toast('❌ Could not save PIN — check your connection','w');}
+}
+async function applockRemovePin(){
+  const currentPin=prompt('Enter your current PIN to remove it:');
+  if(currentPin===null)return;
+  try{
+    const r=await fetch('/api/applock.php',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_syncToken},body:JSON.stringify({action:'remove',currentPin})});
+    const d=await r.json();
+    if(d&&d.ok){toast('🔓 PIN removed','w');applockRenderSettingsStatus();}
+    else toast('❌ '+(d&&d.error==='wrong_current_pin'?'Wrong PIN':'Could not remove'),'w');
+  }catch(e){toast('❌ Could not remove PIN — check your connection','w');}
 }
 
 function _forceReLogin(){
@@ -7132,6 +7291,7 @@ function renderSettings(){
   renderFontGallery();
   renderAppBgGallery();
   renderSbBgGallery();
+  applockRenderSettingsStatus();
   bkRenderList();
   // Keep the dark/light switch in sync in case it changed via a sync pull from another
   // device while this page wasn't open.
