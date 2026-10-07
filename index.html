@@ -18,17 +18,19 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
 <style>
 :root{
-  --bg:#0b1120;--card:#111827;--card2:#1e293b;--sb:#0a0f1c;--pa:37,99,235;
-  --primary:#2563eb;--pl:#93c5fd;--success:#10b981;--warn:#f59e0b;
-  --danger:#ef4444;--info:#3b82f6;--text:#f1f5f9;--muted:#64748b;
-  --border:rgba(255,255,255,.07);--hi:#ef4444;--me:#f59e0b;--lo:#10b981;
+  /* "Obsidian Executive" — vantablack base, brushed-gold accent. --pa is the primary color's
+     r,g,b triplet (used everywhere as rgba(var(--pa),alpha) for tinted glows/overlays). */
+  --bg:#0a0a0a;--card:#131313;--card2:#1c1c1a;--sb:#060605;--pa:212,175,55;
+  --primary:#d4af37;--pl:#f0d78c;--success:#34d399;--warn:#d4af37;
+  --danger:#ef4444;--info:#60a5fa;--text:#f5f3ee;--muted:#8a877e;
+  --border:rgba(255,255,255,.08);--hi:#ef4444;--me:#d4af37;--lo:#34d399;
   --app-font:'Segoe UI',system-ui,sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:var(--app-font);background:var(--bg);color:var(--text);display:flex;min-height:100vh;font-size:13px}
 
 /* SIDEBAR */
-.sb{width:240px;background:var(--sb);border-right:1px solid rgba(255,255,255,.07);position:fixed;left:0;top:0;bottom:0;display:flex;flex-direction:column;z-index:50;box-shadow:4px 0 24px rgba(0,0,0,.25)}
+.sb{width:240px;background:var(--sb);background-image:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,0) 30%);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-right:1px solid rgba(255,255,255,.07);position:fixed;left:0;top:0;bottom:0;display:flex;flex-direction:column;z-index:50;box-shadow:4px 0 24px rgba(0,0,0,.25)}
 .sb-logo{padding:14px 14px 10px;border-bottom:1px solid var(--border)}
 .sb-brand{display:flex;align-items:center;gap:9px;margin-bottom:8px}
 @keyframes logoGlow{0%,100%{filter:drop-shadow(0 0 3px rgba(91,163,255,.5)) drop-shadow(0 0 6px rgba(91,163,255,.3));opacity:1}50%{filter:drop-shadow(0 0 10px rgba(91,163,255,1)) drop-shadow(0 0 20px rgba(229,57,53,.5)) drop-shadow(0 2px 8px rgba(91,163,255,.8));opacity:.82}}
@@ -225,7 +227,12 @@ body > .view.on{margin-left:240px;flex:1;padding:20px 24px 20px;min-height:100vh
 .sc-sub{font-size:10px;color:var(--muted);margin-top:5px}
 
 /* cards */
-.card{background:linear-gradient(160deg,rgba(255,255,255,.045),rgba(255,255,255,0) 45%),var(--card);border-radius:16px;padding:16px;border:1px solid rgba(var(--pa),.16);margin-bottom:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 2px 8px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.16),0 12px 36px -10px rgba(var(--pa),.14)}
+.card{background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,0) 45%),rgba(255,255,255,.03),var(--card);
+  backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);
+  border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,.09);margin-bottom:14px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 2px 8px rgba(0,0,0,.4),0 10px 28px rgba(0,0,0,.25),0 12px 36px -10px rgba(var(--pa),.18);
+  transition:transform .18s ease,box-shadow .18s ease;transform-style:preserve-3d;will-change:transform}
+.card:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 4px 14px rgba(0,0,0,.45),0 16px 40px rgba(0,0,0,.3),0 16px 48px -10px rgba(var(--pa),.28)}
 .card-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .card-t{font-size:11px;font-weight:700;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted)}
 
@@ -3310,6 +3317,23 @@ const FSRC_COL={salary:'#10b981',facebook:'#3b82f6',trading:'#f59e0b',amazon:'#f
 const FCAT_COL={food:'#ef4444',transport:'#f97316',housing:'#8b5cf6',health:'#10b981',shopping:'#f472b6',bills:'#06b6d4',education:'#3b82f6',entertainment:'#fbbf24',business:'#0ea5e9',other_exp:'#64748b'};
 const _CUST_COLS=['#06b6d4','#a855f7','#84cc16','#f43f5e','#0ea5e9','#fbbf24','#22c55e','#8b5cf6','#fb923c','#38bdf8'];
 const fmtMoney=n=>n>=1000000?(n/1000000).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'K':n.toLocaleString();
+// Smoothly counts a number display from its last rendered value to a new one instead of
+// snapping — used on a few "hero" numbers (Net Balance, Today Score). Self-contained: tracks
+// its own last value on the element itself (data-anim-val), so it's safe to call from a render
+// function that re-runs often without needing to touch anything else about that function.
+function animateNumberTo(el,target,formatFn){
+  if(!el)return;
+  const prev=parseFloat(el.dataset.animVal);
+  if(isNaN(prev)||prev===target){el.textContent=formatFn(target);el.dataset.animVal=String(target);return;}
+  const dur=600,start=performance.now();
+  function step(now){
+    const t=Math.min(1,(now-start)/dur);
+    const eased=1-Math.pow(1-t,3);
+    el.textContent=formatFn(prev+(target-prev)*eased);
+    if(t<1)requestAnimationFrame(step);else{el.textContent=formatFn(target);el.dataset.animVal=String(target);}
+  }
+  requestAnimationFrame(step);
+}
 
 const ds=d=>d.toISOString().split('T')[0];
 const today=()=>ds(new Date());
@@ -3541,7 +3565,7 @@ function renderDaily(){
 
   // stats
   const msgs=['Start ticking ✓','Good start!','Halfway!','Almost done!','Nearly perfect!','Perfect! 🔥'];
-  document.getElementById('s-ov').textContent=score+'%';
+  animateNumberTo(document.getElementById('s-ov'),score,v=>Math.round(v)+'%');
   document.getElementById('s-msg').textContent=msgs[Math.min(5,Math.floor(score/20))];
   const hDone=habits.filter(h=>log.habits[h.id]).length;
   document.getElementById('s-h').textContent=hDone+'/'+habits.length;
@@ -5223,7 +5247,7 @@ function renderFinance(){
   // instead of jumping around like a flow figure would.
   const holdings=_holdCash+_holdBank;
   const netEl=document.getElementById('f-net');
-  netEl.textContent=(holdings>=0?'+ ':'− ')+currSym+' '+fmtMoney(Math.abs(holdings));
+  animateNumberTo(netEl,holdings,v=>(v>=0?'+ ':'− ')+currSym+' '+fmtMoney(Math.abs(v)));
   netEl.className='sv '+(holdings>0?'net-pos':holdings<0?'net-neg':'');
   document.getElementById('f-net-sub').textContent='cash + bank combined';
   document.getElementById('f-save').textContent=saveRate+'%';
@@ -5777,9 +5801,11 @@ const THEMES={
   mint_fresh:    {primary:'#059669',pl:'#6ee7b7',pa:'5,150,105',   bg:'#020e0a',card:'#041a14',card2:'#07261c',sb:'#010b07',gs:'#10b981',ge:'#34d399'},
   coffee_bean:   {primary:'#92400e',pl:'#fbbf24',pa:'146,64,14',   bg:'#0e0904',card:'#1c130a',card2:'#281c0f',sb:'#0a0603',gs:'#b45309',ge:'#f59e0b'},
   slate_pro:     {primary:'#475569',pl:'#cbd5e1',pa:'71,85,105',   bg:'#08090b',card:'#111418',card2:'#1a1e24',sb:'#06070a',gs:'#64748b',ge:'#94a3b8'},
+  // "Billionaire Command Center" look — vantablack base, brushed-gold accent, now the app default.
+  obsidian_executive:{primary:'#d4af37',pl:'#f0d78c',pa:'212,175,55',bg:'#0a0a0a',card:'#131313',card2:'#1c1c1a',sb:'#060605',gs:'#d4af37',ge:'#f0d78c'},
 };
-const THEME_ORDER=['professional','purple','ocean','emerald','sunset','rose','gold','teal','neon','controltower','stripe_fintech','banking_pro','biz_district','analytics_dash','wealth_gold','midnight_fin','indigo_night','mint_fresh','coffee_bean','slate_pro'];
-const THEME_NAMES={professional:'Professional Navy',purple:'Violet Dream',ocean:'Deep Sea',emerald:'Forest Dark',sunset:'Volcano',rose:'Cherry Blossom',gold:'Gold Mine',teal:'Arctic Glow',neon:'Neon Nights',controltower:'Control Tower',stripe_fintech:'Stripe Fintech',banking_pro:'Banking Pro',biz_district:'Business District',analytics_dash:'Analytics Dashboard',wealth_gold:'Wealth Manager',midnight_fin:'Midnight Finance',indigo_night:'Indigo Night',mint_fresh:'Mint Fresh',coffee_bean:'Coffee Bean',slate_pro:'Slate Pro'};
+const THEME_ORDER=['obsidian_executive','professional','purple','ocean','emerald','sunset','rose','gold','teal','neon','controltower','stripe_fintech','banking_pro','biz_district','analytics_dash','wealth_gold','midnight_fin','indigo_night','mint_fresh','coffee_bean','slate_pro'];
+const THEME_NAMES={obsidian_executive:'Obsidian Executive',professional:'Professional Navy',purple:'Violet Dream',ocean:'Deep Sea',emerald:'Forest Dark',sunset:'Volcano',rose:'Cherry Blossom',gold:'Gold Mine',teal:'Arctic Glow',neon:'Neon Nights',controltower:'Control Tower',stripe_fintech:'Stripe Fintech',banking_pro:'Banking Pro',biz_district:'Business District',analytics_dash:'Analytics Dashboard',wealth_gold:'Wealth Manager',midnight_fin:'Midnight Finance',indigo_night:'Indigo Night',mint_fresh:'Mint Fresh',coffee_bean:'Coffee Bean',slate_pro:'Slate Pro'};
 // Template metadata for gallery cards — every theme in THEME_ORDER gets a full preview card
 // here (not just the original 6), so this nicer gallery UI is the one real way to browse and
 // pick a theme instead of the tiny 15px sidebar dots being the only way to reach most of them.
@@ -6132,6 +6158,17 @@ function toggleAuto(){
 // Theme dot clicks
 document.querySelectorAll('.th[data-theme]').forEach(d=>d.addEventListener('click',()=>applyTheme(d.dataset.theme)));
 document.getElementById('th-auto').addEventListener('click',toggleAuto);
+
+// One-time forced migration to the new "Obsidian Executive" default look — the theme-picker UI
+// was removed, so there's no way for a returning user to pick it manually; this makes it the
+// live look on next load regardless of whatever theme was previously stored. Also turns off
+// theme auto-cycling (if it was on) so it doesn't immediately cycle away from this look.
+if(!S.get('obsidianMigrated',false)){
+  currentTheme='obsidian_executive';
+  S.set('theme',currentTheme);
+  autoOn=false;S.set('autoTheme',false);
+  S.set('obsidianMigrated',true);
+}
 
 // Init on load
 applyTheme(currentTheme,true);
@@ -8297,21 +8334,26 @@ document.addEventListener('input',function(e){
 // Bug button — static (no walking)
 function initBugWalk(){}
 
-// ===== 3D TILT EFFECT (dashboard stat cards) =====
+// ===== 3D TILT EFFECT (dashboard stat cards + the main glass cards) =====
+// Small .ds-card tiles get a punchier tilt; big .card glass panels get a much subtler one —
+// a 14° tilt looks fine on a 90px stat tile but gimmicky/nauseating on a full-width panel.
 (function initCardTilt(){
   let activeCard=null;
   document.addEventListener('mousemove',e=>{
-    const card=e.target.closest('.ds-card');
+    const card=e.target.closest('.ds-card, .card');
     if(card!==activeCard){
       if(activeCard)activeCard.style.transform='';
       activeCard=card;
     }
     if(!card)return;
+    const isSmall=card.classList.contains('ds-card');
+    const maxDeg=isSmall?14:3.5;
+    const scale=isSmall?1.03:1.012;
     const r=card.getBoundingClientRect();
     const px=(e.clientX-r.left)/r.width-0.5;
     const py=(e.clientY-r.top)/r.height-0.5;
-    const rotY=px*14, rotX=-py*14;
-    card.style.transform=`perspective(900px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.03,1.03,1.03)`;
+    const rotY=px*maxDeg, rotX=-py*maxDeg;
+    card.style.transform=`perspective(900px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(${scale},${scale},${scale})`;
   });
   document.addEventListener('mouseleave',e=>{
     if(activeCard){activeCard.style.transform='';activeCard=null;}
