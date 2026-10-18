@@ -18,12 +18,13 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
 <style>
 :root{
-  /* "Obsidian Executive" — vantablack base, brushed-gold accent. --pa is the primary color's
-     r,g,b triplet (used everywhere as rgba(var(--pa),alpha) for tinted glows/overlays). */
-  --bg:#0a0a0a;--card:#131313;--card2:#1c1c1a;--sb:#060605;--pa:212,175,55;
-  --primary:#d4af37;--pl:#f0d78c;--success:#34d399;--warn:#d4af37;
-  --danger:#ef4444;--info:#60a5fa;--text:#f5f3ee;--muted:#8a877e;
-  --border:rgba(255,255,255,.08);--hi:#ef4444;--me:#d4af37;--lo:#34d399;
+  /* "Vampire Neon" - obsidian midnight base, neon purple primary, crimson + cyan accents.
+     --pa is the primary's r,g,b triplet (rgba(var(--pa),a) is used everywhere for glows). */
+  --bg:#090d16;--card:#0f1424;--card2:#161c30;--sb:#070a13;--pa:168,85,247;
+  --primary:#a855f7;--pl:#d8b4fe;--success:#34d399;--warn:#fbbf24;
+  --danger:#f43f5e;--info:#06b6d4;--text:#ffffff;--muted:#b4bdd4;
+  --border:rgba(255,255,255,.1);--hi:#f43f5e;--me:#fbbf24;--lo:#34d399;
+  --neon-pink:#f43f5e;--neon-cyan:#06b6d4;--ease:cubic-bezier(.22,1,.36,1);
   --app-font:'Segoe UI',system-ui,sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box}
@@ -1223,6 +1224,81 @@ html.light-mode .overlay{background:rgba(0,0,0,.45)}
 #zq-mic.hide{display:none}
 @keyframes zqWakeRing{0%,100%{box-shadow:0 4px 16px rgba(0,0,0,.35),0 0 0 1px rgba(var(--pa),.3),0 0 24px rgba(var(--pa),.35)}50%{box-shadow:0 4px 16px rgba(0,0,0,.35),0 0 0 4px rgba(var(--pa),.5),0 0 36px rgba(var(--pa),.7)}}
 #zq-fab.zq-fab-listening{animation:zqWakeRing 1.8s ease-in-out infinite}
+
+/* ===== VAMPIRE NEON - PRO MAX UI/MOTION LAYER =====
+   One easing curve (--ease: fast-out/slow-in, no overshoot = mechanical feel).
+   Only transform/opacity/box-shadow are animated. */
+.card{padding:24px;background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,0) 45%),rgba(12,16,32,.62);
+  backdrop-filter:blur(16px) saturate(150%);-webkit-backdrop-filter:blur(16px) saturate(150%);
+  border:1px solid rgba(168,85,247,.22)}
+.card:hover{border-color:rgba(168,85,247,.4)}
+.sv,.fw-balance,.big-ring-pct,.ds-val{color:#fff;text-shadow:0 0 18px rgba(168,85,247,.45)}
+.card-t,.ph-t{color:#fff}
+.sl,.ds-lbl,.ph-s,.sc-sub{color:#c9d1e6}
+.tick-item{padding:14px 16px;margin-bottom:10px}
+.f-tx-item{padding-top:12px;padding-bottom:12px}
+/* Bounded lists with thin, colour-matched scrollbars */
+#daily-habits,#daily-goals,.pri-body,#f-loan-list,#fin-listings-inline-body{max-height:340px;overflow-y:auto;overflow-x:hidden;padding-right:4px;scrollbar-width:thin;scrollbar-color:rgba(168,85,247,.6) transparent}
+#daily-habits::-webkit-scrollbar,#daily-goals::-webkit-scrollbar,.pri-body::-webkit-scrollbar,#f-loan-list::-webkit-scrollbar,#fin-listings-inline-body::-webkit-scrollbar{width:5px}
+#daily-habits::-webkit-scrollbar-thumb,#daily-goals::-webkit-scrollbar-thumb,.pri-body::-webkit-scrollbar-thumb,#f-loan-list::-webkit-scrollbar-thumb,#fin-listings-inline-body::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#a855f7,#f43f5e);border-radius:3px}
+::-webkit-scrollbar-thumb{background:rgba(168,85,247,.45)}
+
+/* Ambient grid: low-frequency 3s opacity pulse, behind everything */
+body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background-image:linear-gradient(rgba(168,85,247,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(6,182,212,.06) 1px,transparent 1px);
+  background-size:56px 56px;animation:gridPulse 3s ease-in-out infinite alternate}
+@keyframes gridPulse{from{opacity:.35}to{opacity:1}}
+
+/* A. Staggered entrance cascade (re-runs whenever a view becomes visible) */
+@keyframes riseIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.view.on>*,#daily-drag-zone>*{animation:riseIn .5s var(--ease) backwards}
+.view.on>*:nth-child(2){animation-delay:60ms}.view.on>*:nth-child(3){animation-delay:120ms}
+.view.on>*:nth-child(4){animation-delay:180ms}.view.on>*:nth-child(5){animation-delay:240ms}
+.view.on>*:nth-child(6){animation-delay:300ms}.view.on>*:nth-child(7){animation-delay:360ms}
+.view.on>*:nth-child(n+8){animation-delay:420ms}
+#daily-drag-zone>*:nth-child(1){animation-delay:200ms}#daily-drag-zone>*:nth-child(2){animation-delay:260ms}
+#daily-drag-zone>*:nth-child(3){animation-delay:320ms}#daily-drag-zone>*:nth-child(4){animation-delay:380ms}
+#daily-drag-zone>*:nth-child(n+5){animation-delay:440ms}
+
+/* B. Tactile buttons: +3% scale, growing glow, light-ray sweep, press-compress */
+.btn{position:relative;overflow:hidden;transition:transform .18s var(--ease),box-shadow .18s var(--ease),background .15s,filter .15s}
+.btn:hover{transform:scale(1.03);box-shadow:0 0 25px rgba(244,63,94,.6)}
+.btn:active{transform:scale(.95);transition-duration:.08s}
+.btn::after{content:'';position:absolute;top:0;left:-120%;width:60%;height:100%;pointer-events:none;
+  background:linear-gradient(110deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-20deg)}
+.btn:hover::after{animation:lightRay 1.1s linear infinite}
+@keyframes lightRay{from{left:-120%}to{left:160%}}
+.btn-p{background:linear-gradient(135deg,#a855f7,#f43f5e);color:#fff}
+.btn-p:hover{background:linear-gradient(135deg,#b56cff,#fb4d6b);filter:none}
+.btn:focus-visible,.ni:focus-visible,.fi:focus-visible{outline:2px solid #06b6d4;outline-offset:2px}
+
+/* Sidebar: one sliding pill that glides to the active item, neon left border */
+.sb-nav{position:relative}
+.nav-pill{position:absolute;left:8px;right:8px;top:0;height:34px;border-radius:10px;pointer-events:none;z-index:0;
+  background:linear-gradient(90deg,rgba(168,85,247,.32),rgba(168,85,247,.08));
+  border-left:3px solid #f43f5e;box-shadow:0 0 18px rgba(244,63,94,.25);
+  transition:transform .38s var(--ease),height .38s var(--ease);will-change:transform}
+.ni{position:relative;z-index:1}
+.nav-pill-ready .ni.on{background:none;border-left:none;margin-left:0;color:#fff}
+
+/* C. Row exit: slide off on X, then collapse height so siblings glide up */
+.row-exit{transition:transform .32s var(--ease),opacity .32s var(--ease)!important;transform:translateX(110%)!important;opacity:0}
+.row-collapse{transition:height .26s var(--ease),margin .26s var(--ease),padding .26s var(--ease)!important;
+  height:0!important;margin-top:0!important;margin-bottom:0!important;padding-top:0!important;padding-bottom:0!important;overflow:hidden!important;border-width:0!important}
+
+/* Modals: blurred backdrop fades in, dialog scales .95 to 1 */
+@keyframes backdropIn{from{opacity:0;backdrop-filter:blur(0)}to{opacity:1;backdrop-filter:blur(8px)}}
+@keyframes modalIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.overlay{background:rgba(5,7,14,.72)}
+.overlay.open{animation:backdropIn .26s var(--ease) both;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.overlay.open .modal{animation:modalIn .28s var(--ease) both}
+
+/* Respect the OS reduced-motion setting */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+  body::before{animation:none;opacity:.6}
+  .btn:hover,.btn:active{transform:none}
+}
 </style>
 </head>
 <body>
@@ -4108,6 +4184,33 @@ function _do(){
 }
 
 // ===== NAVIGATION =====
+
+// ===== PRO MAX MOTION HELPERS =====
+const _reduceMotion=()=>window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Sliding nav pill: one absolutely-positioned element glides to whichever .ni is active.
+function updateNavPill(){
+  const nav=document.querySelector('.sb-nav');if(!nav)return;
+  let pill=nav.querySelector('.nav-pill');
+  if(!pill){pill=document.createElement('div');pill.className='nav-pill';nav.insertBefore(pill,nav.firstChild);}
+  const on=nav.querySelector('.ni.on');
+  if(!on){pill.style.opacity='0';return;}
+  nav.classList.add('nav-pill-ready');
+  pill.style.opacity='1';
+  pill.style.height=on.offsetHeight+'px';
+  pill.style.transform='translateY('+on.offsetTop+'px)';
+}
+window.addEventListener('resize',updateNavPill);
+// Row exit: slide off-screen on X, collapse height, THEN run the real data change.
+function animateRowOut(el,done){
+  const row=el&&(el.closest('.tick-item,.f-tx-item,.pri-card,.hrow,.ng-item')||el.parentElement);
+  if(!row||_reduceMotion()){done();return;}
+  row.style.height=row.offsetHeight+'px';
+  void row.offsetHeight;
+  row.classList.add('row-exit');
+  setTimeout(()=>{row.classList.add('row-collapse');setTimeout(done,270);},300);
+}
+setTimeout(updateNavPill,60);
+
 function goTo(name){
   // Defensive: if anything (a modal, a wide widget) ever left the page horizontally/vertically
   // scrolled, switching views should always land back at the top-left instead of carrying that
@@ -4117,6 +4220,7 @@ function goTo(name){
   document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
   const v=document.getElementById('view-'+name);if(v)v.classList.add('on');
   const n=document.querySelector(`.ni[data-view="${name}"]`);if(n)n.classList.add('on');
+  updateNavPill();
   renderAll(true);
 }
 
@@ -4371,11 +4475,11 @@ document.addEventListener('click',function(e){
 
   // --- DESTRUCTIVE FIRST ---
   const dh=t.closest('[data-dh]');
-  if(dh){e.stopPropagation();habits=habits.filter(h=>h.id!==dh.dataset.dh);save();toast('Habit removed.','w');renderAll(true);return;}
+  if(dh){e.stopPropagation();animateRowOut(dh,()=>{habits=habits.filter(h=>h.id!==dh.dataset.dh);save();toast('Habit removed.','w');renderAll(true);});return;}
   const dt=t.closest('[data-dt]');
-  if(dt){e.stopPropagation();tasks=tasks.filter(tk=>tk.id!==dt.dataset.dt);save();toast('Task deleted.','w');renderAll(true);return;}
+  if(dt){e.stopPropagation();animateRowOut(dt,()=>{tasks=tasks.filter(tk=>tk.id!==dt.dataset.dt);save();toast('Task deleted.','w');renderAll(true);});return;}
   const dg=t.closest('[data-dg]');
-  if(dg){e.stopPropagation();goals=goals.filter(g=>g.id!==dg.dataset.dg);save();toast('Goal removed.','w');renderAll(true);return;}
+  if(dg){e.stopPropagation();animateRowOut(dg,()=>{goals=goals.filter(g=>g.id!==dg.dataset.dg);save();toast('Goal removed.','w');renderAll(true);});return;}
   const db=t.closest('[data-db]');
   if(db){e.stopPropagation();birthdays=birthdays.filter(b=>b.id!==db.dataset.db);S.set('birthdays',birthdays);toast('Birthday removed.','w');renderAll(true);return;}
   const dev=t.closest('[data-dev]');
@@ -5802,10 +5906,11 @@ const THEMES={
   coffee_bean:   {primary:'#92400e',pl:'#fbbf24',pa:'146,64,14',   bg:'#0e0904',card:'#1c130a',card2:'#281c0f',sb:'#0a0603',gs:'#b45309',ge:'#f59e0b'},
   slate_pro:     {primary:'#475569',pl:'#cbd5e1',pa:'71,85,105',   bg:'#08090b',card:'#111418',card2:'#1a1e24',sb:'#06070a',gs:'#64748b',ge:'#94a3b8'},
   // "Billionaire Command Center" look — vantablack base, brushed-gold accent, now the app default.
+  vampire_neon:{primary:'#a855f7',pl:'#d8b4fe',pa:'168,85,247',bg:'#090d16',card:'#0f1424',card2:'#161c30',sb:'#070a13',gs:'#a855f7',ge:'#f43f5e'},
   obsidian_executive:{primary:'#d4af37',pl:'#f0d78c',pa:'212,175,55',bg:'#0a0a0a',card:'#131313',card2:'#1c1c1a',sb:'#060605',gs:'#d4af37',ge:'#f0d78c'},
 };
-const THEME_ORDER=['obsidian_executive','professional','purple','ocean','emerald','sunset','rose','gold','teal','neon','controltower','stripe_fintech','banking_pro','biz_district','analytics_dash','wealth_gold','midnight_fin','indigo_night','mint_fresh','coffee_bean','slate_pro'];
-const THEME_NAMES={obsidian_executive:'Obsidian Executive',professional:'Professional Navy',purple:'Violet Dream',ocean:'Deep Sea',emerald:'Forest Dark',sunset:'Volcano',rose:'Cherry Blossom',gold:'Gold Mine',teal:'Arctic Glow',neon:'Neon Nights',controltower:'Control Tower',stripe_fintech:'Stripe Fintech',banking_pro:'Banking Pro',biz_district:'Business District',analytics_dash:'Analytics Dashboard',wealth_gold:'Wealth Manager',midnight_fin:'Midnight Finance',indigo_night:'Indigo Night',mint_fresh:'Mint Fresh',coffee_bean:'Coffee Bean',slate_pro:'Slate Pro'};
+const THEME_ORDER=['vampire_neon','obsidian_executive','professional','purple','ocean','emerald','sunset','rose','gold','teal','neon','controltower','stripe_fintech','banking_pro','biz_district','analytics_dash','wealth_gold','midnight_fin','indigo_night','mint_fresh','coffee_bean','slate_pro'];
+const THEME_NAMES={vampire_neon:'Vampire Neon',obsidian_executive:'Obsidian Executive',professional:'Professional Navy',purple:'Violet Dream',ocean:'Deep Sea',emerald:'Forest Dark',sunset:'Volcano',rose:'Cherry Blossom',gold:'Gold Mine',teal:'Arctic Glow',neon:'Neon Nights',controltower:'Control Tower',stripe_fintech:'Stripe Fintech',banking_pro:'Banking Pro',biz_district:'Business District',analytics_dash:'Analytics Dashboard',wealth_gold:'Wealth Manager',midnight_fin:'Midnight Finance',indigo_night:'Indigo Night',mint_fresh:'Mint Fresh',coffee_bean:'Coffee Bean',slate_pro:'Slate Pro'};
 // Template metadata for gallery cards — every theme in THEME_ORDER gets a full preview card
 // here (not just the original 6), so this nicer gallery UI is the one real way to browse and
 // pick a theme instead of the tiny 15px sidebar dots being the only way to reach most of them.
@@ -6168,6 +6273,13 @@ if(!S.get('obsidianMigrated',false)){
   S.set('theme',currentTheme);
   autoOn=false;S.set('autoTheme',false);
   S.set('obsidianMigrated',true);
+}
+
+if(!S.get('vampireMigrated',false)){
+  currentTheme='vampire_neon';
+  S.set('theme',currentTheme);
+  autoOn=false;S.set('autoTheme',false);
+  S.set('vampireMigrated',true);
 }
 
 // Init on load
@@ -8340,6 +8452,7 @@ function initBugWalk(){}
 (function initCardTilt(){
   let activeCard=null;
   document.addEventListener('mousemove',e=>{
+    if(_reduceMotion())return;
     const card=e.target.closest('.ds-card, .card');
     if(card!==activeCard){
       if(activeCard)activeCard.style.transform='';
