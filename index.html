@@ -1490,6 +1490,20 @@ body[data-motion="subtle"] #mp-fx .g{animation:none}
 .sn-pin{width:15px;height:15px;background:radial-gradient(circle at 35% 30%,#fda4af,#f43f5e 55%,#9f1239);box-shadow:0 0 12px rgba(244,63,94,.9),0 3px 5px rgba(0,0,0,.5)}
 .sn-tape{background:linear-gradient(90deg,rgba(6,182,212,.55),rgba(168,85,247,.55));backdrop-filter:blur(2px);box-shadow:0 0 10px rgba(6,182,212,.5)}
 #np-connections-svg .snc-line{filter:drop-shadow(0 0 5px currentColor)}
+/* ===== FOLDABLE QUICK ACCESS (sidebar) ===== */
+.sb-qa-head{display:flex;align-items:center;justify-content:space-between;padding:8px 14px 2px;cursor:pointer;user-select:none}
+.sb-qa-head span{font:600 10px var(--ui-display,inherit);letter-spacing:.2em;color:var(--muted)}
+.sb-qa-head button{all:unset;cursor:pointer;width:22px;height:22px;border-radius:7px;display:grid;place-content:center;color:var(--muted);transition:transform .3s var(--ease,ease),background .2s}
+.sb-qa-head button:hover{background:rgba(255,255,255,.1);color:var(--text)}
+.sb-qa-head button:focus-visible{outline:2px solid var(--info,#06b6d4);outline-offset:2px}
+.sb-qa-head.folded button{transform:rotate(-90deg)}
+.sb-notepad{transition:padding .25s}
+.sb-notepad.mp-compact{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.sb-notepad.mp-compact .sb-notepad-open-btn{margin-top:0!important;padding:10px 4px;justify-content:center;position:relative}
+.sb-notepad.mp-compact .sb-notepad-open-lbl{display:none}
+.sb-notepad.mp-compact .sb-notepad-open-icon{font-size:20px}
+.sb-notepad.mp-compact .sb-notepad-count-badge{position:absolute;top:-5px;right:-3px;font-size:9px;padding:1px 5px;min-width:0}
+.sb-notepad.mp-compact .sb-notepad-count-badge:empty,.sb-notepad.mp-compact .sb-notepad-count-badge[data-z="1"]{display:none}
 /* Respect the OS reduced-motion setting */
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
@@ -11055,7 +11069,7 @@ if('serviceWorker' in navigator){
 /* BUILD 81 — version card, Summary PDF, "Vampire" assistant upgrade (navigate / ask / note / PDF, Urdu + English).
    Additive: the original assistant handlers (add/complete/remove) still run for everything this layer doesn't claim. */
 (function(){
-  var VER={build:83,name:'Neon UI v2',date:'2026-10-20'};window.APP_VERSION=VER;
+  var VER={build:84,name:'Neon UI v2',date:'2026-10-20'};window.APP_VERSION=VER;
   var $=function(s){return document.getElementById(s)};
   function say(t){try{zqSay(t)}catch(e){}}
   function esc(s){return String(s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
@@ -11161,6 +11175,29 @@ if('serviceWorker' in navigator){
     w.parentNode.insertBefore(b,w.nextSibling)}
   new MutationObserver(mountLang).observe(document.body,{childList:true,subtree:true});mountLang();
   try{if(zqRec)zqRec.lang=S.get('zqLang','en-PK')}catch(e){}
+})();
+</script>
+<script>
+/* FOLDABLE QUICK ACCESS: header + fold toggle for the six sidebar shortcuts (Sticky Notes ... Learning).
+   Folded = compact icon grid (still one tap to open each). State is remembered on this device. */
+(function(){
+  var box=document.querySelector('.sb-notepad');if(!box||document.getElementById('sb-qa-head'))return;
+  var head=document.createElement('div');head.className='sb-qa-head';head.id='sb-qa-head';
+  head.innerHTML='<span>⚡ QUICK ACCESS</span><button type="button" id="sb-qa-toggle" aria-label="Fold or unfold quick access" aria-expanded="true">▾</button>';
+  box.parentNode.insertBefore(head,box);
+  var btns=box.querySelectorAll('.sb-notepad-open-btn');
+  btns.forEach(function(b){var l=b.querySelector('.sb-notepad-open-lbl');if(l)b.title=l.textContent.trim()});
+  function apply(folded,save){
+    box.classList.toggle('mp-compact',folded);head.classList.toggle('folded',folded);
+    document.getElementById('sb-qa-toggle').setAttribute('aria-expanded',String(!folded));
+    box.querySelectorAll('.sb-notepad-count-badge').forEach(function(x){x.dataset.z=(x.textContent.trim()==='0')?'1':''});
+    if(save){try{localStorage.setItem('lt4_sbQaFolded',folded?'1':'0')}catch(e){}}
+  }
+  var folded=false;try{folded=localStorage.getItem('lt4_sbQaFolded')==='1'}catch(e){}
+  apply(folded,false);
+  head.addEventListener('click',function(){folded=!folded;apply(folded,true)});
+  /* keep the "0 = hide badge" rule fresh when counts change while folded */
+  new MutationObserver(function(){if(folded)apply(true,false)}).observe(box,{childList:true,subtree:true,characterData:true});
 })();
 </script>
 </body>
