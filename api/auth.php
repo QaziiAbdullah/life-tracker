@@ -56,7 +56,13 @@ function require_user_id(): int {
   $row = $stmt->fetch();
   if (!$row) json_response(['ok' => false, 'error' => 'invalid_session'], 401);
   if (strtotime($row['expires_at']) < time()) json_response(['ok' => false, 'error' => 'session_expired'], 401);
-  db()->prepare('UPDATE sessions SET last_seen_at = NOW() WHERE id = ?')->execute([$token]);
+  // Sliding session: every use pushes the expiry out to 60 days from now, so an account that's
+  // opened regularly never gets asked to sign in with Google again. (Column writes are best-effort.)
+  try {
+    db()->prepare('UPDATE sessions SET last_seen_at = NOW(), expires_at = GREATEST(expires_at, DATE_ADD(NOW(), INTERVAL 60 DAY)) WHERE id = ?')->execute([$token]);
+  } catch (Throwable $e) {
+    db()->prepare('UPDATE sessions SET last_seen_at = NOW() WHERE id = ?')->execute([$token]);
+  }
   return (int) $row['user_id'];
 }
 
