@@ -10821,9 +10821,9 @@ if('serviceWorker' in navigator){
     b.appendChild(s);setTimeout(function(){s.remove()},650)});
   function mountSetting(){
     var host=document.querySelector('#view-settings');if(!host||host.querySelector('#mp-card'))return;
-    var anchor=document.querySelector('#font-gallery');anchor=anchor&&anchor.closest('.card');
-    var c=document.createElement('div');c.className='card';c.id='mp-card';
-    c.innerHTML='<div class="card-t">✨ Motion</div><div class="mp-help" style="font-size:12px;color:var(--muted);margin:6px 0 12px">Animation strength for the whole app — background glow, hover lifts, entrance cascade, number count-up. Saved on this device.</div><div class="mp-seg"><button data-l="full">Full</button><button data-l="subtle">Subtle</button><button data-l="off">Off</button></div>';
+    var anchor=document.querySelector('#font-gallery');anchor=anchor&&anchor.closest('.set-section');
+    var c=document.createElement('div');c.className='set-section';c.id='mp-card';
+    c.innerHTML='<div class="set-sh">✨ Motion</div><div class="set-row" style="display:block"><div class="set-hint" style="margin-bottom:10px">Animation strength for the whole app — background glow, hover lifts, entrance cascade, number count-up. Saved on this device.</div><div class="mp-seg"><button data-l="full">Full</button><button data-l="subtle">Subtle</button><button data-l="off">Off</button></div></div>';
     (anchor&&anchor.parentNode?anchor.parentNode:host).insertBefore(c,anchor||null);
     c.querySelectorAll('button').forEach(function(b){b.addEventListener('click',function(){setLevel(b.dataset.l)})});
     setLevel(level);
@@ -10985,10 +10985,10 @@ if('serviceWorker' in navigator){
   /* Settings gallery */
   function mount(){
     var host=$('#view-settings');if(!host||$('#if-card'))return;
-    var anchor=$('#font-gallery');anchor=anchor&&anchor.closest('.card');
-    var c=document.createElement('div');c.className='card';c.id='if-card';
+    var anchor=$('#font-gallery');anchor=anchor&&anchor.closest('.set-section');
+    var c=document.createElement('div');c.className='set-section';c.id='if-card';
     var cur='';try{cur=JSON.parse(localStorage.getItem('lt4_uiStyle')||'""')}catch(e){}
-    c.innerHTML='<div class="card-t">🎛 Interface style <span style="font-weight:400;color:var(--muted);font-size:11px">· '+Object.keys(IF).length+' looks</span></div><div class="set-hint" style="margin:6px 0 4px">Pick a whole different look. Your data and all features stay exactly the same.</div><div class="if-gal">'+Object.keys(IF).map(function(k){var u=IF[k];return '<button type="button" class="if-tile'+(k===cur?' on':'')+'" data-if="'+k+'"><div class="pv" style="background:'+u.bg+'"><i style="left:6px;top:6px;width:46%;height:20px;background:'+u.card+';border:1px solid '+(u.light?'rgba(0,0,0,.15)':'rgba(255,255,255,.15)')+';border-radius:'+Math.min(u.radius,10)+'px"></i><i style="left:6px;bottom:6px;width:60%;height:8px;background:linear-gradient(90deg,'+u.pri+','+u.sec+')"></i><i style="right:8px;top:8px;width:16px;height:16px;border-radius:50%;background:'+u.ter+'"></i></div><b>'+u.n+'</b></button>'}).join('')+'</div>';
+    c.innerHTML='<div class="set-sh">🎛 Interface style <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px">· '+Object.keys(IF).length+' looks — pick one</span></div><div class="set-row" style="display:block"><div class="set-hint">Pick a whole different look. Your data and all features stay exactly the same.</div><div class="if-gal">'+Object.keys(IF).map(function(k){var u=IF[k];return '<button type="button" class="if-tile'+(k===cur?' on':'')+'" data-if="'+k+'"><div class="pv" style="background:'+u.bg+'"><i style="left:6px;top:6px;width:46%;height:20px;background:'+u.card+';border:1px solid '+(u.light?'rgba(0,0,0,.15)':'rgba(255,255,255,.15)')+';border-radius:'+Math.min(u.radius,10)+'px"></i><i style="left:6px;bottom:6px;width:60%;height:8px;background:linear-gradient(90deg,'+u.pri+','+u.sec+')"></i><i style="right:8px;top:8px;width:16px;height:16px;border-radius:50%;background:'+u.ter+'"></i></div><b>'+u.n+'</b></button>'}).join('')+'</div></div>';
     (anchor&&anchor.parentNode?anchor.parentNode:host).insertBefore(c,anchor||null);
     c.addEventListener('click',function(e){var t=e.target.closest('.if-tile');if(t)applyIf(t.dataset.if)});
   }
@@ -11055,7 +11055,7 @@ if('serviceWorker' in navigator){
 /* BUILD 81 — version card, Summary PDF, "Vampire" assistant upgrade (navigate / ask / note / PDF, Urdu + English).
    Additive: the original assistant handlers (add/complete/remove) still run for everything this layer doesn't claim. */
 (function(){
-  var VER={build:82,name:'Neon UI v2',date:'2026-10-20'};window.APP_VERSION=VER;
+  var VER={build:83,name:'Neon UI v2',date:'2026-10-20'};window.APP_VERSION=VER;
   var $=function(s){return document.getElementById(s)};
   function say(t){try{zqSay(t)}catch(e){}}
   function esc(s){return String(s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
