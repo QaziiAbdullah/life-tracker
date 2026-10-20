@@ -2329,21 +2329,21 @@ body[data-motion="subtle"] #mp-fx .g{animation:none}
 </main>
 
 <!-- ZULQEY AI ASSISTANT -->
-<button id="zq-fab" title="Zulqey — offline assistant">🧞</button>
+<button id="zq-fab" title="Vampire — voice &amp; text assistant">🧛</button>
 <div class="overlay" id="zq-modal">
   <div class="modal" id="zq-box" style="width:430px;max-width:95vw;height:74vh;display:flex;flex-direction:column;padding:0;overflow:hidden">
     <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
-      <div style="display:flex;align-items:center;gap:8px"><span style="font-size:20px">🧞</span><div><div style="font-weight:700;font-size:14px">Zulqey</div><div style="font-size:10px;color:var(--muted)">Offline assistant · Urdu + English</div></div></div>
+      <div style="display:flex;align-items:center;gap:8px"><span style="font-size:20px">🧛</span><div><div style="font-weight:700;font-size:14px">Vampire</div><div style="font-size:10px;color:var(--muted)">Offline assistant · Urdu + English</div></div></div>
       <button class="th-auto" id="zq-close" style="width:26px;height:26px">✕</button>
     </div>
     <div style="padding:8px 16px 0;flex-shrink:0">
-      <button id="zq-wake-toggle" class="btn btn-g btn-sm" style="width:100%" title="Keep listening for 'Zulqey' while this tab is open">👂 Always Listen: Off</button>
+      <button id="zq-wake-toggle" class="btn btn-g btn-sm" style="width:100%" title="Keep listening for 'Vampire' while this tab is open">👂 Always Listen: Off</button>
     </div>
     <div id="zq-chat" style="flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:8px"></div>
     <div id="zq-chips" style="padding:0 16px;display:flex;gap:6px;flex-wrap:wrap"></div>
     <div style="padding:12px 16px 16px;display:flex;gap:8px;flex-shrink:0">
       <button id="zq-mic" class="btn btn-g" style="padding:8px 11px" title="Speak (mic)">🎤</button>
-      <input id="zq-input" class="fi" style="flex:1" placeholder="Zulqey, aaj food mein 20 riyal expense daal do...">
+      <input id="zq-input" class="fi" style="flex:1" placeholder="Vampire, aaj food mein 20 riyal expense daal do... / finance kholo">
       <button id="zq-send" class="btn btn-p" style="padding:8px 14px">➤</button>
     </div>
   </div>
@@ -10515,7 +10515,7 @@ function zqSpeak(text){
     if(!clean)return;
     window.speechSynthesis.cancel(); // don't let replies queue up/overlap
     const u=new SpeechSynthesisUtterance(clean);
-    u.lang='en-US';u.rate=1;u.pitch=1;
+    u.lang=(S.get('zqLang','en-PK')==='ur-PK'&&window.speechSynthesis.getVoices().some(v=>/^ur/i.test(v.lang)))?'ur-PK':'en-US';u.rate=1;u.pitch=1;
     window.speechSynthesis.speak(u);
   }catch(e){}
 }
@@ -10657,8 +10657,8 @@ const ZQ_HANDLERS={
 async function zqHandle(raw){
   zqSayUser(raw);
   const norm=zqNorm(raw);
-  if(/^\s*(zulqey|zulqi)\s*[.,!]*\s*$/.test(norm.trim())){zqSay('Yes, what can I do for you? 😊');return;}
-  const cleaned=norm.replace(/^\s*(zulqey|zulqi)\b[,]?\s*/,'');
+  if(/^\s*(zulqey|zulqi|vampire)\s*[.,!]*\s*$/.test(norm.trim())){zqSay('Yes, what can I do for you? 😊');return;}
+  const cleaned=norm.replace(/^\s*(zulqey|zulqi|vampire)\b[,]?\s*/,'');
   const shape=zqShape(cleaned);
   const learned=aiPatterns.find(p=>p.shape===shape);
   let intent=learned?learned.intent:zqMatchAny(cleaned,ZQ_INTENT_WORDS);
@@ -10686,7 +10686,7 @@ document.getElementById('zq-fab')?.addEventListener('click',()=>{
   openM('zq-modal');
   zqVoiceTurn=false; // opened by a tap/click, not by voice — stay silent until the user actually speaks
   if(!document.getElementById('zq-chat').children.length){
-    zqSay('Hi! Main Zulqey hoon 🧞 — apka offline assistant. Bas type/bol kar bata dein, jaise: "aaj food mein 20 riyal expense daal do".');
+    zqSay('Hi! Main Vampire hoon 🧛 — Urdu ya English mein type/bol kar bata dein, jaise: "aaj food mein 20 riyal expense daal do", "finance kholo", "is mahine kitna kharcha hua", "weekly summary pdf banao".');
   }
   setTimeout(()=>document.getElementById('zq-input')?.focus(),100);
 });
@@ -10705,7 +10705,7 @@ let zqRecActive=false;
 const ZQ_SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 let zqRec=null;
 if(ZQ_SR){
-  zqRec=new ZQ_SR();zqRec.lang='en-PK';zqRec.maxAlternatives=1;zqRec.interimResults=false;
+  zqRec=new ZQ_SR();zqRec.lang=S.get('zqLang','en-PK');zqRec.maxAlternatives=1;zqRec.interimResults=false;
 
   zqRec.onresult=(e)=>{
     const transcript=e.results[e.results.length-1][0].transcript.trim();
@@ -10751,11 +10751,11 @@ function zqTryStartRec(){
   try{zqRec.start();zqRecActive=true;}catch(e){/* already running or blocked — onerror/onend will retry */}
 }
 function zqHandleWakeTranscript(transcript){
-  const wakeMatch=transcript.toLowerCase().match(/\b(zulqey|zulqi|zulqay|julqi|julqey|zulqe)\b/);
+  const wakeMatch=transcript.toLowerCase().match(/\b(zulqey|zulqi|zulqay|julqi|julqey|zulqe|vampire|vampyre|wampire|vampair)\b/);
   if(!wakeMatch)return; // ambient speech that never mentioned the wake word — ignore
   const after=transcript.slice(transcript.toLowerCase().indexOf(wakeMatch[0])+wakeMatch[0].length).replace(/^[\s,.\-]+/,'').trim();
   openM('zq-modal');
-  if(!document.getElementById('zq-chat').children.length)zqSay('Hi! Main Zulqey hoon 🧞 — apka offline assistant. Bas type/bol kar bata dein, jaise: "aaj food mein 20 riyal expense daal do".');
+  if(!document.getElementById('zq-chat').children.length)zqSay('Hi! Main Vampire hoon 🧛 — Urdu ya English mein type/bol kar bata dein, jaise: "aaj food mein 20 riyal expense daal do", "finance kholo", "is mahine kitna kharcha hua", "weekly summary pdf banao".');
   if(after.length>2){zqHandle(after);}
   else{zqSay('Yes, what can I do for you? 😊');zqExpectingFollowUp=true;}
 }
@@ -10778,7 +10778,7 @@ if(zqAlwaysListen&&ZQ_SR){
 }
 
 if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{});});
+  window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).catch(()=>{});});
   // Once a newly-deployed service worker takes over, the page already in memory is still
   // running the OLD cached code — reload once so the fix actually reaches an open tab/PWA
   // instead of waiting for the user to fully close and reopen the app.
@@ -11047,6 +11047,118 @@ if('serviceWorker' in navigator){
    'radial-gradient(60% 50% at 20% 25%,rgba(56,189,248,.34),transparent 70%),radial-gradient(50% 45% at 75% 75%,rgba(129,140,248,.30),transparent 70%),radial-gradient(40% 40% at 85% 20%,rgba(52,211,153,.2),transparent 70%),#070b16'];
   try{if(typeof WALL_BG_COLORS!=='undefined')P.slice().reverse().forEach(function(p){if(WALL_BG_COLORS.indexOf(p)<0)WALL_BG_COLORS.unshift(p)})}catch(e){}
   try{if(!localStorage.getItem('lt4_wallNeon')){localStorage.setItem('lt4_wallNeon','1');if(S.get('wallBg','#eee8dc')==='#eee8dc'){_wallBg=P[0];S.set('wallBg',P[0])}}}catch(e){}
+})();
+</script>
+<script>
+/* BUILD 81 — version card, Summary PDF, "Vampire" assistant upgrade (navigate / ask / note / PDF, Urdu + English).
+   Additive: the original assistant handlers (add/complete/remove) still run for everything this layer doesn't claim. */
+(function(){
+  var VER={build:81,name:'Neon UI v2',date:'2026-10-20'};window.APP_VERSION=VER;
+  var $=function(s){return document.getElementById(s)};
+  function say(t){try{zqSay(t)}catch(e){}}
+  function esc(s){return String(s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
+
+  /* ---------- version card (Settings) ---------- */
+  function mountVer(){var h=$('view-settings');if(!h||$('ver-card'))return;
+    var c=document.createElement('div');c.className='card';c.id='ver-card';
+    c.innerHTML='<div class="card-t">ℹ️ App version</div><div style="margin-top:8px;font-family:var(--ui-mono,monospace);font-size:13px">Build '+VER.build+' · '+VER.name+' · '+VER.date+'</div><div class="set-hint" style="margin-top:8px">Login: email code once per device, then PIN only. Session stays signed in for 60 days of use.</div>';
+    h.insertBefore(c,h.children[1]||null)}
+  new MutationObserver(mountVer).observe(document.body,{childList:true,subtree:true});mountVer();
+
+  /* ---------- Summary → PDF ---------- */
+  function mountPdfBtn(){var ph=document.querySelector('#view-summary .ph');if(!ph||$('sum-pdf-btn'))return;
+    var d=document.createElement('div');d.className='ph-a';d.innerHTML='<button class="btn btn-g btn-sm" id="sum-pdf-btn" type="button">📄 Download PDF</button>';ph.appendChild(d)}
+  new MutationObserver(mountPdfBtn).observe(document.body,{childList:true,subtree:true});mountPdfBtn();
+  window.summaryPdf=function(){
+    var el=$('sum-content');if(!el||!el.innerHTML.trim()){if(typeof toast==='function')toast('Open Summary first','w');return}
+    var per={daily:'Daily',weekly:'Weekly',monthly:'Monthly',yearly:'Yearly'}[window.sumTab||'daily']||'';
+    var nm='';try{nm=(profileData&&profileData.displayName)||''}catch(e){}
+    var css=Array.prototype.map.call(document.querySelectorAll('style'),function(s){return s.textContent}).join('\n');
+    var f=document.createElement('iframe');f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';document.body.appendChild(f);
+    var d=f.contentDocument;d.open();
+    d.write('<!doctype html><html><head><meta charset="utf-8"><title>'+esc(per)+' Summary</title><style>'+css+'</style><style>html,body{background:#fff!important;color:#111!important;display:block!important;margin:0!important;padding:0!important;overflow:visible!important}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;text-shadow:none!important;backdrop-filter:none!important;animation:none!important}.pdf-wrap{padding:24px;font-family:Segoe UI,system-ui,sans-serif}.pdf-wrap *{color:#111!important}.pdf-wrap [class*="card"],.pdf-wrap [class*="sum"]{background:#fff!important;border:1px solid #ccc!important;box-shadow:none!important;break-inside:avoid}h1{font-size:22px;margin:0 0 4px}.pdf-sub{color:#555;margin-bottom:16px;font-size:12px}</style></head><body><div class="pdf-wrap"><h1>'+esc(nm?nm+' — ':'')+esc(per)+' Summary</h1><div class="pdf-sub">Generated '+new Date().toLocaleString()+' · I AM VAMPIRE</div>'+el.innerHTML+'</div></body></html>');
+    d.close();
+    setTimeout(function(){try{f.contentWindow.focus();f.contentWindow.print()}catch(e){if(typeof toast==='function')toast('Could not open the print dialog','w')}setTimeout(function(){f.remove()},4000)},400)};
+  document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#sum-pdf-btn'))summaryPdf()});
+
+  /* ---------- Urdu-script vocabulary for the original handlers ---------- */
+  try{
+    ZQ_INTENT_WORDS.complete.push('مکمل','ہو گیا','ہوگیا','ٹک');
+    ZQ_INTENT_WORDS.remove.push('ہٹاؤ','ہٹا دو','مٹا دو','مٹاؤ','حذف');
+    ZQ_INTENT_WORDS.add.push('شامل','ڈال دو','ڈالو','بنا دو','بناؤ','لکھو','نیا');
+    ZQ_ENTITY_WORDS.expense.push('خرچ','خرچہ','اخراجات');ZQ_ENTITY_WORDS.income.push('آمدنی','کمائی','تنخواہ');
+    ZQ_ENTITY_WORDS.habit.push('عادت');ZQ_ENTITY_WORDS.task.push('ٹاسک','کام');ZQ_ENTITY_WORDS.goal.push('ہدف','مقصد');ZQ_ENTITY_WORDS.birthday.push('سالگرہ');
+  }catch(e){}
+  function digits(s){return s.replace(/[٠-٩]/g,function(c){return String(c.charCodeAt(0)-1632)}).replace(/[۰-۹]/g,function(c){return String(c.charCodeAt(0)-1776)})}
+
+  /* ---------- new intents ---------- */
+  var PAGES=[
+    ['finance',['finance','paisa','paise','پیسہ','فنانس','khata','hisab']],['habits',['habit','habits','adat','aadat','عادت','عادتیں']],['tasks',['task','tasks','kaam','ٹاسک','کام']],
+    ['goals',['goal','goals','target','maqsad','ہدف']],['birthdays',['birthday','birthdays','event','events','salgirah','سالگرہ']],['timetable',['timetable','time table','schedule','ٹائم ٹیبل']],
+    ['vision',['vision','vision board','ویژن']],['summary',['summary','report','reports','خلاصہ']],['settings',['setting','settings','ترتیبات','سیٹنگ']],
+    ['weekly',['weekly','haftawar','hafta']],['monthly',['monthly','mahana','calendar']],['yearly',['yearly','salana']],['daily',['dashboard','home','daily']],
+    ['@notes',['sticky','sticky notes','notes','nots','نوٹس']],['@notebook',['notebook','diary','کاپی']],['@books',['book','books','kitab','kitabein','کتاب','کتابیں','library']],
+    ['@cyber',['hacking','cyber','hack']],['@azan',['azan','adhan','اذان','namaz','نماز']],['@learn',['learning','learn','seekh','سیکھ']]
+  ];
+  var NAVV=['open','kholo','kholein','khol','dikhao','dikha','jao','show','go to','goto','take me','کھولو','کھول','دکھاؤ','دکھا','جاؤ'];
+  function has(t,list){for(var i=0;i<list.length;i++){if(t.indexOf(list[i])>-1)return true}return false}
+  function pageOf(t){var best=null,len=0;PAGES.forEach(function(p){p[1].forEach(function(w){if(t.indexOf(w)>-1&&w.length>len){best=p[0];len=w.length}})});return best}
+  var sidebarBtn={'@notes':'sb-notepad-open','@notebook':'sb-notebook-open','@books':'sb-library-open','@cyber':'sb-cyber-open','@azan':'sb-azan-open','@learn':'sb-learn-open'};
+  function go(p){try{closeM('zq-modal')}catch(e){}
+    if(p.charAt(0)==='@'){var b=$(sidebarBtn[p]);if(b){b.click();return true}return false}
+    if(typeof goTo==='function'){goTo(p);return true}return false}
+
+  function per(t){if(has(t,['aaj','today','آج','ab tak']))return'today';if(has(t,['saal','year','yearly','سال']))return'year';if(has(t,['sab','all time','total','kul']))return'all';return'month'}
+  function plabel(p){return {today:'aaj',month:'is mahine',year:'is saal',all:'ab tak'}[p]}
+  function inP(d,p){var t=today();if(p==='today')return d===t;if(p==='month')return d.slice(0,7)===t.slice(0,7);if(p==='year')return d.slice(0,4)===t.slice(0,4);return true}
+  function tot(type,p){return finance.filter(function(x){return x.type===type&&inP(x.date,p)}).reduce(function(a,x){return a+x.amount},0)}
+  function money(n){try{return currSym+' '+fmtMoney(n)}catch(e){return String(n)}}
+  function balances(){var cash=0,bank=0,inv=0;finance.forEach(function(t){if(t.type==='transfer'){var a={cash:0,bank:0,investment:0};if(t.transferFrom in a)a[t.transferFrom]-=t.amount;if(t.transferTo in a)a[t.transferTo]+=t.amount;cash+=a.cash;bank+=a.bank;inv+=a.investment;return}
+      if(t.type==='loan_given'||t.type==='loan_taken')return;var pm=t.paymentMethod||'bank',sg=t.type==='income'?t.amount:-t.amount;if(pm==='cash')cash+=sg;else if(pm==='investment')inv+=sg;else bank+=sg});
+    fbListings.filter(function(l){return !l.sold}).forEach(function(l){if((l.paymentMethod||'cash')==='bank')bank-=l.price;else cash-=l.price;inv+=l.price});
+    return{cash:cash,bank:bank,inv:inv}}
+
+  function query(t){
+    var p=per(t);
+    if(has(t,['profit','nafa','munafa','نفع','loss','nuqsan','نقصان'])){var s=fbListings.filter(function(x){return x.sold&&typeof x.profit==='number'}),n=s.reduce(function(a,x){return a+x.profit},0);
+      return s.length?'💼 '+s.length+' deals sold — net '+(n>=0?'profit '+money(n)+' 🎉':'loss '+money(n)+' 😢')+'.':'Abhi koi sold listing nahi hai jis par profit/loss likha ho.'}
+    if(has(t,['listing','listings','sold','becha','bika'])){var l=fbListings.length,s2=fbListings.filter(function(x){return x.sold}).length;return '📦 '+l+' listings hain — '+s2+' sold, '+(l-s2)+' abhi listed.'}
+    if(has(t,['balance','paisa kitna','kitna paisa','bacha','بیلنس','cash','bank'])){var b=balances();return '💰 Cash '+money(b.cash)+' · Bank '+money(b.bank)+' · Investment '+money(b.inv)+' (total cash+bank '+money(b.cash+b.bank)+').'}
+    if(has(t,['expense','kharcha','kharch','kharchy','spend','خرچ','اخراجات']))return '💸 '+plabel(p)+' ka kharcha: '+money(tot('expense',p))+'.';
+    if(has(t,['income','amdani','kamai','earn','آمدنی','کمائی']))return '💰 '+plabel(p)+' ki income: '+money(tot('income',p))+'.';
+    if(has(t,['habit','adat','aadat','عادت'])){var h=$('ds-habits');return '🔁 Aaj ki habits: '+(h?h.textContent:'?')+' mukammal.'}
+    if(has(t,['task','kaam','ٹاسک','کام'])){var k=$('ds-tasks');return '✅ Aaj ke tasks: '+(k?k.textContent:'?')+' mukammal.'}
+    if(has(t,['score','progress','kaisa','kaise'])){var s3=$('ds-score');return '🎯 Aaj ka score: '+(s3?s3.textContent:'?')+'.'}
+    return null}
+
+  async function vamp(raw){
+    var t=zqNorm(digits(raw)),c=t.replace(/^\s*(vampire|zulqey|zulqi|ویمپائر)\b[,]?\s*/,' ');
+    if(/^\s*(vampire|ویمپائر)\s*[.,!]*\s*$/.test(t.trim())){zqSayUser(raw);say('Yes, boliye — main sun raha hoon 🧛');return true}
+    if(has(c,['pdf','پی ڈی ایف'])){zqSayUser(raw);var tab=has(c,['weekly','haftawar','hafta'])?'weekly':has(c,['monthly','mahana','mahine','mahina'])?'monthly':has(c,['yearly','salana','saal'])?'yearly':'daily';
+      try{closeM('zq-modal');goTo('summary');var b=document.querySelector('.stab[data-st="'+tab+'"]');if(b)b.click()}catch(e){}
+      say('📄 '+tab+' summary ka PDF khul raha hai — print dialog mein "Save as PDF" chunein.');setTimeout(summaryPdf,700);return true}
+    var nm=c.match(/(?:note|nots|نوٹ)\s*(?:likh(?:o|do)?|add|daal(?:o)?|dal(?:o)?|bana(?:o|do)?|لکھو|ڈالو)?\s*[:\-]?\s*(.{2,})$/);
+    if(nm&&has(c,['likh','add','daal','dal ','bana','write','لکھ','ڈال'])&&typeof addStickyNote==='function'){zqSayUser(raw);
+      var text=nm[1].replace(/^(likh|likho|do|kar do|karo|daal|karen)\s+/,'').trim();try{openNotepad()}catch(e){}
+      setTimeout(function(){try{addStickyNote();setTimeout(function(){var ta=document.querySelector('.sn-ta[data-snid="'+_snNewId+'"]');if(ta){ta.value=text;ta.dispatchEvent(new Event('input',{bubbles:true}));ta.dispatchEvent(new Event('blur',{bubbles:true}))}},200)}catch(e){}},500);
+      say('📝 Sticky note bana diya: "'+text+'"');return true}
+    if(has(c,NAVV)){var pg=pageOf(c);if(pg){zqSayUser(raw);if(go(pg)){say('✅ Khol diya.')}else say('Ye page nahi mila.');return true}}
+    if(has(c,['kitna','kitne','kitni','how much','how many','batao','bata do','bata','balance','profit','nafa','کتنا','کتنے','بتاؤ','بتا','what is','kya hai','status'])){var a=query(c);if(a){zqSayUser(raw);say(a);return true}}
+    return false}
+
+  var _orig=window.zqHandle;
+  window.zqHandle=async function(raw){
+    try{if(await vamp(raw))return}catch(e){console.warn('vampire layer',e)}
+    return _orig(digits(raw));
+  };
+
+  /* ---------- voice language toggle (English / Urdu) ---------- */
+  function mountLang(){var w=$('zq-wake-toggle');if(!w||$('zq-lang-toggle'))return;var b=document.createElement('button');b.id='zq-lang-toggle';b.className='btn btn-g btn-sm';b.style.cssText='width:100%;margin-top:6px';b.type='button';
+    function lab(){b.textContent='🌐 Voice language: '+(S.get('zqLang','en-PK')==='ur-PK'?'اردو (Urdu)':'English / Roman Urdu')}lab();
+    b.onclick=function(){var n=S.get('zqLang','en-PK')==='ur-PK'?'en-PK':'ur-PK';S.set('zqLang',n);try{if(zqRec){zqRec.lang=n}}catch(e){}lab()};
+    w.parentNode.insertBefore(b,w.nextSibling)}
+  new MutationObserver(mountLang).observe(document.body,{childList:true,subtree:true});mountLang();
+  try{if(zqRec)zqRec.lang=S.get('zqLang','en-PK')}catch(e){}
 })();
 </script>
 </body>

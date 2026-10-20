@@ -1,4 +1,4 @@
-const CACHE_NAME = 'redbug-life-tracking-v80';
+const CACHE_NAME = 'redbug-life-tracking-v81';
 const PRECACHE_URLS = [
   '/',
   '/index.html',
@@ -31,6 +31,20 @@ self.addEventListener('fetch', event => {
 
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // The app page itself: always try the network first so a new deploy shows up on the very next
+  // open; the cached copy is only the offline fallback.
+  if (event.request.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('/index.html')) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          if (response.ok) { const copy = response.clone(); caches.open(CACHE_NAME).then(c => c.put(event.request, copy)); }
+          return response;
+        })
+        .catch(() => caches.match(event.request).then(m => m || caches.match('/index.html')))
+    );
     return;
   }
 
