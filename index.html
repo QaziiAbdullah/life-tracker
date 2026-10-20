@@ -1446,9 +1446,9 @@ body[data-motion="subtle"] #mp-fx .g{animation:none}
 .card-t{font-size:11px;text-transform:uppercase;color:var(--muted)}
 .ph{margin-bottom:18px}.ph-t{font-size:clamp(21px,2.6vw,30px);font-weight:700;letter-spacing:.02em}
 .card{padding:22px}
-#daily-drag-zone{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px;align-items:stretch}
+#daily-drag-zone{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-auto-flow:row dense;gap:16px;align-items:stretch}
 #daily-drag-zone>.drag-blk{grid-column:span 6;min-width:0}
-#daily-drag-zone>.drag-blk[data-blk=stats],#daily-drag-zone>.drag-blk[data-blk=bday],#daily-drag-zone>.drag-blk[data-blk=priority]{grid-column:span 12}
+#daily-drag-zone>.drag-blk[data-blk=stats],#daily-drag-zone>.drag-blk[data-blk=priority]{grid-column:span 12}
 #daily-drag-zone>.drag-blk>.card,#daily-drag-zone>.drag-blk>.fin-widget{margin-bottom:0!important}
 #daily-drag-zone>.drag-blk[data-blk=bday]:not(:has(#bday-widget:not([style*="display:none"]))){display:none}
 @media(max-width:1100px){#daily-drag-zone>.drag-blk{grid-column:span 12}}
@@ -3643,7 +3643,7 @@ function bestStreak(){
 
 // ===== SVG CHARTS =====
 function svgLine(scores,labels,h=120){
-  const W=400,padL=30,padR=10,padT=14,padB=26;
+  const W=Math.max(400,Math.min(1600,Math.round((document.getElementById('line-chart-wrap')||{}).clientWidth||400))),padL=30,padR=10,padT=14,padB=26;
   const cw=W-padL-padR,ch=h-padT-padB;
   const pts=scores.map((s,i)=>({x:padL+(i/(Math.max(scores.length-1,1)))*cw,y:padT+ch-(s/100)*ch,s,lbl:labels[i]}));
   const line=pts.map((p,i)=>(i?'L':'M')+p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ');
@@ -11032,6 +11032,8 @@ if('serviceWorker' in navigator){
     var card=t.closest('.card');if(!card)return;var head=t;while(head.parentElement&&head.parentElement!==card)head=head.parentElement;if(head.parentElement!==card)return;
     var old=card.querySelector(':scope>.mp-head');if(old&&old!==head)old.classList.remove('mp-head');head.classList.add('mp-head');card.classList.toggle('mp-fold');
   });
+  /* build 82: everyone starts again on Vampire Neon once; after that the chosen interface is remembered */
+  try{if(!localStorage.getItem('lt4_uiMigr82')){localStorage.setItem('lt4_uiMigr82','1');localStorage.removeItem('lt4_uiStyle');setTimeout(function(){applyIf('vampire_neon',true)},300)}}catch(e){}
   /* restore chosen interface on load */
   try{var s=JSON.parse(localStorage.getItem('lt4_uiStyle')||'""');if(s&&IF[s])setTimeout(function(){applyIf(s,true)},600)}catch(e){}
 })();
@@ -11053,7 +11055,7 @@ if('serviceWorker' in navigator){
 /* BUILD 81 — version card, Summary PDF, "Vampire" assistant upgrade (navigate / ask / note / PDF, Urdu + English).
    Additive: the original assistant handlers (add/complete/remove) still run for everything this layer doesn't claim. */
 (function(){
-  var VER={build:81,name:'Neon UI v2',date:'2026-10-20'};window.APP_VERSION=VER;
+  var VER={build:82,name:'Neon UI v2',date:'2026-10-20'};window.APP_VERSION=VER;
   var $=function(s){return document.getElementById(s)};
   function say(t){try{zqSay(t)}catch(e){}}
   function esc(s){return String(s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
